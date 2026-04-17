@@ -10,6 +10,11 @@ if (Test-Path -LiteralPath $siteDir) {
 New-Item -ItemType Directory -Path $siteDir | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $siteDir "daily") | Out-Null
 
+$webSourceDir = Join-Path $repoRoot "web"
+if (Test-Path -LiteralPath $webSourceDir) {
+    Copy-Item -LiteralPath $webSourceDir -Destination (Join-Path $siteDir "web") -Recurse -Force
+}
+
 $historyDashboard = Join-Path $repoRoot "history_dashboard.html"
 $datedDashboards = Get-ChildItem -Path $repoRoot -File -Filter "stock_dashboard_*.html" |
     Sort-Object Name

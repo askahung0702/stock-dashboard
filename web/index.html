@@ -202,8 +202,8 @@ td{padding:7px 9px;vertical-align:middle}
   <div class="hdr-title">台股 <span>選股系統</span></div>
   <div class="hdr-meta" id="hdr-meta">載入中...</div>
   <div class="hdr-actions">
-    <button class="btn" onclick="location.href='/btc'">BTC 儀表板</button>
-    <button class="btn" onclick="window.open('/old','_blank')">舊版</button>
+    <button class="btn" onclick="location.href='btc.html'">BTC 儀表板</button>
+    <button class="btn" onclick="window.open('../old.html','_blank')">舊版</button>
   </div>
 </header>
 
@@ -590,7 +590,7 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const r = await fetch('/api/latest');
+    const r = await fetch('data/latest.json');
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
 
@@ -984,9 +984,14 @@ async function openDetail(code) {
   renderDH(s);
   renderDB(s, null);
   try {
-    const r = await fetch('/api/stock/' + code);
-    const d = await r.json();
-    renderDB(s, d.history || []);
+    if (!S.historyMap) {
+      const hr = await fetch('data/history.json');
+      if (!hr.ok) throw new Error('HTTP ' + hr.status);
+      const historyData = await hr.json();
+      S.historyMap = {};
+      (historyData.stocks || []).forEach(stock => { S.historyMap[stock.code] = stock.history || []; });
+    }
+    renderDB(s, S.historyMap[code] || []);
   } catch(e) { /* show without history */ }
 }
 

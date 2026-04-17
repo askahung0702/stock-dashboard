@@ -55,6 +55,7 @@ public class StockAnalysis {
         writeBacktestSafely();
         writeHistoryDashboardSafely(dashboardWriter, results, likelyCandidates, watchlistCandidates,
                 likelyVolumeCandidates, nonLikelyVolumeCandidates, latestHistoryDashboardFileName);
+        writeStaticSiteDataSafely();
 
         System.out.println("");
         System.out.println("Analyzed stocks: " + results.size());
@@ -217,6 +218,16 @@ public class StockAnalysis {
             System.out.println("History dashboard: " + path);
         } catch (Exception ex) {
             System.out.println("Cannot write " + fileName + ": " + ex.getMessage());
+        }
+    }
+
+    private static void writeStaticSiteDataSafely() {
+        try {
+            new StockStaticApiExporter().writeDefaultOutputs(new java.io.File("web\\data", "latest.json").getPath(),
+                    new java.io.File("web\\data", "history.json").getPath());
+            System.out.println("Static site data: " + new java.io.File("web\\data").getAbsolutePath());
+        } catch (Exception ex) {
+            System.out.println("Cannot write static site data: " + ex.getMessage());
         }
     }
 }
