@@ -251,6 +251,8 @@ td{padding:7px 9px;vertical-align:middle}
     <label class="flbl"><input type="checkbox" id="max300" onchange="go()"> 股價≤300元</label>
     <label class="flbl"><input type="checkbox" id="sup" onchange="go()"> 分數上漲</label>
     <label class="flbl"><input type="checkbox" id="multi" onchange="go()"> 連續≥2天</label>
+    <label class="flbl"><input type="checkbox" id="turnprofit" onchange="go()"> 轉虧為盈</label>
+    <label class="flbl"><input type="checkbox" id="growthonly" onchange="go()"> 業績成長</label>
     <label class="flbl"><input type="checkbox" id="wonly" onchange="go()"> 僅目前群組自選</label>
     <div class="group-tools">
       <span class="group-lbl">自選群組</span>
@@ -760,6 +762,8 @@ function go() {
   const max300 = document.getElementById('max300').checked;
   const sup   = document.getElementById('sup').checked;
   const multi = document.getElementById('multi').checked;
+  const turnprofit = document.getElementById('turnprofit').checked;
+  const growthonly = document.getElementById('growthonly').checked;
   const wonly = document.getElementById('wonly').checked;
   const t     = S.activeTab;
 
@@ -781,6 +785,9 @@ function go() {
   if (max300) stocks = stocks.filter(s => (s.price || 0) > 0 && s.price <= 300);
   if (sup)   stocks = stocks.filter(s => (s.scoreDelta || 0) > 0);
   if (multi) stocks = stocks.filter(s => (Number.isFinite(s.consecutiveDays) ? s.consecutiveDays : 0) >= 2);
+  if (turnprofit || growthonly) {
+    stocks = stocks.filter(s => (turnprofit && isTurnToProfit(s)) || (growthonly && isRevenueGrowth(s)));
+  }
   if (wonly) stocks = stocks.filter(s => S.wl.has(s.code));
 
   // 預設排序：短線tab用shortScore，中線tab用midScore
@@ -802,7 +809,7 @@ function reset() {
   ['mkt','ind','theme'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('minscore').value = 0;
   document.getElementById('minscoreval').textContent = '0';
-  ['surge','max300','sup','multi','wonly'].forEach(id => document.getElementById(id).checked = false);
+  ['surge','max300','sup','multi','turnprofit','growthonly','wonly'].forEach(id => document.getElementById(id).checked = false);
   go();
 }
 
@@ -951,6 +958,21 @@ function hasCatalystKeyword(text) {
 function hasTurnaroundSignal(s) {
   const label = String(s.turnaroundLabel || '');
   return ['業績成長','業績翻轉','轉虧為盈','高品質翻轉'].includes(label) || (s.turnaroundScore || 0) >= 55;
+}
+function isTurnToProfit(s) {
+  const label = String(s.turnaroundLabel || '');
+  const earningsTurnaround = s.earningsTurnaroundSignalScore || 0;
+  const oneOffRisk = s.oneOffRiskScore || 0;
+  if (label === '轉虧為盈' || label === '高品質翻轉') return true;
+  return earningsTurnaround >= 50 && oneOffRisk <= 35;
+}
+function isRevenueGrowth(s) {
+  const label = String(s.turnaroundLabel || '');
+  const revenueGrowth = s.revenueGrowthSignalScore || 0;
+  const earningsTurnaround = s.earningsTurnaroundSignalScore || 0;
+  const oneOffRisk = s.oneOffRiskScore || 0;
+  if (label === '業績成長' || label === '高品質翻轉') return true;
+  return revenueGrowth >= 72 && earningsTurnaround >= 38 && oneOffRisk <= 35;
 }
 function isCatalystGrowth(s) {
   const revenueStrong = (s.revenueScore || 0) >= 20;
