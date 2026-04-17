@@ -92,6 +92,10 @@ public class StockHistoryDatabase {
         return snapshot;
     }
 
+    public Snapshot buildSnapshotForDate(String date, List<StockAnalysisResultVO> results) {
+        return buildSnapshot(date, results);
+    }
+
     private String upsertSnapshotJson(File historyDirectory, Snapshot snapshot) throws Exception {
         JSONObject root = loadRoot(historyDirectory);
         JSONObject snapshots = getSnapshotsObject(root);

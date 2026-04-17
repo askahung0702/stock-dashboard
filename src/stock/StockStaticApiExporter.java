@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.List;
+
+import stock.vo.StockAnalysisResultVO;
 
 public class StockStaticApiExporter {
 
@@ -19,6 +22,17 @@ public class StockStaticApiExporter {
     public void writeDefaultOutputs(String latestPath, String historyPath) throws Exception {
         StockApiRenderer apiRenderer = new StockApiRenderer();
         writeUtf8(latestPath, apiRenderer.renderLatestJson());
+
+        TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
+        StockDashboardWriter writer = new StockDashboardWriter(analyzer.currentDateStamp(), analyzer.getLikelyThreshold(),
+                analyzer.getWatchlistThreshold(), analyzer.getVolumeSurgeThreshold());
+        writeUtf8(historyPath, writer.renderHistoryDataJson());
+    }
+
+    public void writeOutputsForResults(String latestPath, String historyPath, String latestDate,
+            List<StockAnalysisResultVO> results) throws Exception {
+        StockApiRenderer apiRenderer = new StockApiRenderer();
+        writeUtf8(latestPath, apiRenderer.renderLatestJson(latestDate, results));
 
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
         StockDashboardWriter writer = new StockDashboardWriter(analyzer.currentDateStamp(), analyzer.getLikelyThreshold(),

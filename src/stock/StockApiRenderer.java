@@ -11,6 +11,7 @@ import org.json.simple.JSONObject;
 
 import stock.StockHistoryDatabase.Snapshot;
 import stock.StockHistoryDatabase.SnapshotRow;
+import stock.vo.StockAnalysisResultVO;
 
 public class StockApiRenderer {
 
@@ -168,6 +169,169 @@ public class StockApiRenderer {
         result.put("marketAlertText",   marketAlertText);
         result.put("themes",            themes);
         result.put("rows",              rows);
+        return result.toJSONString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public String renderLatestJson(String latestDate, List<StockAnalysisResultVO> results) throws Exception {
+        StockHistoryDatabase db = new StockHistoryDatabase();
+        Map<String, Snapshot> snapshots = db.loadSnapshots();
+        Snapshot currentSnapshot = db.buildSnapshotForDate(latestDate, results);
+        Map<String, SnapshotRow> prevRows = new HashMap<String, SnapshotRow>();
+
+        List<String> dates = new ArrayList<String>(snapshots.keySet());
+        Collections.sort(dates);
+        String prevDate = null;
+        if (!dates.isEmpty()) {
+            int sameDateIndex = dates.indexOf(latestDate);
+            if (sameDateIndex >= 0) {
+                prevDate = sameDateIndex > 0 ? dates.get(sameDateIndex - 1) : null;
+            } else {
+                prevDate = dates.get(dates.size() - 1);
+            }
+        }
+
+        if (prevDate != null) {
+            Snapshot prevSnapshot = snapshots.get(prevDate);
+            if (prevSnapshot != null) {
+                for (SnapshotRow row : prevSnapshot.rows) {
+                    prevRows.put(row.code, row);
+                }
+            }
+        }
+
+        List<String> scoreDates = new ArrayList<String>(dates);
+        if (!scoreDates.contains(latestDate)) {
+            scoreDates.add(latestDate);
+        }
+        Collections.sort(scoreDates);
+        Map<String, Map<String, Double>> scoreLookup = buildScoreLookup(snapshots, dates);
+        Map<String, Double> currentScoreMap = new HashMap<String, Double>();
+        for (SnapshotRow row : currentSnapshot.rows) {
+            currentScoreMap.put(row.code, Double.valueOf(selectionScoreOf(row)));
+        }
+        scoreLookup.put(latestDate, currentScoreMap);
+        Map<String, Integer> consecutiveDays = computeConsecutiveDays(scoreLookup, scoreDates, currentSnapshot);
+
+        int prevLikelyCount = 0;
+        double prevSelectionScoreSum = 0D;
+        int prevTotal = 0;
+        if (prevDate != null) {
+            Snapshot prevSnapshot = snapshots.get(prevDate);
+            if (prevSnapshot != null) {
+                prevTotal = prevSnapshot.rows.size();
+                for (SnapshotRow row : prevSnapshot.rows) {
+                    if (isLikely(row)) {
+                        prevLikelyCount++;
+                    }
+                    prevSelectionScoreSum += selectionScoreOf(row);
+                }
+            }
+        }
+
+        int likelyCount = 0, watchlistCount = 0, scoreUpCount = 0, volumeSurgeCount = 0, qualifiedCount = 0,
+                buyPointCount = 0, confidenceReadyCount = 0, newsHotCount = 0, newsRiskCount = 0, themeHotCount = 0;
+        double selectionScoreSum = 0D;
+        double confidenceSum = 0D;
+        double newsScoreSum = 0D;
+        double themeScoreSum = 0D;
+        for (SnapshotRow row : currentSnapshot.rows) {
+            if (isLikely(row)) likelyCount++;
+            else if (selectionScoreOf(row) >= WATCHLIST_THRESHOLD) watchlistCount++;
+            if (row.selectionQualified) qualifiedCount++;
+            if (buyPointScoreOf(row) >= 75D) buyPointCount++;
+            if (row.volumeRatio >= 1.8) volumeSurgeCount++;
+            if (row.newsScore >= 60D) newsHotCount++;
+            if (row.newsRiskScore >= 65D) newsRiskCount++;
+            if (row.themeScore >= 60D) themeHotCount++;
+            SnapshotRow prev = prevRows.get(row.code);
+            if (prev != null && selectionScoreOf(row) > selectionScoreOf(prev)) scoreUpCount++;
+            selectionScoreSum += selectionScoreOf(row);
+            newsScoreSum += row.newsScore;
+            themeScoreSum += row.themeScore;
+            if (hasDataConfidence(row)) {
+                confidenceSum += row.dataConfidence;
+                confidenceReadyCount++;
+            }
+        }
+        int total = currentSnapshot.rows.size();
+        double scoreUpPct = total > 0 ? scoreUpCount * 100.0 / total : 0;
+        double volumeSurgePct = total > 0 ? volumeSurgeCount * 100.0 / total : 0;
+        double qualifiedPct = total > 0 ? qualifiedCount * 100.0 / total : 0;
+        double buyPointPct = total > 0 ? buyPointCount * 100.0 / total : 0;
+        double breadthPct = total > 0 ? (likelyCount + watchlistCount) * 100.0 / total : 0;
+        double averageSelectionScore = total > 0 ? selectionScoreSum / total : 0;
+        double averageNewsScore = total > 0 ? newsScoreSum / total : 0;
+        double averageThemeScore = total > 0 ? themeScoreSum / total : 0;
+        double averageConfidence = confidenceReadyCount > 0 ? confidenceSum / confidenceReadyCount : 0;
+        double prevAverageSelectionScore = prevTotal > 0 ? prevSelectionScoreSum / prevTotal : averageSelectionScore;
+        double marketScore = computeMarketScore(scoreUpPct, breadthPct, qualifiedPct, buyPointPct,
+                averageSelectionScore);
+        double marketDangerScore = computeMarketDangerScore(marketScore, averageSelectionScore, prevAverageSelectionScore,
+                likelyCount, prevLikelyCount, total > 0 ? newsRiskCount * 100.0 / total : 0,
+                total > 0 ? themeHotCount * 100.0 / total : 0, volumeSurgePct);
+        String marketAlert = resolveMarketAlert(marketDangerScore);
+        String marketAlertText = buildMarketAlertText(marketAlert, marketDangerScore, newsRiskCount, likelyCount,
+                prevLikelyCount, averageSelectionScore, prevAverageSelectionScore);
+        JSONArray themes = buildThemeHeatJson(currentSnapshot.rows, prevRows);
+
+        String marketSignal;
+        String marketSignalText;
+        if (marketScore >= 65D) {
+            marketSignal = "偏強";
+            marketSignalText = String.format("市場環境偏強，分數上升 %.0f%%、可交易標的 %.0f%%，買點可積極挑選", scoreUpPct,
+                    qualifiedPct);
+        } else if (marketScore >= 55D) {
+            marketSignal = "中性";
+            marketSignalText = String.format("市場中性偏多，分數上升 %.0f%%，但仍需嚴格挑買點", scoreUpPct);
+        } else if (marketScore >= 45D) {
+            marketSignal = "偏弱";
+            marketSignalText = String.format("市場偏弱，買點數量有限（%.0f%%），建議縮小部位", buyPointPct);
+        } else {
+            marketSignal = "警戒";
+            marketSignalText = String.format("市場警戒，分數上升 %.0f%%、可交易標的 %.0f%%，應偏保守", scoreUpPct, qualifiedPct);
+        }
+
+        JSONArray rows = new JSONArray();
+        for (SnapshotRow row : currentSnapshot.rows) {
+            JSONObject rowObj = rowToJson(row);
+            SnapshotRow prev = prevRows.get(row.code);
+            rowObj.put("scoreDelta", Double.valueOf(prev != null ? selectionScoreOf(row) - selectionScoreOf(prev) : 0));
+            rowObj.put("prevPrice", Double.valueOf(prev != null ? prev.price : 0));
+            rowObj.put("consecutiveDays", Long.valueOf(consecutiveDays.getOrDefault(row.code, 1)));
+            rows.add(rowObj);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("date", currentSnapshot.date);
+        result.put("prevDate", prevDate != null ? prevDate : "");
+        result.put("count", Long.valueOf(total));
+        result.put("likelyCount", Long.valueOf(likelyCount));
+        result.put("watchlistCount", Long.valueOf(watchlistCount));
+        result.put("scoreUpCount", Long.valueOf(scoreUpCount));
+        result.put("scoreUpPct", Double.valueOf(Math.round(scoreUpPct * 10) / 10.0));
+        result.put("volumeSurgeCount", Long.valueOf(volumeSurgeCount));
+        result.put("volumeSurgePct", Double.valueOf(Math.round(volumeSurgePct * 10) / 10.0));
+        result.put("qualifiedCount", Long.valueOf(qualifiedCount));
+        result.put("qualifiedPct", Double.valueOf(Math.round(qualifiedPct * 10) / 10.0));
+        result.put("buyPointCount", Long.valueOf(buyPointCount));
+        result.put("buyPointPct", Double.valueOf(Math.round(buyPointPct * 10) / 10.0));
+        result.put("averageSelectionScore", Double.valueOf(Math.round(averageSelectionScore * 10) / 10.0));
+        result.put("averageNewsScore", Double.valueOf(Math.round(averageNewsScore * 10) / 10.0));
+        result.put("averageThemeScore", Double.valueOf(Math.round(averageThemeScore * 10) / 10.0));
+        result.put("averageConfidence", Double.valueOf(Math.round(averageConfidence * 10) / 10.0));
+        result.put("confidenceReady", Boolean.valueOf(confidenceReadyCount > 0));
+        result.put("confidenceReadyCount", Long.valueOf(confidenceReadyCount));
+        result.put("likelyThreshold", Double.valueOf(LIKELY_THRESHOLD));
+        result.put("watchlistThreshold", Double.valueOf(WATCHLIST_THRESHOLD));
+        result.put("marketScore", Double.valueOf(Math.round(marketScore * 10) / 10.0));
+        result.put("marketSignal", marketSignal);
+        result.put("marketSignalText", marketSignalText);
+        result.put("marketDangerScore", Double.valueOf(Math.round(marketDangerScore * 10) / 10.0));
+        result.put("marketAlert", marketAlert);
+        result.put("marketAlertText", marketAlertText);
+        result.put("themes", themes);
+        result.put("rows", rows);
         return result.toJSONString();
     }
 
