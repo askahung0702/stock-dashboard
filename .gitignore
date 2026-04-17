@@ -1,0 +1,24 @@
+# Build output
+/bin/
+/site/
+*.class
+
+# IDE and local settings
+/.settings/
+/.claude/
+
+# Generated analysis data
+/daily_snapshots/
+/history/
+/stock_dashboard_*.html
+
+# Local logs and scratch files
+/server_out.txt
+/server_err.txt
+/stdout
+/tmp_btc_check.js
+/tmp_btc_check2.js
+
+# OS cruft
+.DS_Store
+Thumbs.db

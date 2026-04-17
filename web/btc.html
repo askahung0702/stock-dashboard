@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC 市場狀態儀表板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;background:radial-gradient(circle at top,#3a2912 0,#17120e 34%,#0b0d10 100%);color:#f5efe6}a{text-decoration:none;color:inherit}.hdr{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:14px 20px;background:rgba(11,13,16,.82);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}.title{font-size:20px;font-weight:800;letter-spacing:.04em}.title span{color:#f0b44d}.meta{color:#bfb4a2;font-size:12px}.actions{margin-left:auto;display:flex;gap:8px}.btn{background:#201a14;border:1px solid rgba(255,255,255,.12);color:#f5efe6;border-radius:999px;padding:8px 14px;cursor:pointer}.btn:hover{background:#2b241d}.main{max-width:1440px;margin:0 auto;padding:18px}.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;margin-bottom:14px}.panel{background:rgba(20,22,28,.74);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.18)}.eyebrow{font-size:11px;color:#c9b594;letter-spacing:.18em;text-transform:uppercase}.hero-score{font-size:56px;font-weight:900;line-height:1;margin:10px 0 6px;color:#ffd38a}.hero-state{font-size:20px;font-weight:700}.hero-turn{margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(240,180,77,.08);border:1px solid rgba(240,180,77,.18);color:#f6d9a5}.hero-copy{margin-top:12px;color:#cfbfa9;line-height:1.8}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}.stat .lbl{font-size:11px;color:#b5a48f;text-transform:uppercase;letter-spacing:.12em}.stat .val{font-size:26px;font-weight:800;margin-top:8px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.score-card h3{margin:0 0 8px;font-size:15px}.score-num{font-size:32px;font-weight:900}.bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0}.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#f0b44d,#ffde9c)}.small{font-size:12px;color:#cdbba2;line-height:1.7}.signals,.sources,.timeline{display:grid;gap:10px}.signal,.source,.timeline-item,.backtest-row{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}.signal-head,.source-head,.timeline-head,.backtest-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px}.badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}.positive{background:rgba(34,197,94,.16);color:#8ef0b0}.negative{background:rgba(239,68,68,.15);color:#ffb0b0}.neutral{background:rgba(240,180,77,.16);color:#ffd38a}.ok{background:rgba(59,130,246,.15);color:#9cc7ff}.warn{background:rgba(245,158,11,.15);color:#ffd48f}.chart-wrap{height:320px}.section-title{font-size:16px;font-weight:800;margin:0 0 12px}.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kv .item{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.03)}.kv .k{font-size:11px;color:#b5a48f;text-transform:uppercase;letter-spacing:.1em}.kv .v{margin-top:6px;font-size:21px;font-weight:800}.muted{color:#cdbba2}.loading{padding:80px 20px;text-align:center;color:#cdbba2}.history-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.backtest-grid{display:grid;gap:10px}.two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}.mono{font-variant-numeric:tabular-nums}.tl-returns{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.05);font-size:11px;color:#d5c7b2}@media (max-width:1100px){.hero,.grid,.cards,.stats,.kv,.history-stats,.two-col{grid-template-columns:1fr 1fr}}@media (max-width:760px){.hero,.grid,.cards,.stats,.kv,.history-stats,.two-col{grid-template-columns:1fr}.hero-score{font-size:42px}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div>
+    <div class="title">BTC <span>市場狀態儀表板</span></div>
+    <div class="meta" id="meta">載入中...</div>
+  </div>
+  <div class="actions">
+    <button class="btn" onclick="location.href='/'">台股首頁</button>
+    <button class="btn" onclick="location.reload()">重新整理</button>
+  </div>
+</header>
+<div class="main" id="app"><div class="loading">載入 BTC 儀表板中...</div></div>
+<script>
+let priceChart,scoreChart,historyChart;
+const fmt=v=>Number(v||0).toLocaleString('en-US',{maximumFractionDigits:2});
+const pct=v=>v==null||Number.isNaN(Number(v))?'—':(Number(v)>0?'+':'')+Number(v).toFixed(1)+'%';
+const toneClass=t=>t==='positive'?'positive':t==='negative'?'negative':'neutral';
+const numOrDash=v=>v==null||Number.isNaN(Number(v))?'—':fmt(v);
+const shortDate=d=>d?String(d).slice(5):'—';
+function returnTone(v){if(v==null||Number.isNaN(Number(v)))return 'neutral';return Number(v)>0?'positive':Number(v)<0?'negative':'neutral';}
+function render(d){
+  document.getElementById('meta').textContent='資料日期：'+(d.generatedAt||'—')+' · 市場狀態：'+(d.marketState||'—');
+  const price=d.price||{},macro=d.macro||{},pos=d.positioning||{},on=d.onchain||{},scores=d.scores||[],history=d.stateHistory||[],turning=d.turningHistory||[],backtest=d.backtest||[],summary=d.historySummary||{};
+  document.getElementById('app').innerHTML=`
+<div class="hero">
+  <section class="panel">
+    <div class="eyebrow">Market State</div>
+    <div class="hero-score mono">${fmt(d.marketScore)}</div>
+    <div class="hero-state">${d.marketState||'—'} · ${d.turningPoint||'—'}</div>
+    <div class="hero-turn">${d.turningPointText||''}</div>
+    <div class="hero-copy">${d.summary||''}</div>
+  </section>
+  <section class="panel">
+    <div class="eyebrow">Current Price</div>
+    <div class="hero-score mono" style="font-size:44px">$${fmt(price.currentPrice)}</div>
+    <div class="small">7D ${pct(price.change7dPct)} · 30D ${pct(price.change30dPct)} · 90D ${pct(price.change90dPct)}</div>
+    <div class="small" style="margin-top:10px">90 日高點回撤 ${pct(price.drawdownFrom90dHighPct)} · 20 日量比 ${fmt(price.volumeRatio20)}x · 資料完整度 ${fmt(d.confidenceScore)} 分</div>
+  </section>
+</div>
+<div class="stats">
+  <div class="panel stat"><div class="lbl">20 日均線</div><div class="val mono">$${fmt(price.sma20)}</div></div>
+  <div class="panel stat"><div class="lbl">50 日均線</div><div class="val mono">$${fmt(price.sma50)}</div></div>
+  <div class="panel stat"><div class="lbl">200 日均線</div><div class="val mono">$${fmt(price.sma200)}</div></div>
+  <div class="panel stat"><div class="lbl">Fed 3M 變化</div><div class="val mono">${fmt(macro.fedFunds3mDelta)}</div></div>
+  <div class="panel stat"><div class="lbl">美元 20D</div><div class="val mono">${pct(macro.dxy20dPct)}</div></div>
+</div>
+<div class="history-stats">
+  <div class="panel stat"><div class="lbl">累積快照</div><div class="val mono">${fmt(summary.count)}</div></div>
+  <div class="panel stat"><div class="lbl">偏多日數</div><div class="val mono">${fmt(summary.riskOnDays)}</div></div>
+  <div class="panel stat"><div class="lbl">警戒日數</div><div class="val mono">${fmt(summary.cautionDays)}</div></div>
+  <div class="panel stat"><div class="lbl">上行確認次數</div><div class="val mono">${fmt(summary.confirmedTurns)}</div></div>
+</div>
+<div class="cards">${scores.map(s=>`<section class="panel score-card"><h3>${s.label}</h3><div class="score-num mono">${fmt(s.score)}</div><div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,s.score||0))}%"></div></div><div class="small">${s.description||''}</div><div class="small" style="margin-top:8px">${s.summary||''}</div></section>`).join('')}</div>
+<div class="grid">
+  <section class="panel"><h2 class="section-title">價格趨勢</h2><div class="chart-wrap"><canvas id="priceChart"></canvas></div></section>
+  <section class="panel"><h2 class="section-title">四層分數</h2><div class="chart-wrap"><canvas id="scoreChart"></canvas></div></section>
+</div>
+<div class="grid">
+  <section class="panel"><h2 class="section-title">歷史市場分數</h2><div class="chart-wrap"><canvas id="historyChart"></canvas></div></section>
+  <section class="panel"><h2 class="section-title">轉折回測</h2><div class="backtest-grid">${backtest.map(b=>`<div class="backtest-row"><div class="backtest-head"><strong>${b.label}</strong><span class="badge ${returnTone(b.avg30dPct)}">${fmt(b.count)} 次</span></div><div class="small">7D 平均 ${pct(b.avg7dPct)} · 30D 平均 ${pct(b.avg30dPct)}</div><div class="small">7D 正報酬率 ${b.positive7Rate==null?'—':fmt(b.positive7Rate)+'%'} · 30D 正報酬率 ${b.positive30Rate==null?'—':fmt(b.positive30Rate)+'%'}</div></div>`).join('')}</div></section>
+</div>
+<div class="grid">
+  <section class="panel"><h2 class="section-title">宏觀與定位</h2><div class="kv">
+    <div class="item"><div class="k">Fed Funds</div><div class="v mono">${fmt(macro.fedFundsLatest)}</div><div class="muted">3M ${fmt(macro.fedFunds3mDelta)} · ${macro.fedFundsDate||''}</div></div>
+    <div class="item"><div class="k">DXY</div><div class="v mono">${fmt(macro.dxyLatest)}</div><div class="muted">20D ${pct(macro.dxy20dPct)} · 60D ${pct(macro.dxy60dPct)}</div></div>
+    <div class="item"><div class="k">M2</div><div class="v mono">${fmt(macro.m2LatestTrillion)}T</div><div class="muted">YoY ${pct(macro.m2YoYPct)} · 6M ${pct(macro.m26mPct)}</div></div>
+    <div class="item"><div class="k">年化基差</div><div class="v mono">${pos.available?pct(pos.annualizedBasisPct):'—'}</div><div class="muted">${pos.available?(pos.referenceContract+' · '+(pos.referenceDate||'')):pos.statusMessage||'未取得'}</div></div>
+    <div class="item"><div class="k">未平倉量</div><div class="v mono">${pos.available?fmt(pos.openInterestBtc):'—'}</div><div class="muted">BTC</div></div>
+    <div class="item"><div class="k">Deribit 成交額</div><div class="v mono">${pos.available?('$'+fmt(pos.volumeUsd)):'—'}</div><div class="muted">USD</div></div>
+  </div></section>
+  <section class="panel"><h2 class="section-title">鏈上觀察</h2><div class="kv">
+    <div class="item"><div class="k">節點狀態</div><div class="v mono">${on.available?'Connected':'Optional'}</div><div class="muted">${on.statusMessage||''}</div></div>
+    <div class="item"><div class="k">mempool fee</div><div class="v mono">${on.available?fmt(on.mempoolMinFeeSatVb):'—'}</div><div class="muted">sat/vB</div></div>
+    <div class="item"><div class="k">mempool 容量</div><div class="v mono">${on.available?fmt(on.mempoolBytesMb):'—'}</div><div class="muted">MB</div></div>
+    <div class="item"><div class="k">mempool 交易數</div><div class="v mono">${on.available?fmt(on.mempoolCount):'—'}</div><div class="muted">pending tx</div></div>
+    <div class="item"><div class="k">Blocks</div><div class="v mono">${on.available?fmt(on.blocks):'—'}</div><div class="muted">headers ${on.available?fmt(on.headers):'—'}</div></div>
+    <div class="item"><div class="k">驗證進度</div><div class="v mono">${on.available?fmt(on.verificationProgressPct)+'%':'—'}</div><div class="muted">${on.referenceDate||''}</div></div>
+  </div></section>
+</div>
+<div class="two-col">
+  <section class="panel"><h2 class="section-title">近期轉折紀錄</h2><div class="timeline">${turning.map(t=>`<div class="timeline-item"><div class="timeline-head"><strong>${t.turningPoint}</strong><span class="badge ${returnTone(t.return30dPct)}">${shortDate(t.date)}</span></div><div class="small">市場狀態 ${t.marketState||'—'} · 市場分數 ${fmt(t.marketScore)} · 價格 $${fmt(t.price)}</div><div class="tl-returns"><span class="chip">7D ${pct(t.return7dPct)}</span><span class="chip">30D ${pct(t.return30dPct)}</span></div></div>`).join('')}</div></section>
+  <section class="panel"><h2 class="section-title">關鍵訊號</h2><div class="signals">${(d.signals||[]).map(s=>`<div class="signal"><div class="signal-head"><strong>${s.group} · ${s.label}</strong><span class="badge ${toneClass(s.tone)}">${s.value||''}</span></div><div class="small">${s.note||''}</div></div>`).join('')}</div></section>
+</div>
+<div class="grid"><section class="panel"><h2 class="section-title">資料來源</h2><div class="sources">${(d.sources||[]).map(s=>`<div class="source"><div class="source-head"><strong>${s.name}</strong><span class="badge ${s.status==='ok'?'ok':'warn'}">${s.status==='ok'?'OK':'WARN'}</span></div><div class="small">${s.detail||''}${s.asOf?' · '+s.asOf:''}</div></div>`).join('')}</div></section></div>`;
+  const priceLabels=(d.priceHistory||[]).map(x=>x.date?.slice(5));
+  const prices=(d.priceHistory||[]).map(x=>x.close);
+  if(priceChart) priceChart.destroy();
+  priceChart = new Chart(document.getElementById('priceChart'), {
+    type:'line',
+    data:{
+      labels:priceLabels,
+      datasets:[{label:'BTC-USD',data:prices,borderColor:'#f0b44d',backgroundColor:'rgba(240,180,77,.12)',fill:true,tension:.2,pointRadius:0}]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#f5efe6'}}},
+      scales:{x:{ticks:{color:'#b5a48f'}},y:{ticks:{color:'#b5a48f'}}}
+    }
+  });
+
+  if(scoreChart) scoreChart.destroy();
+  scoreChart = new Chart(document.getElementById('scoreChart'), {
+    type:'bar',
+    data:{
+      labels:scores.map(s=>s.label),
+      datasets:[{data:scores.map(s=>s.score),backgroundColor:scores.map(s=>s.score>=68?'rgba(34,197,94,.75)':s.score<45?'rgba(239,68,68,.75)':'rgba(240,180,77,.75)'),borderRadius:10}]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#b5a48f'}},y:{ticks:{color:'#b5a48f'},beginAtZero:true,max:100}}
+    }
+  });
+
+  const histLabels=history.map(x=>shortDate(x.date));
+  const histScore=history.map(x=>x.marketScore);
+  const histPrice=history.map(x=>x.price);
+  if(historyChart) historyChart.destroy();
+  historyChart = new Chart(document.getElementById('historyChart'), {
+    data:{
+      labels:histLabels,
+      datasets:[
+        {type:'line',label:'市場分數',data:histScore,borderColor:'#ffde9c',backgroundColor:'rgba(255,222,156,.14)',yAxisID:'y',tension:.2,pointRadius:0,fill:true},
+        {type:'line',label:'BTC 價格',data:histPrice,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.10)',yAxisID:'y1',tension:.2,pointRadius:0}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#f5efe6'}}},
+      scales:{
+        x:{ticks:{color:'#b5a48f'}},
+        y:{position:'left',ticks:{color:'#b5a48f'},min:0,max:100},
+        y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'#86b7ff'}}
+      }
+    }
+  });
+}
+async function init(){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);try{const r=await fetch('/api/btc/latest',{signal:controller.signal});if(!r.ok)throw new Error('HTTP '+r.status);render(await r.json())}catch(e){const msg=e&&e.name==='AbortError'?'API 回應逾時，請稍後再試':'BTC 載入失敗：'+e.message;document.getElementById('meta').textContent='載入失敗';document.getElementById('app').innerHTML='<div class="panel">'+msg+'</div>'}finally{clearTimeout(timer)}}
+init();
+</script>
+</body>
+</html>
+
+
