@@ -1,0 +1,7 @@
+interface:
+  display_name: "Stock Early Breakout Review"
+  short_description: "Monthly early-breakout review and comparison"
+  default_prompt: "Use $stock-early-breakout-review to review one month's early-breakout conditions, compare them with the previous window, and refresh the dashboard and web report outputs."
+
+policy:
+  allow_implicit_invocation: true

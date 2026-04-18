@@ -56,6 +56,23 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .theme-meta{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6}
 .theme-heat{font-size:18px;font-weight:700;margin-top:3px}
 
+/* Early breakout */
+.eb-panel{background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.08));border:1px solid rgba(59,130,246,.24);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.eb-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.eb-title{font-size:15px;font-weight:700;color:#fff}
+.eb-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.7}
+.eb-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#bfdbfe;border-radius:999px;padding:6px 12px;font-size:12px}
+.eb-link:hover{background:rgba(59,130,246,.22)}
+.eb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+.eb-stat{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
+.eb-stat-lbl{font-size:11px;color:var(--muted)}
+.eb-stat-val{font-size:19px;font-weight:700;margin-top:3px}
+.eb-conds{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.eb-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.42);color:#dbeafe}
+.eb-chip.guard{color:#bbf7d0;border-color:rgba(34,197,94,.28)}
+.eb-chip.support{color:#fde68a;border-color:rgba(234,179,8,.28)}
+.eb-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7}
+
 /* Filter bar */
 .fbar{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .fbar input,.fbar select{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 9px;font-size:13px;font-family:inherit}
@@ -83,11 +100,13 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-mid.active{color:var(--green);border-bottom-color:var(--green)}
 .tab.tab-buy.active{color:var(--orange);border-bottom-color:var(--orange)}
 .tab.tab-catalyst.active{color:#f59e0b;border-bottom-color:#f59e0b}
+.tab.tab-breakout.active{color:#22c55e;border-bottom-color:#22c55e}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
 .tab.tab-mid.active .tcnt{background:var(--green)}
 .tab.tab-buy.active .tcnt{background:var(--orange);color:#fff}
 .tab.tab-catalyst.active .tcnt{background:#f59e0b;color:#fff}
+.tab.tab-breakout.active .tcnt{background:#22c55e;color:#fff}
 
 /* Table */
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto}
@@ -229,6 +248,19 @@ td{padding:7px 9px;vertical-align:middle}
 
   <div class="theme-strip" id="theme-strip"></div>
 
+  <div class="eb-panel" id="eb-panel" style="display:none">
+    <div class="eb-head">
+      <div>
+        <div class="eb-title">早期起漲條件</div>
+        <div class="eb-sub" id="eb-sub">載入中...</div>
+      </div>
+      <a class="eb-link" id="eb-link" href="early_breakout/early_breakout_latest.html" target="_blank" rel="noopener">查看完整早期起漲報表</a>
+    </div>
+    <div class="eb-grid" id="eb-grid"></div>
+    <div class="eb-conds" id="eb-conds"></div>
+    <div class="eb-note" id="eb-note"></div>
+  </div>
+
   <!-- Filter bar -->
   <div class="fbar">
     <input type="text" id="q" placeholder="🔍 搜尋代碼或名稱..." oninput="onSearch()">
@@ -253,6 +285,7 @@ td{padding:7px 9px;vertical-align:middle}
     <label class="flbl"><input type="checkbox" id="multi" onchange="go()"> 連續≥2天</label>
     <label class="flbl"><input type="checkbox" id="turnprofit" onchange="go()"> 轉虧為盈</label>
     <label class="flbl"><input type="checkbox" id="growthonly" onchange="go()"> 業績成長</label>
+    <label class="flbl"><input type="checkbox" id="ebonly" onchange="go()"> 早期起漲</label>
     <label class="flbl"><input type="checkbox" id="wonly" onchange="go()"> 僅目前群組自選</label>
     <div class="group-tools">
       <span class="group-lbl">自選群組</span>
@@ -274,6 +307,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-mid"   data-t="mid"   onclick="tab('mid')">📈 中線精選 <span class="tcnt" id="tc-mid">0</span></div>
     <div class="tab tab-catalyst" data-t="catalyst" onclick="tab('catalyst')">🚀 催化成長 <span class="tcnt" id="tc-catalyst">0</span></div>
     <div class="tab tab-buy"   data-t="buy"   onclick="tab('buy')">🎯 買點佳 <span class="tcnt" id="tc-buy">0</span></div>
+    <div class="tab tab-breakout" data-t="breakout" onclick="tab('breakout')">🌱 早期起漲 <span class="tcnt" id="tc-breakout">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
@@ -357,6 +391,48 @@ function oldDashboardUrl() {
   return isStaticPagesMode() ? '../old.html' : '/old';
 }
 
+function uniq(arr) {
+  return [...new Set(arr.filter(Boolean))];
+}
+
+function earlyBreakoutCsvCandidates() {
+  const staticCandidates = [
+    'early_breakout/early_breakout_latest.csv',
+    'web/early_breakout/early_breakout_latest.csv',
+    '/web/early_breakout/early_breakout_latest.csv'
+  ];
+  const dynamicCandidates = [
+    '/web/early_breakout/early_breakout_latest.csv',
+    'early_breakout/early_breakout_latest.csv',
+    'web/early_breakout/early_breakout_latest.csv',
+    '/early_breakout/early_breakout_latest.csv'
+  ];
+  return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
+}
+
+function earlyBreakoutHtmlCandidates() {
+  const staticCandidates = [
+    'early_breakout/early_breakout_latest.html',
+    'web/early_breakout/early_breakout_latest.html',
+    '/web/early_breakout/early_breakout_latest.html'
+  ];
+  const dynamicCandidates = [
+    '/web/early_breakout/early_breakout_latest.html',
+    'early_breakout/early_breakout_latest.html',
+    'web/early_breakout/early_breakout_latest.html',
+    '/early_breakout/early_breakout_latest.html'
+  ];
+  return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
+}
+
+function earlyBreakoutCsvUrl() {
+  return S.earlyBreakout?.csvUrl || earlyBreakoutCsvCandidates()[0];
+}
+
+function earlyBreakoutHtmlUrl() {
+  return S.earlyBreakout?.htmlUrl || earlyBreakoutHtmlCandidates()[0];
+}
+
 function makeGroupId() {
   return 'grp_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
@@ -429,6 +505,7 @@ const S = {
   wl: new Set(),
   wlEntries: {},
   meta: {},
+  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '' },
   rc: null, hc: null
 };
 
@@ -613,9 +690,12 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const r = await fetch(latestDataUrl());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
+    const [latestResp, earlyBreakout] = await Promise.all([
+      fetch(latestDataUrl()),
+      loadEarlyBreakout().catch(() => null)
+    ]);
+    if (!latestResp.ok) throw new Error('HTTP ' + latestResp.status);
+    const d = await latestResp.json();
 
     // 預計算短線/中線分
     S.all = (d.rows || []).map(s => ({
@@ -627,6 +707,7 @@ async function init() {
       type:       ''  // will be set after scores computed
     }));
     S.all.forEach(s => { s.type = getType(s); });
+    applyEarlyBreakoutMeta(earlyBreakout);
 
     S.meta = d;
     const ds = fmtDate(d.date);
@@ -637,6 +718,7 @@ async function init() {
 
     renderMarketBanner(d);
     renderThemeHeat(d.themes || []);
+    renderEarlyBreakoutPanel();
     fillIndustries();
     fillThemes();
     updateTabCounts();
@@ -681,6 +763,162 @@ function syncSaved() {
   document.getElementById('s-saved').textContent  = S.wl.size;
   document.getElementById('tc-saved').textContent = S.wl.size;
   refreshGroupUi();
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cell);
+      cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell);
+      if (row.some(value => value !== '')) rows.push(row);
+      row = [];
+      cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  if (cell !== '' || row.length) {
+    row.push(cell);
+    if (row.some(value => value !== '')) rows.push(row);
+  }
+  return rows;
+}
+
+function normalizeEarlyBreakoutRow(headers, values) {
+  const row = {};
+  headers.forEach((header, index) => { row[header] = values[index] ?? ''; });
+  row.rank = Number(row.rank) || 0;
+  row.screenScore = Number(row.screen_score) || 0;
+  row.selectionScore = Number(row.selection_score) || 0;
+  row.buyPointScore = Number(row.buy_point_score) || 0;
+  row.coreMatchCount = Number(row.core_match_count) || 0;
+  row.requiredCoreCount = Number(row.required_core_count) || 0;
+  row.supportMatchCount = Number(row.support_match_count) || 0;
+  row.focusCandidate = row.focus_candidate === 'Y';
+  return row;
+}
+
+async function loadEarlyBreakout() {
+  let lastError = null;
+  for (const url of earlyBreakoutCsvCandidates()) {
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) {
+        lastError = new Error('HTTP ' + response.status + ' @ ' + url);
+        continue;
+      }
+      const text = await response.text();
+      const parsed = parseCsv(text);
+      if (!parsed.length) {
+        lastError = new Error('empty csv @ ' + url);
+        continue;
+      }
+      const [headers, ...dataRows] = parsed;
+      const rows = dataRows
+        .filter(values => values.length && values[0] !== '')
+        .map(values => normalizeEarlyBreakoutRow(headers, values));
+      if (!rows.length) {
+        lastError = new Error('no rows @ ' + url);
+        continue;
+      }
+      const htmlUrl = earlyBreakoutHtmlCandidates().find(candidate => candidate.replace(/\.html$/, '') === url.replace(/\.csv$/, '').replace(/_latest$/, '_latest')) || earlyBreakoutHtmlCandidates()[0];
+      return { rows, csvUrl: url, htmlUrl };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('early breakout csv unavailable');
+}
+
+function applyEarlyBreakoutMeta(payload) {
+  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '' };
+  if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
+    S.earlyBreakout = state;
+    return;
+  }
+  payload.rows.forEach(row => {
+    state.rows.push(row);
+    state.byCode[row.code] = row;
+    state.codeSet.add(row.code);
+    if (row.focusCandidate) state.focusCount += 1;
+  });
+  S.all = S.all.map(stock => {
+    const breakout = state.byCode[stock.code];
+    if (!breakout) return { ...stock, earlyBreakoutCandidate: false, earlyBreakoutRank: 999999, earlyBreakoutScreenScore: 0, earlyBreakoutFocus: false };
+    return {
+      ...stock,
+      earlyBreakoutCandidate: true,
+      earlyBreakoutRank: breakout.rank || 999999,
+      earlyBreakoutScreenScore: breakout.screenScore || 0,
+      earlyBreakoutFocus: !!breakout.focusCandidate,
+      earlyBreakoutReason: breakout.screen_reason || '',
+      earlyBreakoutMatchedConditions: breakout.matched_conditions || ''
+    };
+  });
+  state.loaded = true;
+  state.csvUrl = payload.csvUrl || '';
+  state.htmlUrl = payload.htmlUrl || earlyBreakoutHtmlCandidates()[0];
+  S.earlyBreakout = state;
+}
+
+function renderEarlyBreakoutPanel() {
+  const panel = document.getElementById('eb-panel');
+  if (!panel) return;
+  if (!S.earlyBreakout.loaded || !S.earlyBreakout.rows.length) {
+    panel.style.display = 'none';
+    return;
+  }
+  const rows = S.earlyBreakout.rows;
+  const topThemes = {};
+  rows.forEach(row => {
+    const theme = row.primary_theme || '一般';
+    topThemes[theme] = (topThemes[theme] || 0) + 1;
+  });
+  const themeSummary = Object.entries(topThemes)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([theme, count]) => `${theme} ${count}檔`)
+    .join('、');
+
+  document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
+  document.getElementById('eb-sub').textContent =
+    `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
+  document.getElementById('eb-grid').innerHTML = [
+    ['候選數', rows.length],
+    ['Focus', S.earlyBreakout.focusCount],
+    ['最高 Screen', rows[0] ? rows[0].screenScore.toFixed(1) : '—'],
+    ['研究基準', '近一月起漲']
+  ].map(([label, value]) => `
+    <div class="eb-stat">
+      <div class="eb-stat-lbl">${label}</div>
+      <div class="eb-stat-val">${value}</div>
+    </div>`).join('');
+  document.getElementById('eb-conds').innerHTML = [
+    ['核心', '近3月營收維持年增且正成長月 >= 2'],
+    ['核心', '最新月營收年增 > 0、20日與60日報酬為正'],
+    ['核心', '股價站上 MA20，且 MA20 > MA60 > MA120'],
+    ['核心', 'EPS/獲利有支撐，法人或主力未明顯轉弱'],
+    ['保護', '20日漲幅不能過熱，量比與 RSI 不可失控'],
+    ['加分', '平台突破 / 回踩承接 / AI / CoWoS / 業績成長']
+  ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role === '加分' ? 'support' : ''}">${role} · ${text}</span>`).join('');
+  document.getElementById('eb-note').textContent =
+    '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
+  panel.style.display = '';
 }
 
 // ── Market Banner ─────────────────────────────────────────────────────────────
@@ -745,6 +983,7 @@ function updateTabCounts() {
   document.getElementById('tc-mid').textContent    = S.all.filter(s => s.midScore >= 65).length;
   document.getElementById('tc-catalyst').textContent = S.all.filter(isCatalystGrowth).length;
   document.getElementById('tc-buy').textContent    = S.all.filter(isGoodBuyPoint).length;
+  document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCandidate).length;
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -764,6 +1003,7 @@ function go() {
   const multi = document.getElementById('multi').checked;
   const turnprofit = document.getElementById('turnprofit').checked;
   const growthonly = document.getElementById('growthonly').checked;
+  const ebonly = document.getElementById('ebonly').checked;
   const wonly = document.getElementById('wonly').checked;
   const t     = S.activeTab;
 
@@ -774,6 +1014,7 @@ function go() {
   else if (t === 'mid')   stocks = stocks.filter(s => s.midScore >= 65);
   else if (t === 'catalyst') stocks = stocks.filter(isCatalystGrowth);
   else if (t === 'buy')   stocks = stocks.filter(isGoodBuyPoint);
+  else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCandidate);
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
   if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
@@ -788,10 +1029,12 @@ function go() {
   if (turnprofit || growthonly) {
     stocks = stocks.filter(s => (turnprofit && isTurnToProfit(s)) || (growthonly && isRevenueGrowth(s)));
   }
+  if (ebonly) stocks = stocks.filter(s => s.earlyBreakoutCandidate);
   if (wonly) stocks = stocks.filter(s => S.wl.has(s.code));
 
   // 預設排序：短線tab用shortScore，中線tab用midScore
   let defaultKey = S.sortKey;
+  if (t === 'breakout' && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -809,7 +1052,7 @@ function reset() {
   ['mkt','ind','theme'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('minscore').value = 0;
   document.getElementById('minscoreval').textContent = '0';
-  ['surge','max300','sup','multi','turnprofit','growthonly','wonly'].forEach(id => document.getElementById(id).checked = false);
+  ['surge','max300','sup','multi','turnprofit','growthonly','ebonly','wonly'].forEach(id => document.getElementById(id).checked = false);
   go();
 }
 
@@ -824,6 +1067,12 @@ function tab(t) {
   }
   else if (t === 'buy' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
+  }
+  else if (t === 'breakout') {
+    S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
+  }
+  else if (S.sortKey === 'earlyBreakoutScreenScore') {
+    S.sortKey = 'score'; S.sortDir = -1; refreshSortArrows();
   }
   else if (t !== 'short' && t !== 'mid' && t !== 'catalyst' && (S.sortKey === 'shortScore' || S.sortKey === 'midScore')) {
     S.sortKey = 'score'; refreshSortArrows();

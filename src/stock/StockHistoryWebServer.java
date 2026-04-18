@@ -29,6 +29,8 @@ public class StockHistoryWebServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
         server.createContext("/", new DashboardHandler());
         server.createContext("/btc", new BtcPageHandler());
+        server.createContext("/web/", new StaticFileHandler("web", "/web/"));
+        server.createContext("/early_breakout/", new StaticFileHandler("web/early_breakout", "/early_breakout/"));
         server.createContext("/api/history", new HistoryJsonHandler());
         server.createContext("/api/health", new HealthHandler());
         server.createContext("/api/latest", new LatestHandler());
@@ -106,6 +108,35 @@ public class StockHistoryWebServer {
         return sb.toString();
     }
 
+    private static byte[] readFileBytes(File file) throws Exception {
+        FileInputStream input = new FileInputStream(file);
+        try {
+            byte[] bytes = new byte[(int) file.length()];
+            int offset = 0;
+            while (offset < bytes.length) {
+                int read = input.read(bytes, offset, bytes.length - offset);
+                if (read < 0) {
+                    break;
+                }
+                offset += read;
+            }
+            return bytes;
+        } finally {
+            input.close();
+        }
+    }
+
+    private static String contentTypeFor(String path) {
+        String value = safe(path).toLowerCase();
+        if (value.endsWith(".html")) return "text/html; charset=UTF-8";
+        if (value.endsWith(".csv")) return "text/csv; charset=UTF-8";
+        if (value.endsWith(".json")) return "application/json; charset=UTF-8";
+        if (value.endsWith(".js")) return "application/javascript; charset=UTF-8";
+        if (value.endsWith(".css")) return "text/css; charset=UTF-8";
+        if (value.endsWith(".txt")) return "text/plain; charset=UTF-8";
+        return "application/octet-stream";
+    }
+
     private static void writeResponse(HttpExchange exchange, int statusCode, String contentType, byte[] body)
             throws Exception {
         Headers headers = exchange.getResponseHeaders();
@@ -166,6 +197,45 @@ public class StockHistoryWebServer {
                 }
                 String html = readWebFile("web/btc.html");
                 writeResponse(exchange, 200, "text/html; charset=UTF-8", html.getBytes(UTF8.name()));
+            } catch (Exception ex) {
+                try {
+                    writeResponse(exchange, 500, "text/plain; charset=UTF-8", ("Server error: " + ex.getMessage()).getBytes(UTF8.name()));
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    private static class StaticFileHandler implements HttpHandler {
+        private final File rootDir;
+        private final String urlPrefix;
+
+        private StaticFileHandler(String rootPath, String urlPrefix) {
+            this.rootDir = new File(rootPath);
+            this.urlPrefix = urlPrefix;
+        }
+
+        public void handle(HttpExchange exchange) {
+            try {
+                if (!isGet(exchange)) {
+                    writeResponse(exchange, 405, "text/plain; charset=UTF-8", "Method Not Allowed".getBytes(UTF8.name()));
+                    return;
+                }
+                String path = safe(exchange.getRequestURI().getPath());
+                if (!path.startsWith(urlPrefix)) {
+                    writeResponse(exchange, 404, "text/plain; charset=UTF-8", "Not Found".getBytes(UTF8.name()));
+                    return;
+                }
+                String relative = path.substring(urlPrefix.length()).replace('\\', '/');
+                if (relative.contains("..")) {
+                    writeResponse(exchange, 400, "text/plain; charset=UTF-8", "Invalid path".getBytes(UTF8.name()));
+                    return;
+                }
+                File target = new File(rootDir, relative);
+                if (!target.exists() || !target.isFile()) {
+                    writeResponse(exchange, 404, "text/plain; charset=UTF-8", "Not Found".getBytes(UTF8.name()));
+                    return;
+                }
+                writeResponse(exchange, 200, contentTypeFor(target.getName()), readFileBytes(target));
             } catch (Exception ex) {
                 try {
                     writeResponse(exchange, 500, "text/plain; charset=UTF-8", ("Server error: " + ex.getMessage()).getBytes(UTF8.name()));
