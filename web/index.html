@@ -64,18 +64,9 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .eb-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#bfdbfe;border-radius:999px;padding:6px 12px;font-size:12px}
 .eb-link:hover{background:rgba(59,130,246,.22)}
 .eb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
-.eb-val-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px}
 .eb-stat{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
 .eb-stat-lbl{font-size:11px;color:var(--muted)}
 .eb-stat-val{font-size:19px;font-weight:700;margin-top:3px}
-.eb-val-card{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
-.eb-val-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.eb-val-title{font-size:12px;font-weight:700;color:#f8fafc}
-.eb-val-sample{font-size:11px;color:var(--muted)}
-.eb-val-rows{display:grid;gap:4px;margin-top:8px}
-.eb-val-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px}
-.eb-val-row span{color:#cbd5e1}
-.eb-val-row b{color:#86efac}
 .eb-conds{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .eb-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.42);color:#dbeafe}
 .eb-chip.guard{color:#bbf7d0;border-color:rgba(34,197,94,.28)}
@@ -113,6 +104,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-continuation.active{color:#f97316;border-bottom-color:#f97316}
 .tab.tab-breakout1854.active{color:#a855f7;border-bottom-color:#a855f7}
 .tab.tab-continuation1854.active{color:#eab308;border-bottom-color:#eab308}
+.tab.tab-highwin.active{color:#fb7185;border-bottom-color:#fb7185}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
 .tab.tab-mid.active .tcnt{background:var(--green)}
@@ -122,6 +114,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-continuation.active .tcnt{background:#f97316;color:#fff}
 .tab.tab-breakout1854.active .tcnt{background:#a855f7;color:#fff}
 .tab.tab-continuation1854.active .tcnt{background:#eab308;color:#111827}
+.tab.tab-highwin.active .tcnt{background:#fb7185;color:#fff}
 
 /* Table */
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto}
@@ -272,7 +265,6 @@ td{padding:7px 9px;vertical-align:middle}
       <a class="eb-link" id="eb-link" href="early_breakout/early_breakout_latest.html" target="_blank" rel="noopener">查看完整早期起漲報表</a>
     </div>
     <div class="eb-grid" id="eb-grid"></div>
-    <div class="eb-val-grid" id="eb-validation"></div>
     <div class="eb-conds" id="eb-conds"></div>
     <div class="eb-note" id="eb-note"></div>
   </div>
@@ -317,16 +309,12 @@ td{padding:7px 9px;vertical-align:middle}
   <!-- Tabs -->
   <div class="tabs">
     <div class="tab active"   data-t="all"    onclick="tab('all')">全部 <span class="tcnt" id="tc-all">0</span></div>
-    <div class="tab"          data-t="likely" onclick="tab('likely')">比較有可能 <span class="tcnt" id="tc-likely">0</span></div>
-    <div class="tab"          data-t="wl"     onclick="tab('wl')">觀察名單 <span class="tcnt" id="tc-wl">0</span></div>
-    <div class="tab tab-short" data-t="short" onclick="tab('short')">⚡ 短線精選 <span class="tcnt" id="tc-short">0</span></div>
-    <div class="tab tab-mid"   data-t="mid"   onclick="tab('mid')">📈 中線精選 <span class="tcnt" id="tc-mid">0</span></div>
     <div class="tab tab-catalyst" data-t="catalyst" onclick="tab('catalyst')">🚀 催化成長 <span class="tcnt" id="tc-catalyst">0</span></div>
-    <div class="tab tab-buy"   data-t="buy"   onclick="tab('buy')">🎯 買點佳 <span class="tcnt" id="tc-buy">0</span></div>
     <div class="tab tab-breakout" data-t="breakout" onclick="tab('breakout')">🌱 早期起漲 <span class="tcnt" id="tc-breakout">0</span></div>
     <div class="tab tab-continuation" data-t="continuation" onclick="tab('continuation')">🔥 強勢續攻 <span class="tcnt" id="tc-continuation">0</span></div>
     <div class="tab tab-breakout1854" data-t="breakout1854" onclick="tab('breakout1854')">🌿 早期起漲 18/54 <span class="tcnt" id="tc-breakout1854">0</span></div>
     <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
+    <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">🏆 highWinMode <span class="tcnt" id="tc-highwin">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
@@ -394,8 +382,10 @@ function isStaticPagesMode() {
   return host.endsWith('github.io') || window.location.protocol === 'file:';
 }
 
-function latestDataUrl() {
-  return isStaticPagesMode() ? 'data/latest.json' : '/api/latest';
+function latestDataCandidates() {
+  return isStaticPagesMode()
+    ? ['data/latest.json']
+    : ['/web/data/latest.json', '/api/latest'];
 }
 
 function stockHistoryUrl(code) {
@@ -455,21 +445,6 @@ function earlyBreakoutSummaryCandidates() {
     'early_breakout/early_breakout_latest_summary.json',
     'web/early_breakout/early_breakout_latest_summary.json',
     '/early_breakout/early_breakout_latest_summary.json'
-  ];
-  return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
-}
-
-function earlyBreakoutForwardSummaryCandidates() {
-  const staticCandidates = [
-    'early_breakout/early_breakout_forward_returns_latest.json',
-    'web/early_breakout/early_breakout_forward_returns_latest.json',
-    '/web/early_breakout/early_breakout_forward_returns_latest.json'
-  ];
-  const dynamicCandidates = [
-    '/web/early_breakout/early_breakout_forward_returns_latest.json',
-    'early_breakout/early_breakout_forward_returns_latest.json',
-    'web/early_breakout/early_breakout_forward_returns_latest.json',
-    '/early_breakout/early_breakout_forward_returns_latest.json'
   ];
   return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
 }
@@ -558,7 +533,7 @@ const S = {
   wl: new Set(),
   wlEntries: {},
   meta: {},
-  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '', forwardSummary: null, forwardSummaryUrl: '' },
+  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' },
   rc: null, hc: null
 };
 
@@ -744,11 +719,10 @@ async function init() {
   persistWatchGroups();
   try {
     const [latestResp, earlyBreakout] = await Promise.all([
-      fetch(latestDataUrl()),
+      fetchLatestData(),
       loadEarlyBreakout().catch(() => null)
     ]);
-    if (!latestResp.ok) throw new Error('HTTP ' + latestResp.status);
-    const d = await latestResp.json();
+    const d = latestResp;
 
     // 預計算短線/中線分
     S.all = (d.rows || []).map(s => ({
@@ -781,6 +755,23 @@ async function init() {
   } catch(e) {
     document.getElementById('ld').innerHTML = '<div style="color:var(--red)">載入失敗：' + e.message + '</div>';
   }
+}
+
+async function fetchLatestData() {
+  let lastError = null;
+  for (const url of latestDataCandidates()) {
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) {
+        lastError = new Error('HTTP ' + resp.status + ' @ ' + url);
+        continue;
+      }
+      return await resp.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('latest data unavailable');
 }
 
 function fmtDate(d)      { return d ? d.replace(/(\d{4})(\d{2})(\d{2})/, '$1/$2/$3') : '—'; }
@@ -913,20 +904,7 @@ async function loadEarlyBreakout() {
           lastError = error;
         }
       }
-      let forwardSummary = null;
-      let forwardSummaryUrl = '';
-      for (const forwardCandidate of earlyBreakoutForwardSummaryCandidates()) {
-        try {
-          const forwardResp = await fetch(forwardCandidate, { cache: 'no-store' });
-          if (!forwardResp.ok) continue;
-          forwardSummary = await forwardResp.json();
-          forwardSummaryUrl = forwardCandidate;
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-      return { rows, csvUrl: url, htmlUrl, summary, summaryUrl, forwardSummary, forwardSummaryUrl };
+      return { rows, csvUrl: url, htmlUrl, summary, summaryUrl };
     } catch (error) {
       lastError = error;
     }
@@ -935,7 +913,7 @@ async function loadEarlyBreakout() {
 }
 
 function applyEarlyBreakoutMeta(payload) {
-  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, earlyCount1854: 0, continuationCount1854: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '', forwardSummary: null, forwardSummaryUrl: '' };
+  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, earlyCount1854: 0, continuationCount1854: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
   if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
     S.earlyBreakout = state;
     return;
@@ -976,27 +954,7 @@ function applyEarlyBreakoutMeta(payload) {
   state.htmlUrl = payload.htmlUrl || earlyBreakoutHtmlCandidates()[0];
   state.summary = payload.summary || null;
   state.summaryUrl = payload.summaryUrl || '';
-  state.forwardSummary = payload.forwardSummary || null;
-  state.forwardSummaryUrl = payload.forwardSummaryUrl || '';
   S.earlyBreakout = state;
-}
-
-function renderForwardValidationCard(group) {
-  if (!group || !Number(group.sample_count_max)) return '';
-  const rows = [1, 2, 4].map(week => {
-    const item = group[`${week}w`] || {};
-    const avg = item.avg_return_pct === '' || item.avg_return_pct == null ? '—' : `${Number(item.avg_return_pct).toFixed(2)}%`;
-    const win = item.win_rate_pct === '' || item.win_rate_pct == null ? '—' : `${Number(item.win_rate_pct).toFixed(1)}%`;
-    return `<div class="eb-val-row"><span>${week}週後</span><b>${avg}</b><span>勝率 ${win}</span></div>`;
-  }).join('');
-  return `
-    <div class="eb-val-card">
-      <div class="eb-val-head">
-        <div class="eb-val-title">${group.variant_label} ${group.screen_style_label} ${group.scope_label}</div>
-        <div class="eb-val-sample">樣本 ${group.sample_count_max}</div>
-      </div>
-      <div class="eb-val-rows">${rows}</div>
-    </div>`;
 }
 
 function renderEarlyBreakoutPanel() {
@@ -1051,15 +1009,6 @@ function renderEarlyBreakoutPanel() {
         '54日報酬需維持正向',
         'broker 主力買超比率 > 0'
       ];
-  const forwardSummary = S.earlyBreakout.forwardSummary || null;
-  const validationGroups = forwardSummary?.groups || {};
-  const validationCards = [
-    validationGroups.ma2060_early_focus,
-    validationGroups.ma2060_continuation_focus,
-    validationGroups.ma2060_early_all,
-    validationGroups.ma2060_continuation_all
-  ].map(renderForwardValidationCard).filter(Boolean).join('');
-
   document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
   document.getElementById('eb-sub').textContent =
     summary
@@ -1085,14 +1034,9 @@ function renderEarlyBreakoutPanel() {
     ...strictRuleChips1854.slice(0, 2).map(text => ['18/54', text]),
     ['保護', '短中期漲幅、量比與 RSI 不可過熱']
   ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role !== '核心' ? 'support' : ''}">${role} · ${text}</span>`).join('');
-  document.getElementById('eb-validation').innerHTML = validationCards || `
-    <div class="eb-val-card">
-      <div class="eb-val-title">快照驗證</div>
-      <div class="eb-sub">目前尚無可用的 1 到 4 週驗證摘要。</div>
-    </div>`;
   document.getElementById('eb-note').textContent =
     summary
-      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${forwardSummary ? ` 快照驗證區間 ${fmtDate(forwardSummary.snapshot_start)} → ${fmtDate(forwardSummary.snapshot_end)}。` : ''}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
+      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
       : '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
   panel.style.display = '';
 }
@@ -1153,16 +1097,12 @@ function fillThemes() {
 
 function updateTabCounts() {
   document.getElementById('tc-all').textContent    = S.all.length;
-  document.getElementById('tc-likely').textContent = S.all.filter(s => s.likely).length;
-  document.getElementById('tc-wl').textContent     = S.all.filter(s => !s.likely && s.score >= getWatchlistThreshold()).length;
-  document.getElementById('tc-short').textContent  = S.all.filter(s => s.shortScore >= 65).length;
-  document.getElementById('tc-mid').textContent    = S.all.filter(s => s.midScore >= 65).length;
   document.getElementById('tc-catalyst').textContent = S.all.filter(isCatalystGrowth).length;
-  document.getElementById('tc-buy').textContent    = S.all.filter(isGoodBuyPoint).length;
   document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'early').length;
   document.getElementById('tc-continuation').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'continuation').length;
   document.getElementById('tc-breakout1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'early').length;
   document.getElementById('tc-continuation1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'continuation').length;
+  document.getElementById('tc-highwin').textContent = S.all.filter(isHighWinMode).length;
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -1187,16 +1127,12 @@ function go() {
   const t     = S.activeTab;
 
   let stocks = S.all;
-  if (t === 'likely') stocks = stocks.filter(s => s.likely);
-  else if (t === 'wl') stocks = stocks.filter(s => !s.likely && s.score >= getWatchlistThreshold());
-  else if (t === 'short') stocks = stocks.filter(s => s.shortScore >= 65);
-  else if (t === 'mid')   stocks = stocks.filter(s => s.midScore >= 65);
-  else if (t === 'catalyst') stocks = stocks.filter(isCatalystGrowth);
-  else if (t === 'buy')   stocks = stocks.filter(isGoodBuyPoint);
+  if (t === 'catalyst') stocks = stocks.filter(isCatalystGrowth);
   else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'early');
   else if (t === 'continuation') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'continuation');
   else if (t === 'breakout1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'early');
   else if (t === 'continuation1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'continuation');
+  else if (t === 'highwin') stocks = stocks.filter(isHighWinMode);
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
   if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
@@ -1217,6 +1153,7 @@ function go() {
   // 預設排序：短線tab用shortScore，中線tab用midScore
   let defaultKey = S.sortKey;
   if ((t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
+  if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -1242,13 +1179,11 @@ function tab(t) {
   S.activeTab = t;
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.t === t));
   // 切換 tab 時同步預設排序
-  if (t === 'short' && S.sortKey === 'score') { S.sortKey = 'shortScore'; refreshSortArrows(); }
-  else if (t === 'mid' && S.sortKey === 'shortScore') { S.sortKey = 'midScore'; refreshSortArrows(); }
-  else if (t === 'catalyst' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
+  if (t === 'catalyst' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
   }
-  else if (t === 'buy' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
-    S.sortKey = 'buyPointScore'; refreshSortArrows();
+  else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore')) {
+    S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
@@ -1256,7 +1191,7 @@ function tab(t) {
   else if (S.sortKey === 'earlyBreakoutScreenScore') {
     S.sortKey = 'score'; S.sortDir = -1; refreshSortArrows();
   }
-  else if (t !== 'short' && t !== 'mid' && t !== 'catalyst' && (S.sortKey === 'shortScore' || S.sortKey === 'midScore')) {
+  else if (t !== 'catalyst' && (S.sortKey === 'shortScore' || S.sortKey === 'midScore')) {
     S.sortKey = 'score'; refreshSortArrows();
   }
   go();
@@ -1403,6 +1338,55 @@ function bearishWarningBadge(s) {
 }
 function isGoodBuyPoint(s) {
   return (s.buyPointScore || 0) >= 75 && !!s.selectionQualified;
+}
+function isHighWinMode(s) {
+  const selectionQualified = !!s.selectionQualified;
+  const confidenceReady = hasConfidenceData(s);
+  const dataConfidence = confidenceReady ? Number(s.dataConfidence || 0) : 0;
+  const financialQuality = Number(s.financialQualityScore || 0);
+  const selectionScore = Number(s.score || 0);
+  const buyPointScore = Number(s.buyPointScore || 0);
+  const structureScore = Number(s.structureScore || 0);
+  const riskRewardScore = Number(s.riskRewardScore || 0);
+  const volumeRatio = Number(s.volumeRatio || 0);
+  const drawdown = Number(s.drawdownFromHigh60Pct || 0);
+  const return20 = Number(s.return20DayPct || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const newsRiskScore = Number(s.newsRiskScore || 0);
+  const price = Number(s.price || 0);
+  const movingAverage20 = Number(s.movingAverage20 || 0);
+  const structureLabel = String(s.structureLabel || '');
+
+  const excluded = (
+    !selectionQualified
+    || !confidenceReady
+    || financialQuality < 12
+    || dataConfidence < 70
+    || newsRiskScore > 65
+    || volumeRatio > 2.8
+    || volumeRatio < 0.8
+    || return20 > 25
+    || rsi >= 75
+    || structureLabel === '追高風險'
+    || (price > 0 && movingAverage20 > 0 && price < movingAverage20)
+    || drawdown < -12
+  );
+  if (excluded) return false;
+
+  return (
+    selectionQualified
+    && confidenceReady
+    && dataConfidence >= 75
+    && financialQuality >= 12
+    && selectionScore >= 75
+    && buyPointScore >= 78
+    && structureScore >= 70
+    && riskRewardScore >= 45
+    && volumeRatio >= 0.9 && volumeRatio <= 2.2
+    && drawdown >= -8 && drawdown <= 0
+    && rsi >= 50 && rsi <= 68
+    && newsRiskScore <= 60
+  );
 }
 function hasCatalystKeyword(text) {
   const source = String(text || '').toLowerCase();
