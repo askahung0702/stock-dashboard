@@ -6,13 +6,16 @@
   "identified_count": 8,
   "window_start_count": 9,
   "fallback_count": 3,
-  "candidate_count": 198,
-  "focus_count": 101,
+  "screen_mode": "strict",
+  "candidate_count": 69,
+  "focus_count": 48,
+  "broad_candidate_count": 198,
+  "broad_focus_count": 101,
   "universe_count": 1944,
-  "candidate_ratio_pct": 10.19,
-  "identified_multiplier": 24.75,
-  "breadth_label": "偏寬",
-  "breadth_note": "目前名單 198 檔，占全市場 10.2% ，約為 identified 樣本的 24.8 倍，比較像品質趨勢籃子，不夠像剛起漲名單。",
+  "candidate_ratio_pct": 3.55,
+  "identified_multiplier": 8.62,
+  "breadth_label": "較平衡",
+  "breadth_note": "目前名單 69 檔，占全市場 3.5% ，約為 identified 樣本的 8.6 倍，整體寬鬆度在可操作範圍。",
   "common_feature_lines": [
     "未過熱 100.0%",
     "法人/主力籌碼未明顯轉弱 100.0%",
@@ -33,7 +36,7 @@
     "距60日高點回檔介於 -25% 到 -2%",
     "broker 主力買超比率 > 0"
   ],
-  "strict_latest_count": 130,
+  "strict_latest_count": 69,
   "strict_non_fallback_hit": 9,
   "strict_non_fallback_total": 17,
   "strict_identified_hit": 6,
@@ -42,8 +45,8 @@
   "review_lines": [
     "研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。",
     "真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 >= 2 100.0%",
-    "目前 live 早期起漲名單 198 檔，Focus 101 檔；判定為「偏寬」。目前名單 198 檔，占全市場 10.2% ，約為 identified 樣本的 24.8 倍，比較像品質趨勢籃子，不夠像剛起漲名單。",
-    "建議較嚴格版規則：近3月平均營收年增 > 5% 且正成長月 >= 2；MA20 > MA60；20日報酬介於 3% 到 30%；60日報酬 > 0；距60日高點回檔介於 -25% 到 -2%；broker 主力買超比率 > 0。用這組規則回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8，最新市場大約縮到 130 檔。",
+    "寬版學習名單 198 檔；前端目前改用 strict 主名單 69 檔，Focus 48 檔；判定為「較平衡」。目前名單 69 檔，占全市場 3.5% ，約為 identified 樣本的 8.6 倍，整體寬鬆度在可操作範圍。",
+    "建議較嚴格版規則：近3月平均營收年增 > 5% 且正成長月 >= 2；MA20 > MA60；20日報酬介於 3% 到 30%；60日報酬 > 0；距60日高點回檔介於 -25% 到 -2%；broker 主力買超比率 > 0。用這組規則回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8，最新市場大約縮到 69 檔。",
     "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。"
   ],
   "previous_window": ""

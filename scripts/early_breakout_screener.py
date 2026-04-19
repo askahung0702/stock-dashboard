@@ -174,7 +174,7 @@ HTML_TMPL = """<!DOCTYPE html>
   <div class="metric"><div class="label">目前候選數</div><div class="value">{candidate_count}</div></div>
   <div class="metric"><div class="label">Focus 候選</div><div class="value">{focus_count}</div></div>
   <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">{breadth_label}</div></div>
-  <div class="metric"><div class="label">建議嚴格版</div><div class="value">{strict_candidate_count}</div></div>
+  <div class="metric"><div class="label">寬版學習</div><div class="value">{broad_candidate_count}</div></div>
 </div>
 
 <div class="panel">
@@ -489,6 +489,7 @@ def build_review_summary(
     launch_rows,
     condition_stats,
     screened,
+    broad_screened,
     current_rows,
     previous_meta,
 ):
@@ -501,7 +502,8 @@ def build_review_summary(
         len(screened), len(current_rows), len(identified_rows)
     )
 
-    strict_latest_count = sum(1 for row in current_rows if strict_breakout_ready(row))
+    strict_latest_count = len(screened)
+    broad_candidate_count = len(broad_screened)
     strict_non_fallback_hit = sum(
         1 for row in non_fallback_rows if strict_breakout_ready(row.get("_launch_row", {}))
     )
@@ -535,7 +537,7 @@ def build_review_summary(
     review_lines = [
         f"研究區間 {study_start} → {study_end} 的前 {analysis_top} 大漲股中，identified {len(identified_rows)} 檔、window_start {sum(1 for row in launch_rows if row['launch_status'] == 'window_start')} 檔、fallback {sum(1 for row in launch_rows if row['launch_status'] == 'fallback')} 檔。",
         f"真正 identified 樣本最穩的共同特徵：{'；'.join(identified_feature_lines) if identified_feature_lines else '目前樣本不足。'}",
-        f"目前 live 早期起漲名單 {len(screened)} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
+        f"寬版學習名單 {broad_candidate_count} 檔；前端目前改用 strict 主名單 {len(screened)} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
         f"建議較嚴格版規則：{'；'.join(strict_rule_lines)}。用這組規則回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}，最新市場大約縮到 {strict_latest_count} 檔。",
         "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。",
     ]
@@ -550,8 +552,11 @@ def build_review_summary(
         "identified_count": len(identified_rows),
         "window_start_count": sum(1 for row in launch_rows if row["launch_status"] == "window_start"),
         "fallback_count": sum(1 for row in launch_rows if row["launch_status"] == "fallback"),
+        "screen_mode": "strict",
         "candidate_count": len(screened),
         "focus_count": sum(1 for row in screened if row["focus_candidate"] == "Y"),
+        "broad_candidate_count": broad_candidate_count,
+        "broad_focus_count": sum(1 for row in broad_screened if row["focus_candidate"] == "Y"),
         "universe_count": len(current_rows),
         "candidate_ratio_pct": candidate_ratio_pct,
         "identified_multiplier": identified_multiplier,
@@ -871,7 +876,7 @@ def find_latest_candidates(date_str=None):
     return None, None
 
 
-def screen_candidates(rows, condition_stats):
+def screen_candidates(rows, condition_stats, strict_mode=False):
     guard = next((item for item in condition_stats if item["rule_role"] == "guard"), None)
     core = [item for item in condition_stats if item["rule_role"] == "core"]
     support = [item for item in condition_stats if item["rule_role"] == "support"]
@@ -883,6 +888,8 @@ def screen_candidates(rows, condition_stats):
     for row in rows:
         cmap = condition_map(row)
         if guard and not cmap.get(guard["key"]):
+            continue
+        if strict_mode and not strict_breakout_ready(row):
             continue
         if selection_score_of(row) < DEFAULT_MIN_SELECTION_GATE:
             continue
@@ -1099,7 +1106,7 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
         + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">符合早期起漲規則</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">Focus</div><div class=\"metric-value\">{sum(1 for item in candidates if item['focus_candidate'] == 'Y')}</div><div class=\"subline\">買點分 >= {DEFAULT_FOCUS_BUY_POINT:.0f}</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">核心條件</div><div class=\"metric-value\">{len([item for item in condition_stats if item['rule_role'] == 'core'])}</div><div class=\"subline\">命中率 >= 70%</div></article>"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">目前 {review_summary.get('candidate_count', 0)} 檔 / 嚴格版估 {review_summary.get('strict_latest_count', 0)} 檔</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">strict {review_summary.get('candidate_count', 0)} 檔 / 寬版 {review_summary.get('broad_candidate_count', 0)} 檔</div></article>"
         + "</div>"
         + f"<div class=\"empty\" style=\"margin-bottom:14px;\"><strong>本次核心：</strong> {safe_html(core_line)}<br><strong>和前次相比：</strong> {safe_html(compare_line)}<br><strong>月檢視：</strong> {review_line}</div>"
         + "<div class=\"table-shell\"><table><thead><tr><th>股票</th><th>結構</th><th>題材</th><th>等級</th></tr></thead><tbody>"
@@ -1173,7 +1180,8 @@ def main():
     current_rows = load_csv(latest_path)
     for row in current_rows:
         row["_date"] = screen_date
-    screened = screen_candidates(current_rows, condition_stats)
+    broad_screened = screen_candidates(current_rows, condition_stats, strict_mode=False)
+    screened = screen_candidates(current_rows, condition_stats, strict_mode=True)
     top_display = screened[:args.top]
 
     identified_count = sum(1 for row in launch_rows if row["launch_status"] == "identified")
@@ -1217,6 +1225,7 @@ def main():
         launch_rows,
         condition_stats,
         screened,
+        broad_screened,
         current_rows,
         previous_meta,
     )
@@ -1233,7 +1242,8 @@ def main():
     else:
         print("[INFO] Previous comparison: none")
     print(f"[INFO] Screening snapshot: {latest_path.name}")
-    print(f"[INFO] Passed screen: {len(screened)} (focus {focus_count})")
+    print(f"[INFO] Broad screen: {len(broad_screened)}")
+    print(f"[INFO] Strict screen: {len(screened)} (focus {focus_count})")
     print()
     print_console_summary(top_display)
 
@@ -1317,7 +1327,7 @@ def main():
         candidate_count=len(screened),
         focus_count=focus_count,
         breadth_label=review_summary["breadth_label"],
-        strict_candidate_count=review_summary["strict_latest_count"],
+        broad_candidate_count=review_summary["broad_candidate_count"],
         core_lines=build_rule_lines(condition_stats, "core"),
         support_lines=build_rule_lines(condition_stats, "support"),
         comparison_lines=build_comparison_lines(previous_meta, compared_rows),

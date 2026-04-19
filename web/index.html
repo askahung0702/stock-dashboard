@@ -931,7 +931,7 @@ function renderEarlyBreakoutPanel() {
   const summary = S.earlyBreakout.summary || null;
   const studyWindow = summary?.study_start && summary?.study_end ? `${summary.study_start} → ${summary.study_end}` : '最近一月';
   const breadthLabel = summary?.breadth_label || '未判定';
-  const strictCount = Number(summary?.strict_latest_count) || 0;
+  const broadCount = Number(summary?.broad_candidate_count) || 0;
   const identifiedCount = Number(summary?.identified_count) || 0;
   const reviewLine = Array.isArray(summary?.review_lines) && summary.review_lines.length ? summary.review_lines[0] : '';
   const featureChips = Array.isArray(summary?.identified_feature_lines) && summary.identified_feature_lines.length
@@ -953,13 +953,13 @@ function renderEarlyBreakoutPanel() {
   document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
   document.getElementById('eb-sub').textContent =
     summary
-      ? `月檢視 ${studyWindow} 前20大漲股後，目前 live 名單 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；寬鬆度判定 ${breadthLabel}。`
+      ? `月檢視 ${studyWindow} 前20大漲股後，前端主名單採 strict 版 ${rows.length} 檔，寬版學習名單 ${broadCount || '—'} 檔；寬鬆度判定 ${breadthLabel}。`
       : `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
   document.getElementById('eb-grid').innerHTML = [
     ['候選數', rows.length],
     ['Focus', S.earlyBreakout.focusCount],
     ['已辨識起漲', identifiedCount || '—'],
-    [summary ? '嚴格版估計' : '最高 Screen', summary ? strictCount : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
+    [summary ? '寬版學習' : '最高 Screen', summary ? (broadCount || '—') : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
     [summary ? '寬鬆度' : '研究基準', summary ? breadthLabel : '近一月起漲']
   ].map(([label, value]) => `
     <div class="eb-stat">

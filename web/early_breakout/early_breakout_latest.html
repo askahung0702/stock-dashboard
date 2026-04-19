@@ -48,10 +48,10 @@
   <div class="metric"><div class="label">已辨識起漲點</div><div class="value">8</div></div>
   <div class="metric"><div class="label">窗起點命中</div><div class="value">9</div></div>
   <div class="metric"><div class="label">回退代理點</div><div class="value">3</div></div>
-  <div class="metric"><div class="label">目前候選數</div><div class="value">198</div></div>
-  <div class="metric"><div class="label">Focus 候選</div><div class="value">101</div></div>
-  <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">偏寬</div></div>
-  <div class="metric"><div class="label">建議嚴格版</div><div class="value">130</div></div>
+  <div class="metric"><div class="label">目前候選數</div><div class="value">69</div></div>
+  <div class="metric"><div class="label">Focus 候選</div><div class="value">48</div></div>
+  <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">較平衡</div></div>
+  <div class="metric"><div class="label">寬版學習</div><div class="value">198</div></div>
 </div>
 
 <div class="panel">
@@ -71,7 +71,7 @@
 
 <div class="panel">
   <b>月檢視判讀</b><br>
-  研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。<br>真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 &gt;= 2 100.0%<br>目前 live 早期起漲名單 198 檔，Focus 101 檔；判定為「偏寬」。目前名單 198 檔，占全市場 10.2% ，約為 identified 樣本的 24.8 倍，比較像品質趨勢籃子，不夠像剛起漲名單。<br>建議較嚴格版規則：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；MA20 &gt; MA60；20日報酬介於 3% 到 30%；60日報酬 &gt; 0；距60日高點回檔介於 -25% 到 -2%；broker 主力買超比率 &gt; 0。用這組規則回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8，最新市場大約縮到 130 檔。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。
+  研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。<br>真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 &gt;= 2 100.0%<br>寬版學習名單 198 檔；前端目前改用 strict 主名單 69 檔，Focus 48 檔；判定為「較平衡」。目前名單 69 檔，占全市場 3.5% ，約為 identified 樣本的 8.6 倍，整體寬鬆度在可操作範圍。<br>建議較嚴格版規則：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；MA20 &gt; MA60；20日報酬介於 3% 到 30%；60日報酬 &gt; 0；距60日高點回檔介於 -25% 到 -2%；broker 主力買超比率 &gt; 0。用這組規則回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8，最新市場大約縮到 69 檔。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。
 </div>
 
 <table>
@@ -99,24 +99,6 @@
 <tr>
   <td>1</td>
   <td><span class="grade grade-a">A</span></td>
-  <td><b>2382</b></td>
-  <td>廣達</td>
-  <td>323.00</td>
-  <td class="score-hi">95.38</td>
-  <td>89.04</td>
-  <td>90.61</td>
-  <td>+64.5%</td>
-  <td>+10.2%</td>
-  <td>+14.1%</td>
-  <td>1.01</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>2</td>
-  <td><span class="grade grade-a">A</span></td>
   <td><b>3090</b></td>
   <td>日電貿</td>
   <td>108.50</td>
@@ -133,7 +115,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>3</td>
+  <td>2</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>2330</b></td>
   <td>台積電</td>
@@ -151,61 +133,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>4</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2890</b></td>
-  <td>永豐金</td>
-  <td>32.70</td>
-  <td class="score-hi">93.58</td>
-  <td>80.88</td>
-  <td>91.80</td>
-  <td>+39.7%</td>
-  <td>+2.0%</td>
-  <td>+12.0%</td>
-  <td>0.89</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>5</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6139</b></td>
-  <td>亞翔</td>
-  <td>723.00</td>
-  <td class="score-hi">93.38</td>
-  <td>85.49</td>
-  <td>85.03</td>
-  <td>+72.2%</td>
-  <td>+23.6%</td>
-  <td>+20.3%</td>
-  <td>1.60</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>6</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6788</b></td>
-  <td>華景電</td>
-  <td>431.00</td>
-  <td class="score-hi">93.35</td>
-  <td>85.49</td>
-  <td>84.91</td>
-  <td>+15.7%</td>
-  <td>+16.2%</td>
-  <td>+21.9%</td>
-  <td>1.59</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>7</td>
+  <td>3</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>2395</b></td>
   <td>研華</td>
@@ -223,7 +151,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>8</td>
+  <td>4</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3189</b></td>
   <td>景碩</td>
@@ -241,43 +169,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>9</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6526</b></td>
-  <td>達發</td>
-  <td>506.00</td>
-  <td class="score-hi">92.28</td>
-  <td>74.34</td>
-  <td>93.47</td>
-  <td>+4.5%</td>
-  <td>+0.8%</td>
-  <td>+16.2%</td>
-  <td>1.03</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">低軌衛星</span></td>
-  <td></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>10</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2347</b></td>
-  <td>聯強</td>
-  <td>83.90</td>
-  <td class="score-hi">92.13</td>
-  <td>77.37</td>
-  <td>88.94</td>
-  <td>+36.5%</td>
-  <td>+4.9%</td>
-  <td>+31.3%</td>
-  <td>0.92</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>11</td>
+  <td>5</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3702</b></td>
   <td>大聯大</td>
@@ -295,7 +187,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>12</td>
+  <td>6</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>8064</b></td>
   <td>東捷</td>
@@ -313,7 +205,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>13</td>
+  <td>7</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>6261</b></td>
   <td>久元</td>
@@ -331,25 +223,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>14</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4904</b></td>
-  <td>遠傳</td>
-  <td>97.40</td>
-  <td class="score-hi">91.44</td>
-  <td>73.80</td>
-  <td>89.94</td>
-  <td>+6.8%</td>
-  <td>+3.6%</td>
-  <td>+8.7%</td>
-  <td>1.33</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>15</td>
+  <td>8</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>6568</b></td>
   <td>宏觀</td>
@@ -367,25 +241,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>16</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2801</b></td>
-  <td>彰銀</td>
-  <td>21.60</td>
-  <td class="score-hi">91.04</td>
-  <td>74.51</td>
-  <td>87.06</td>
-  <td>+15.5%</td>
-  <td>+3.9%</td>
-  <td>+5.4%</td>
-  <td>1.17</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>17</td>
+  <td>9</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3044</b></td>
   <td>健鼎</td>
@@ -403,43 +259,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>18</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6531</b></td>
-  <td>愛普*</td>
-  <td>644.00</td>
-  <td class="score-hi">90.93</td>
-  <td>78.33</td>
-  <td>81.75</td>
-  <td>+117.7%</td>
-  <td>+16.9%</td>
-  <td>+36.4%</td>
-  <td>1.41</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>19</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2481</b></td>
-  <td>強茂</td>
-  <td>118.00</td>
-  <td class="score-hi">90.57</td>
-  <td>75.37</td>
-  <td>83.65</td>
-  <td>+10.9%</td>
-  <td>+15.1%</td>
-  <td>+48.6%</td>
-  <td>1.74</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>20</td>
+  <td>10</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3491</b></td>
   <td>昇達科</td>
@@ -457,7 +277,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>21</td>
+  <td>11</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>5234</b></td>
   <td>達興材料</td>
@@ -475,25 +295,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>22</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>1815</b></td>
-  <td>富喬</td>
-  <td>127.00</td>
-  <td class="score-hi">89.44</td>
-  <td>81.53</td>
-  <td>87.25</td>
-  <td>+37.6%</td>
-  <td>+13.9%</td>
-  <td>+45.6%</td>
-  <td>1.79</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>23</td>
+  <td>12</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>6739</b></td>
   <td>竹陞科技</td>
@@ -511,7 +313,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>24</td>
+  <td>13</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3689</b></td>
   <td>湧德</td>
@@ -529,43 +331,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>25</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3030</b></td>
-  <td>德律</td>
-  <td>338.50</td>
-  <td class="score-hi">89.30</td>
-  <td>75.63</td>
-  <td>76.98</td>
-  <td>+26.1%</td>
-  <td>+29.9%</td>
-  <td>+95.7%</td>
-  <td>1.08</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>26</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6196</b></td>
-  <td>帆宣</td>
-  <td>359.00</td>
-  <td class="score-hi">89.14</td>
-  <td>75.22</td>
-  <td>76.69</td>
-  <td>+7.8%</td>
-  <td>+25.7%</td>
-  <td>+30.1%</td>
-  <td>1.37</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
-</tr>
-<tr>
-  <td>27</td>
+  <td>14</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3406</b></td>
   <td>玉晶光</td>
@@ -583,7 +349,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>28</td>
+  <td>15</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>1560</b></td>
   <td>中砂</td>
@@ -601,7 +367,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>29</td>
+  <td>16</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>5274</b></td>
   <td>信驊</td>
@@ -619,7 +385,7 @@
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 <tr>
-  <td>30</td>
+  <td>17</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>6163</b></td>
   <td>華電網</td>
@@ -634,6 +400,240 @@
   <td><span class="tag tag-structure">整理待確認</span></td>
   <td><span class="tag tag-theme">重電</span></td>
   <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>3711</b></td>
+  <td>日月光投控</td>
+  <td>442.00</td>
+  <td class="score-hi">88.60</td>
+  <td>72.66</td>
+  <td>77.18</td>
+  <td>+17.3%</td>
+  <td>+23.6%</td>
+  <td>+62.5%</td>
+  <td>1.25</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">CoWoS</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>7769</b></td>
+  <td>鴻勁</td>
+  <td>4,500.00</td>
+  <td class="score-hi">88.08</td>
+  <td>73.89</td>
+  <td>90.03</td>
+  <td>+80.7%</td>
+  <td>+8.2%</td>
+  <td>+30.6%</td>
+  <td>1.61</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">AI</span></td>
+  <td></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>8039</b></td>
+  <td>台虹</td>
+  <td>143.50</td>
+  <td class="score-hi">87.98</td>
+  <td>66.74</td>
+  <td>81.50</td>
+  <td>+8.0%</td>
+  <td>+22.1%</td>
+  <td>+68.6%</td>
+  <td>1.85</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>8086</b></td>
+  <td>宏捷科</td>
+  <td>148.50</td>
+  <td class="score-hi">87.96</td>
+  <td>77.44</td>
+  <td>84.98</td>
+  <td>+60.5%</td>
+  <td>+9.6%</td>
+  <td>+29.1%</td>
+  <td>3.25</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">AI</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>2495</b></td>
+  <td>普安</td>
+  <td>42.85</td>
+  <td class="score-hi">87.88</td>
+  <td>79.82</td>
+  <td>81.60</td>
+  <td>+35.1%</td>
+  <td>+19.2%</td>
+  <td>+33.9%</td>
+  <td>0.91</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>3380</b></td>
+  <td>明泰</td>
+  <td>41.55</td>
+  <td class="score-hi">87.68</td>
+  <td>73.89</td>
+  <td>88.02</td>
+  <td>+15.7%</td>
+  <td>+15.6%</td>
+  <td>+31.3%</td>
+  <td>0.97</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">散熱</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>3498</b></td>
+  <td>陽程</td>
+  <td>84.60</td>
+  <td class="score-hi">87.49</td>
+  <td>66.57</td>
+  <td>79.22</td>
+  <td>+100.3%</td>
+  <td>+12.7%</td>
+  <td>+55.8%</td>
+  <td>0.93</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>7751</b></td>
+  <td>竑騰</td>
+  <td>1,895.00</td>
+  <td class="score-hi">87.41</td>
+  <td>76.07</td>
+  <td>83.92</td>
+  <td>+73.6%</td>
+  <td>+14.5%</td>
+  <td>+138.4%</td>
+  <td>1.59</td>
+  <td><span class="tag tag-structure">整理待確認</span></td>
+  <td></td>
+  <td></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>5443</b></td>
+  <td>均豪</td>
+  <td>114.00</td>
+  <td class="score-hi">87.23</td>
+  <td>73.99</td>
+  <td>85.62</td>
+  <td>+25.5%</td>
+  <td>+10.7%</td>
+  <td>+16.8%</td>
+  <td>0.56</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">CoWoS</span></td>
+  <td><span class="tag tag-signal">5-10日波段</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>3653</b></td>
+  <td>健策</td>
+  <td>4,565.00</td>
+  <td class="score-hi">87.17</td>
+  <td>73.48</td>
+  <td>85.97</td>
+  <td>+11.2%</td>
+  <td>+14.7%</td>
+  <td>+78.0%</td>
+  <td>1.05</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">散熱</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>6291</b></td>
+  <td>沛亨</td>
+  <td>421.50</td>
+  <td class="score-hi">86.40</td>
+  <td>65.14</td>
+  <td>75.57</td>
+  <td>+49.8%</td>
+  <td>+16.6%</td>
+  <td>+127.8%</td>
+  <td>0.88</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>8070</b></td>
+  <td>長華*</td>
+  <td>48.30</td>
+  <td class="score-hi">86.29</td>
+  <td>70.62</td>
+  <td>85.15</td>
+  <td>+20.3%</td>
+  <td>+10.7%</td>
+  <td>+2.4%</td>
+  <td>2.02</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><span class="grade grade-a">A</span></td>
+  <td><b>3211</b></td>
+  <td>順達</td>
+  <td>359.00</td>
+  <td class="score-hi">85.25</td>
+  <td>70.31</td>
+  <td>80.32</td>
+  <td>+42.9%</td>
+  <td>+18.3%</td>
+  <td>+20.5%</td>
+  <td>0.58</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">BBU</span></td>
+  <td></td>
   <td class="small">法人/主力籌碼未明顯轉弱；近3月營收維持年增，且正成長月數 &gt;= 2；MA20 在 MA60 之上</td>
 </tr>
 </tbody>
