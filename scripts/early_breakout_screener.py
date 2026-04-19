@@ -12,6 +12,7 @@ Early Breakout Screener
 
 import argparse
 import csv
+import json
 import math
 import re
 import sys
@@ -36,6 +37,11 @@ DEFAULT_MIN_FORWARD_RETURN_PCT = 18.0
 DEFAULT_MIN_SELECTION_GATE = 60.0
 DEFAULT_MIN_SCREEN_SCORE = 72.0
 DEFAULT_FOCUS_BUY_POINT = 75.0
+DEFAULT_STRICT_MIN_REVENUE_YOY = 5.0
+DEFAULT_STRICT_RETURN20_MIN = 3.0
+DEFAULT_STRICT_RETURN20_MAX = 30.0
+DEFAULT_STRICT_DRAWDOWN_MIN = -25.0
+DEFAULT_STRICT_DRAWDOWN_MAX = -2.0
 
 DASHBOARD_PANEL_START = "<!-- EARLY_BREAKOUT_PANEL_START -->"
 DASHBOARD_PANEL_END = "<!-- EARLY_BREAKOUT_PANEL_END -->"
@@ -167,6 +173,8 @@ HTML_TMPL = """<!DOCTYPE html>
   <div class="metric"><div class="label">回退代理點</div><div class="value">{fallback_count}</div></div>
   <div class="metric"><div class="label">目前候選數</div><div class="value">{candidate_count}</div></div>
   <div class="metric"><div class="label">Focus 候選</div><div class="value">{focus_count}</div></div>
+  <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">{breadth_label}</div></div>
+  <div class="metric"><div class="label">建議嚴格版</div><div class="value">{strict_candidate_count}</div></div>
 </div>
 
 <div class="panel">
@@ -182,6 +190,11 @@ HTML_TMPL = """<!DOCTYPE html>
 <div class="panel">
   <b>和前一次相比</b><br>
   {comparison_lines}
+</div>
+
+<div class="panel">
+  <b>月檢視判讀</b><br>
+  {review_lines}
 </div>
 
 <table>
@@ -385,6 +398,177 @@ def gate_for_key(key):
         if condition["key"] == key:
             return condition["gate"]
     return ""
+
+
+def strict_breakout_ready(row):
+    return (
+        fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
+        and iv(row, "positive_revenue_months", 0) >= 2
+        and fv(row, "ma20", 0.0) > fv(row, "ma60", 0.0) > 0
+        and DEFAULT_STRICT_RETURN20_MIN <= fv(row, "return_20d_pct", 0.0) <= DEFAULT_STRICT_RETURN20_MAX
+        and fv(row, "return_60d_pct", 0.0) > 0
+        and DEFAULT_STRICT_DRAWDOWN_MIN
+        <= fv(row, "drawdown_from_high60_pct", -999.0)
+        <= DEFAULT_STRICT_DRAWDOWN_MAX
+        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+    )
+
+
+def summarize_condition_hits(rows):
+    sample_size = len(rows)
+    summary = []
+    for condition in CONDITIONS:
+        key = condition["key"]
+        hit_count = sum(1 for row in rows if condition_map(row).get(key))
+        hit_rate = round((hit_count * 100.0 / sample_size), 2) if sample_size else 0.0
+        summary.append(
+            {
+                "key": key,
+                "label": condition["label"],
+                "gate": condition["gate"],
+                "sample_size": sample_size,
+                "hit_count": hit_count,
+                "hit_rate_pct": hit_rate,
+            }
+        )
+    summary.sort(key=lambda item: (-item["hit_rate_pct"], item["key"]))
+    return summary
+
+
+def pick_summary_labels(condition_hits, min_hit_rate=70.0, limit=4, exclude_keys=None):
+    exclude = set(exclude_keys or [])
+    labels = [
+        f"{item['label']} {item['hit_rate_pct']:.1f}%"
+        for item in condition_hits
+        if item["key"] not in exclude and item["hit_rate_pct"] >= min_hit_rate
+    ]
+    if labels:
+        return labels[:limit]
+    return [
+        f"{item['label']} {item['hit_rate_pct']:.1f}%"
+        for item in condition_hits
+        if item["key"] not in exclude
+    ][:limit]
+
+
+def classify_screen_breadth(candidate_count, universe_count, identified_count):
+    ratio_pct = round(candidate_count * 100.0 / universe_count, 2) if universe_count else 0.0
+    multiplier = round(candidate_count / max(identified_count, 1), 2)
+    if ratio_pct >= 9.0 or multiplier >= 20.0:
+        label = "偏寬"
+        note = (
+            f"目前名單 {candidate_count} 檔，占全市場 {ratio_pct:.1f}% ，約為 identified 樣本的 {multiplier:.1f} 倍，"
+            "比較像品質趨勢籃子，不夠像剛起漲名單。"
+        )
+    elif ratio_pct >= 5.0 or multiplier >= 12.0:
+        label = "中等偏寬"
+        note = (
+            f"目前名單 {candidate_count} 檔，占全市場 {ratio_pct:.1f}% ，約為 identified 樣本的 {multiplier:.1f} 倍，"
+            "可以再收斂一些，讓候選更接近起漲初段。"
+        )
+    elif candidate_count <= 20 and ratio_pct <= 1.5:
+        label = "偏窄"
+        note = (
+            f"目前名單 {candidate_count} 檔，占全市場 {ratio_pct:.1f}% ，篩選很尖，"
+            "但要留意是否過度過濾而漏掉新啟動標的。"
+        )
+    else:
+        label = "較平衡"
+        note = (
+            f"目前名單 {candidate_count} 檔，占全市場 {ratio_pct:.1f}% ，約為 identified 樣本的 {multiplier:.1f} 倍，"
+            "整體寬鬆度在可操作範圍。"
+        )
+    return label, note, ratio_pct, multiplier
+
+
+def build_review_summary(
+    study_start,
+    study_end,
+    screen_date,
+    analysis_top,
+    launch_rows,
+    condition_stats,
+    screened,
+    current_rows,
+    previous_meta,
+):
+    identified_rows = [row for row in launch_rows if row["launch_status"] == "identified"]
+    non_fallback_rows = [row for row in launch_rows if row["launch_status"] != "fallback"]
+    identified_condition_hits = summarize_condition_hits(
+        [row["_launch_row"] for row in identified_rows if row.get("_launch_row")]
+    )
+    broad_label, broad_note, candidate_ratio_pct, identified_multiplier = classify_screen_breadth(
+        len(screened), len(current_rows), len(identified_rows)
+    )
+
+    strict_latest_count = sum(1 for row in current_rows if strict_breakout_ready(row))
+    strict_non_fallback_hit = sum(
+        1 for row in non_fallback_rows if strict_breakout_ready(row.get("_launch_row", {}))
+    )
+    strict_identified_hit = sum(
+        1 for row in identified_rows if strict_breakout_ready(row.get("_launch_row", {}))
+    )
+
+    identified_feature_lines = pick_summary_labels(
+        identified_condition_hits,
+        min_hit_rate=75.0,
+        exclude_keys={"selection_qualified"},
+    )
+    common_feature_lines = pick_summary_labels(
+        condition_stats,
+        min_hit_rate=70.0,
+        exclude_keys={"selection_qualified"},
+    )
+    strict_rule_lines = [
+        f"近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
+        "MA20 > MA60",
+        f"20日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        "60日報酬 > 0",
+        f"距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%",
+        "broker 主力買超比率 > 0",
+    ]
+    previous_window = (
+        f"{previous_meta.get('study_start', '')} → {previous_meta.get('study_end', '')}"
+        if previous_meta
+        else ""
+    )
+    review_lines = [
+        f"研究區間 {study_start} → {study_end} 的前 {analysis_top} 大漲股中，identified {len(identified_rows)} 檔、window_start {sum(1 for row in launch_rows if row['launch_status'] == 'window_start')} 檔、fallback {sum(1 for row in launch_rows if row['launch_status'] == 'fallback')} 檔。",
+        f"真正 identified 樣本最穩的共同特徵：{'；'.join(identified_feature_lines) if identified_feature_lines else '目前樣本不足。'}",
+        f"目前 live 早期起漲名單 {len(screened)} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
+        f"建議較嚴格版規則：{'；'.join(strict_rule_lines)}。用這組規則回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}，最新市場大約縮到 {strict_latest_count} 檔。",
+        "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。",
+    ]
+    if previous_window:
+        review_lines.append(f"前次可比較區間：{previous_window}。")
+
+    return {
+        "study_start": study_start,
+        "study_end": study_end,
+        "screen_date": screen_date,
+        "analysis_top": analysis_top,
+        "identified_count": len(identified_rows),
+        "window_start_count": sum(1 for row in launch_rows if row["launch_status"] == "window_start"),
+        "fallback_count": sum(1 for row in launch_rows if row["launch_status"] == "fallback"),
+        "candidate_count": len(screened),
+        "focus_count": sum(1 for row in screened if row["focus_candidate"] == "Y"),
+        "universe_count": len(current_rows),
+        "candidate_ratio_pct": candidate_ratio_pct,
+        "identified_multiplier": identified_multiplier,
+        "breadth_label": broad_label,
+        "breadth_note": broad_note,
+        "common_feature_lines": common_feature_lines,
+        "identified_feature_lines": identified_feature_lines,
+        "strict_rule_lines": strict_rule_lines,
+        "strict_latest_count": strict_latest_count,
+        "strict_non_fallback_hit": strict_non_fallback_hit,
+        "strict_non_fallback_total": len(non_fallback_rows),
+        "strict_identified_hit": strict_identified_hit,
+        "strict_identified_total": len(identified_rows),
+        "backtest_recommended": True,
+        "review_lines": review_lines,
+        "previous_window": previous_window,
+    }
 
 
 def top_gainers(rows_by_date, start_date, end_date, top_n):
@@ -855,13 +1039,16 @@ def print_console_summary(top_display):
         )
 
 
-def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_meta, candidates):
+def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_meta, candidates, review_summary):
     top = candidates[:10]
     core = [item for item in condition_stats if item["rule_role"] == "core"][:4]
     core_line = "；".join(
         f"{item['label']} {item['hit_rate_pct']:.1f}%"
         for item in core
     ) if core else "目前尚未建立核心條件。"
+    review_line = "<br>".join(
+        safe_html(line) for line in review_summary.get("review_lines", [])[:3]
+    ) or "目前沒有月檢視摘要。"
 
     compare_line = "目前沒有前次可比較。"
     if previous_meta and compared_rows:
@@ -912,9 +1099,9 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
         + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">符合早期起漲規則</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">Focus</div><div class=\"metric-value\">{sum(1 for item in candidates if item['focus_candidate'] == 'Y')}</div><div class=\"subline\">買點分 >= {DEFAULT_FOCUS_BUY_POINT:.0f}</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">核心條件</div><div class=\"metric-value\">{len([item for item in condition_stats if item['rule_role'] == 'core'])}</div><div class=\"subline\">命中率 >= 70%</div></article>"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">比較摘要</div><div class=\"metric-value\">{safe_html(previous_meta.get('study_end', '-')) if previous_meta else '-'}</div><div class=\"subline\">前一次檢視日期</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">目前 {review_summary.get('candidate_count', 0)} 檔 / 嚴格版估 {review_summary.get('strict_latest_count', 0)} 檔</div></article>"
         + "</div>"
-        + f"<div class=\"empty\" style=\"margin-bottom:14px;\"><strong>本次核心：</strong> {safe_html(core_line)}<br><strong>和前次相比：</strong> {safe_html(compare_line)}</div>"
+        + f"<div class=\"empty\" style=\"margin-bottom:14px;\"><strong>本次核心：</strong> {safe_html(core_line)}<br><strong>和前次相比：</strong> {safe_html(compare_line)}<br><strong>月檢視：</strong> {review_line}</div>"
         + "<div class=\"table-shell\"><table><thead><tr><th>股票</th><th>結構</th><th>題材</th><th>等級</th></tr></thead><tbody>"
         + "".join(rows_html)
         + "</tbody></table></div>"
@@ -1022,6 +1209,17 @@ def main():
     write_csv(common_csv, common_fields, common_rows)
 
     previous_meta, compared_rows = compare_with_previous(common_rows, study_start, study_end)
+    review_summary = build_review_summary(
+        study_start,
+        study_end,
+        screen_date,
+        args.analysis_top,
+        launch_rows,
+        condition_stats,
+        screened,
+        current_rows,
+        previous_meta,
+    )
 
     print(f"[INFO] Study window: {study_start} -> {study_end}")
     print(f"[INFO] Top gainers analysed: {len(launch_rows)}")
@@ -1043,6 +1241,8 @@ def main():
     compare_csv = HISTORY / f"early_breakout_condition_changes_{study_start}_{study_end}.csv"
     report_csv = WEB_REPORTS / f"early_breakout_{screen_date}.csv"
     latest_csv = WEB_REPORTS / "early_breakout_latest.csv"
+    report_summary_json = WEB_REPORTS / f"early_breakout_{screen_date}_summary.json"
+    latest_summary_json = WEB_REPORTS / "early_breakout_latest_summary.json"
     html_path = WEB_REPORTS / f"early_breakout_{screen_date}.html"
     latest_html = WEB_REPORTS / "early_breakout_latest.html"
 
@@ -1085,6 +1285,14 @@ def main():
     ]
     write_csv(report_csv, screen_fields, screened)
     latest_csv.write_text(report_csv.read_text(encoding="utf-8-sig"), encoding="utf-8-sig")
+    report_summary_json.write_text(
+        json.dumps(review_summary, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    latest_summary_json.write_text(
+        report_summary_json.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
 
     try:
         html_screen_date = datetime.strptime(screen_date, "%Y%m%d").strftime("%Y-%m-%d")
@@ -1108,15 +1316,20 @@ def main():
         fallback_count=fallback_count,
         candidate_count=len(screened),
         focus_count=focus_count,
+        breadth_label=review_summary["breadth_label"],
+        strict_candidate_count=review_summary["strict_latest_count"],
         core_lines=build_rule_lines(condition_stats, "core"),
         support_lines=build_rule_lines(condition_stats, "support"),
         comparison_lines=build_comparison_lines(previous_meta, compared_rows),
+        review_lines="<br>".join(safe_html(line) for line in review_summary["review_lines"]),
         rows=html_rows,
     )
     html_path.write_text(html_content, encoding="utf-8")
     latest_html.write_text(html_content, encoding="utf-8")
 
-    panel_html = dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_meta, screened)
+    panel_html = dashboard_panel_html(
+        screen_date, condition_stats, compared_rows, previous_meta, screened, review_summary
+    )
     inject_panel_into_dashboard(panel_html)
 
     print()
@@ -1124,9 +1337,10 @@ def main():
     print(f"[OK] Common rules CSV    -> {common_csv}")
     print(f"[OK] Condition diff CSV  -> {compare_csv}")
     print(f"[OK] Screen CSV          -> {report_csv}")
+    print(f"[OK] Review summary JSON -> {report_summary_json}")
     print(f"[OK] Screen HTML         -> {html_path}")
     print("[OK] Dashboard injected  -> history_dashboard.html / latest stock_dashboard_*.html")
-    print("[OK] Also written        -> early_breakout_latest.csv / .html")
+    print("[OK] Also written        -> early_breakout_latest.csv / .html / _summary.json")
 
 
 if __name__ == "__main__":

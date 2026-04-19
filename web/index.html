@@ -425,12 +425,31 @@ function earlyBreakoutHtmlCandidates() {
   return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
 }
 
+function earlyBreakoutSummaryCandidates() {
+  const staticCandidates = [
+    'early_breakout/early_breakout_latest_summary.json',
+    'web/early_breakout/early_breakout_latest_summary.json',
+    '/web/early_breakout/early_breakout_latest_summary.json'
+  ];
+  const dynamicCandidates = [
+    '/web/early_breakout/early_breakout_latest_summary.json',
+    'early_breakout/early_breakout_latest_summary.json',
+    'web/early_breakout/early_breakout_latest_summary.json',
+    '/early_breakout/early_breakout_latest_summary.json'
+  ];
+  return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
+}
+
 function earlyBreakoutCsvUrl() {
   return S.earlyBreakout?.csvUrl || earlyBreakoutCsvCandidates()[0];
 }
 
 function earlyBreakoutHtmlUrl() {
   return S.earlyBreakout?.htmlUrl || earlyBreakoutHtmlCandidates()[0];
+}
+
+function earlyBreakoutSummaryUrl() {
+  return S.earlyBreakout?.summaryUrl || earlyBreakoutSummaryCandidates()[0];
 }
 
 function makeGroupId() {
@@ -505,7 +524,7 @@ const S = {
   wl: new Set(),
   wlEntries: {},
   meta: {},
-  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '' },
+  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' },
   rc: null, hc: null
 };
 
@@ -837,7 +856,20 @@ async function loadEarlyBreakout() {
         continue;
       }
       const htmlUrl = earlyBreakoutHtmlCandidates().find(candidate => candidate.replace(/\.html$/, '') === url.replace(/\.csv$/, '').replace(/_latest$/, '_latest')) || earlyBreakoutHtmlCandidates()[0];
-      return { rows, csvUrl: url, htmlUrl };
+      let summary = null;
+      let summaryUrl = '';
+      for (const summaryCandidate of earlyBreakoutSummaryCandidates()) {
+        try {
+          const summaryResp = await fetch(summaryCandidate, { cache: 'no-store' });
+          if (!summaryResp.ok) continue;
+          summary = await summaryResp.json();
+          summaryUrl = summaryCandidate;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      return { rows, csvUrl: url, htmlUrl, summary, summaryUrl };
     } catch (error) {
       lastError = error;
     }
@@ -846,7 +878,7 @@ async function loadEarlyBreakout() {
 }
 
 function applyEarlyBreakoutMeta(payload) {
-  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '' };
+  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
   if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
     S.earlyBreakout = state;
     return;
@@ -873,6 +905,8 @@ function applyEarlyBreakoutMeta(payload) {
   state.loaded = true;
   state.csvUrl = payload.csvUrl || '';
   state.htmlUrl = payload.htmlUrl || earlyBreakoutHtmlCandidates()[0];
+  state.summary = payload.summary || null;
+  state.summaryUrl = payload.summaryUrl || '';
   S.earlyBreakout = state;
 }
 
@@ -894,30 +928,53 @@ function renderEarlyBreakoutPanel() {
     .slice(0, 3)
     .map(([theme, count]) => `${theme} ${count}檔`)
     .join('、');
+  const summary = S.earlyBreakout.summary || null;
+  const studyWindow = summary?.study_start && summary?.study_end ? `${summary.study_start} → ${summary.study_end}` : '最近一月';
+  const breadthLabel = summary?.breadth_label || '未判定';
+  const strictCount = Number(summary?.strict_latest_count) || 0;
+  const identifiedCount = Number(summary?.identified_count) || 0;
+  const reviewLine = Array.isArray(summary?.review_lines) && summary.review_lines.length ? summary.review_lines[0] : '';
+  const featureChips = Array.isArray(summary?.identified_feature_lines) && summary.identified_feature_lines.length
+    ? summary.identified_feature_lines
+    : [
+        '近3月營收維持年增且正成長月 >= 2',
+        '法人/主力籌碼未明顯轉弱',
+        '20日報酬為正且未過熱'
+      ];
+  const strictRuleChips = Array.isArray(summary?.strict_rule_lines) && summary.strict_rule_lines.length
+    ? summary.strict_rule_lines
+    : [
+        '近3月平均營收年增 > 5%',
+        'MA20 > MA60',
+        '20日報酬介於 3% 到 30%',
+        'broker 主力買超比率 > 0'
+      ];
 
   document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
   document.getElementById('eb-sub').textContent =
-    `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
+    summary
+      ? `月檢視 ${studyWindow} 前20大漲股後，目前 live 名單 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；寬鬆度判定 ${breadthLabel}。`
+      : `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
   document.getElementById('eb-grid').innerHTML = [
     ['候選數', rows.length],
     ['Focus', S.earlyBreakout.focusCount],
-    ['最高 Screen', rows[0] ? rows[0].screenScore.toFixed(1) : '—'],
-    ['研究基準', '近一月起漲']
+    ['已辨識起漲', identifiedCount || '—'],
+    [summary ? '嚴格版估計' : '最高 Screen', summary ? strictCount : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
+    [summary ? '寬鬆度' : '研究基準', summary ? breadthLabel : '近一月起漲']
   ].map(([label, value]) => `
     <div class="eb-stat">
       <div class="eb-stat-lbl">${label}</div>
       <div class="eb-stat-val">${value}</div>
     </div>`).join('');
   document.getElementById('eb-conds').innerHTML = [
-    ['核心', '近3月營收維持年增且正成長月 >= 2'],
-    ['核心', '最新月營收年增 > 0、20日與60日報酬為正'],
-    ['核心', '股價站上 MA20，且 MA20 > MA60 > MA120'],
-    ['核心', 'EPS/獲利有支撐，法人或主力未明顯轉弱'],
-    ['保護', '20日漲幅不能過熱，量比與 RSI 不可失控'],
-    ['加分', '平台突破 / 回踩承接 / AI / CoWoS / 業績成長']
-  ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role === '加分' ? 'support' : ''}">${role} · ${text}</span>`).join('');
+    ...featureChips.slice(0, 3).map(text => ['核心', text]),
+    ...strictRuleChips.slice(0, 2).map(text => ['加嚴', text]),
+    ['保護', '20日漲幅、量比與 RSI 不可過熱']
+  ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role !== '核心' ? 'support' : ''}">${role} · ${text}</span>`).join('');
   document.getElementById('eb-note').textContent =
-    '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
+    summary
+      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
+      : '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
   panel.style.display = '';
 }
 

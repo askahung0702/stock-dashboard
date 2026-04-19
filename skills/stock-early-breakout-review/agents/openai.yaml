@@ -1,7 +1,7 @@
 interface:
   display_name: "Stock Early Breakout Review"
-  short_description: "Monthly early-breakout review and comparison"
-  default_prompt: "Use $stock-early-breakout-review to review one month's early-breakout conditions, compare them with the previous window, and refresh the dashboard and web report outputs."
+  short_description: "Monthly top-20 breakout review, comparison, and deployment"
+  default_prompt: "Use $stock-early-breakout-review to review last month's top 20 gainers, compare their shared early-breakout traits with the previous review, judge whether the current rule set is too broad, refresh the dashboard and web outputs, and push the static site when requested."
 
 policy:
   allow_implicit_invocation: true
