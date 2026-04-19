@@ -7,15 +7,19 @@
   "window_start_count": 9,
   "fallback_count": 3,
   "screen_mode": "strict",
-  "candidate_count": 69,
-  "focus_count": 48,
+  "candidate_count": 86,
+  "focus_count": 60,
+  "early_candidate_count": 46,
+  "continuation_candidate_count": 40,
+  "early_focus_count": 30,
+  "continuation_focus_count": 30,
   "broad_candidate_count": 198,
   "broad_focus_count": 101,
   "universe_count": 1944,
-  "candidate_ratio_pct": 3.55,
-  "identified_multiplier": 8.62,
+  "candidate_ratio_pct": 4.42,
+  "identified_multiplier": 10.75,
   "breadth_label": "較平衡",
-  "breadth_note": "目前名單 69 檔，占全市場 3.5% ，約為 identified 樣本的 8.6 倍，整體寬鬆度在可操作範圍。",
+  "breadth_note": "目前名單 86 檔，占全市場 4.4% ，約為 identified 樣本的 10.8 倍，整體寬鬆度在可操作範圍。",
   "common_feature_lines": [
     "未過熱 100.0%",
     "法人/主力籌碼未明顯轉弱 100.0%",
@@ -29,14 +33,13 @@
     "近3月營收維持年增，且正成長月數 >= 2 100.0%"
   ],
   "strict_rule_lines": [
-    "近3月平均營收年增 > 5% 且正成長月 >= 2",
-    "MA20 > MA60",
-    "20日報酬介於 3% 到 30%",
-    "60日報酬 > 0",
-    "距60日高點回檔介於 -25% 到 -2%",
-    "broker 主力買超比率 > 0"
+    "早期起漲：近3月平均營收年增 > 5% 且正成長月 >= 2",
+    "早期起漲：MA20 > MA60，20日報酬介於 3% 到 30%",
+    "早期起漲：距60日高點回檔介於 -25% 到 -2%，broker 主力買超 > 0",
+    "強勢續攻：股價 > MA20 > MA60，20日報酬介於 3% 到 25%",
+    "強勢續攻：60日報酬 > 10% ，距60日高點介於 -6% 到 1%"
   ],
-  "strict_latest_count": 69,
+  "strict_latest_count": 86,
   "strict_non_fallback_hit": 9,
   "strict_non_fallback_total": 17,
   "strict_identified_hit": 6,
@@ -45,8 +48,8 @@
   "review_lines": [
     "研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。",
     "真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 >= 2 100.0%",
-    "寬版學習名單 198 檔；前端目前改用 strict 主名單 69 檔，Focus 48 檔；判定為「較平衡」。目前名單 69 檔，占全市場 3.5% ，約為 identified 樣本的 8.6 倍，整體寬鬆度在可操作範圍。",
-    "建議較嚴格版規則：近3月平均營收年增 > 5% 且正成長月 >= 2；MA20 > MA60；20日報酬介於 3% 到 30%；60日報酬 > 0；距60日高點回檔介於 -25% 到 -2%；broker 主力買超比率 > 0。用這組規則回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8，最新市場大約縮到 69 檔。",
+    "寬版學習名單 198 檔；前端 strict 主名單 86 檔，其中早期起漲 46 檔、強勢續攻 40 檔，Focus 60 檔；判定為「較平衡」。目前名單 86 檔，占全市場 4.4% ，約為 identified 樣本的 10.8 倍，整體寬鬆度在可操作範圍。",
+    "前端主名單目前採雙路徑：早期起漲：近3月平均營收年增 > 5% 且正成長月 >= 2；早期起漲：MA20 > MA60，20日報酬介於 3% 到 30%；早期起漲：距60日高點回檔介於 -25% 到 -2%，broker 主力買超 > 0；強勢續攻：股價 > MA20 > MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 > 10% ，距60日高點介於 -6% 到 1%。其中早期起漲路徑回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8；雙路徑合併後最新市場約 86 檔。",
     "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。"
   ],
   "previous_window": ""

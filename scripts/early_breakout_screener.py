@@ -42,6 +42,13 @@ DEFAULT_STRICT_RETURN20_MIN = 3.0
 DEFAULT_STRICT_RETURN20_MAX = 30.0
 DEFAULT_STRICT_DRAWDOWN_MIN = -25.0
 DEFAULT_STRICT_DRAWDOWN_MAX = -2.0
+DEFAULT_CONTINUATION_RETURN20_MIN = 3.0
+DEFAULT_CONTINUATION_RETURN20_MAX = 25.0
+DEFAULT_CONTINUATION_RETURN60_MIN = 10.0
+DEFAULT_CONTINUATION_DRAWDOWN_MIN = -6.0
+DEFAULT_CONTINUATION_DRAWDOWN_MAX = 1.0
+DEFAULT_CONTINUATION_NEAR_HIGH = -4.0
+DEFAULT_CONTINUATION_STRONG_RETURN60 = 20.0
 
 DASHBOARD_PANEL_START = "<!-- EARLY_BREAKOUT_PANEL_START -->"
 DASHBOARD_PANEL_END = "<!-- EARLY_BREAKOUT_PANEL_END -->"
@@ -204,6 +211,7 @@ HTML_TMPL = """<!DOCTYPE html>
   <th>Grade</th>
   <th>代碼</th>
   <th>名稱</th>
+  <th>型態</th>
   <th>價格</th>
   <th>Screen</th>
   <th>策略分</th>
@@ -414,6 +422,35 @@ def strict_breakout_ready(row):
     )
 
 
+def strong_continuation_ready(row):
+    return (
+        fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
+        and iv(row, "positive_revenue_months", 0) >= 2
+        and fv(row, "current_price", 0.0) > fv(row, "ma20", 0.0) > fv(row, "ma60", 0.0) > 0
+        and DEFAULT_CONTINUATION_RETURN20_MIN
+        <= fv(row, "return_20d_pct", 0.0)
+        <= DEFAULT_CONTINUATION_RETURN20_MAX
+        and fv(row, "return_60d_pct", 0.0) > DEFAULT_CONTINUATION_RETURN60_MIN
+        and DEFAULT_CONTINUATION_DRAWDOWN_MIN
+        <= fv(row, "drawdown_from_high60_pct", -999.0)
+        <= DEFAULT_CONTINUATION_DRAWDOWN_MAX
+        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+    )
+
+
+def screen_style_of(row):
+    drawdown = fv(row, "drawdown_from_high60_pct", 0.0)
+    return60 = fv(row, "return_60d_pct", 0.0)
+    signal_type = sv(row, "signal_type")
+    if strong_continuation_ready(row) and (
+        drawdown > DEFAULT_CONTINUATION_NEAR_HIGH
+        or return60 >= DEFAULT_CONTINUATION_STRONG_RETURN60
+        or signal_type == "5-10日波段"
+    ):
+        return "continuation", "強勢續攻"
+    return "early", "早期起漲"
+
+
 def summarize_condition_hits(rows):
     sample_size = len(rows)
     summary = []
@@ -504,6 +541,18 @@ def build_review_summary(
 
     strict_latest_count = len(screened)
     broad_candidate_count = len(broad_screened)
+    early_candidate_count = sum(1 for row in screened if row.get("screen_style") == "early")
+    continuation_candidate_count = sum(
+        1 for row in screened if row.get("screen_style") == "continuation"
+    )
+    early_focus_count = sum(
+        1 for row in screened if row.get("screen_style") == "early" and row["focus_candidate"] == "Y"
+    )
+    continuation_focus_count = sum(
+        1
+        for row in screened
+        if row.get("screen_style") == "continuation" and row["focus_candidate"] == "Y"
+    )
     strict_non_fallback_hit = sum(
         1 for row in non_fallback_rows if strict_breakout_ready(row.get("_launch_row", {}))
     )
@@ -522,12 +571,11 @@ def build_review_summary(
         exclude_keys={"selection_qualified"},
     )
     strict_rule_lines = [
-        f"近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
-        "MA20 > MA60",
-        f"20日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
-        "60日報酬 > 0",
-        f"距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%",
-        "broker 主力買超比率 > 0",
+        f"早期起漲：近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
+        f"早期起漲：MA20 > MA60，20日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        f"早期起漲：距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%，broker 主力買超 > 0",
+        f"強勢續攻：股價 > MA20 > MA60，20日報酬介於 {DEFAULT_CONTINUATION_RETURN20_MIN:.0f}% 到 {DEFAULT_CONTINUATION_RETURN20_MAX:.0f}%",
+        f"強勢續攻：60日報酬 > {DEFAULT_CONTINUATION_RETURN60_MIN:.0f}% ，距60日高點介於 {DEFAULT_CONTINUATION_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_CONTINUATION_DRAWDOWN_MAX:.0f}%",
     ]
     previous_window = (
         f"{previous_meta.get('study_start', '')} → {previous_meta.get('study_end', '')}"
@@ -537,8 +585,8 @@ def build_review_summary(
     review_lines = [
         f"研究區間 {study_start} → {study_end} 的前 {analysis_top} 大漲股中，identified {len(identified_rows)} 檔、window_start {sum(1 for row in launch_rows if row['launch_status'] == 'window_start')} 檔、fallback {sum(1 for row in launch_rows if row['launch_status'] == 'fallback')} 檔。",
         f"真正 identified 樣本最穩的共同特徵：{'；'.join(identified_feature_lines) if identified_feature_lines else '目前樣本不足。'}",
-        f"寬版學習名單 {broad_candidate_count} 檔；前端目前改用 strict 主名單 {len(screened)} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
-        f"建議較嚴格版規則：{'；'.join(strict_rule_lines)}。用這組規則回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}，最新市場大約縮到 {strict_latest_count} 檔。",
+        f"寬版學習名單 {broad_candidate_count} 檔；前端 strict 主名單 {len(screened)} 檔，其中早期起漲 {early_candidate_count} 檔、強勢續攻 {continuation_candidate_count} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
+        f"前端主名單目前採雙路徑：{'；'.join(strict_rule_lines)}。其中早期起漲路徑回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}；雙路徑合併後最新市場約 {strict_latest_count} 檔。",
         "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。",
     ]
     if previous_window:
@@ -555,6 +603,10 @@ def build_review_summary(
         "screen_mode": "strict",
         "candidate_count": len(screened),
         "focus_count": sum(1 for row in screened if row["focus_candidate"] == "Y"),
+        "early_candidate_count": early_candidate_count,
+        "continuation_candidate_count": continuation_candidate_count,
+        "early_focus_count": early_focus_count,
+        "continuation_focus_count": continuation_focus_count,
         "broad_candidate_count": broad_candidate_count,
         "broad_focus_count": sum(1 for row in broad_screened if row["focus_candidate"] == "Y"),
         "universe_count": len(current_rows),
@@ -889,7 +941,7 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
         cmap = condition_map(row)
         if guard and not cmap.get(guard["key"]):
             continue
-        if strict_mode and not strict_breakout_ready(row):
+        if strict_mode and not (strict_breakout_ready(row) or strong_continuation_ready(row)):
             continue
         if selection_score_of(row) < DEFAULT_MIN_SELECTION_GATE:
             continue
@@ -919,11 +971,14 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
             grade = "C"
 
         focus_candidate = buy_point_of(row) >= DEFAULT_FOCUS_BUY_POINT and grade in ("A", "B")
+        screen_style, screen_style_label = screen_style_of(row)
         missing_core = [item["label"] for item in core if not cmap.get(item["key"])]
         matched_labels = [item["label"] for item in matched]
         screened.append(
             {
                 "screen_grade": grade,
+                "screen_style": screen_style,
+                "screen_style_label": screen_style_label,
                 "focus_candidate": "Y" if focus_candidate else "N",
                 "screen_score": screen_score,
                 "core_match_count": core_match,
@@ -956,6 +1011,7 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
                 "missing_core_conditions": " | ".join(missing_core),
                 "screen_reason": (
                     f"核心 {core_match}/{len(core)}，加分 {support_match}/{len(support)}；"
+                    f"型態 {screen_style_label}；"
                     f"結構 {sv(row, 'structure_label') or '未標示'}；"
                     f"題材 {sv(row, 'primary_theme') or '一般'}；"
                     f"訊號 {sv(row, 'signal_type') or '待確認'}"
@@ -1002,6 +1058,7 @@ def build_html_row(candidate):
   <td><span class="grade {grade_class(candidate['screen_grade'])}">{candidate['screen_grade']}</span></td>
   <td><b>{safe_html(candidate['code'])}</b></td>
   <td>{safe_html(candidate['name'])}</td>
+  <td>{tag_html(candidate['screen_style_label'], 'tag tag-signal')}</td>
   <td>{candidate['current_price']:,.2f}</td>
   <td class="{score_class(candidate['screen_score'])}">{candidate['screen_score']:.2f}</td>
   <td>{candidate['selection_score']:.2f}</td>
@@ -1030,16 +1087,17 @@ def build_rule_lines(condition_stats, role):
 
 def print_console_summary(top_display):
     print(
-        f"{'#':>3}  {'Grade':<5} {'代碼':<8} {'名稱':<12} {'Screen':>7}  {'策略分':>7}  {'買點分':>7}  "
+        f"{'#':>3}  {'Grade':<5} {'代碼':<8} {'名稱':<12} {'型態':<8} {'Screen':>7}  {'策略分':>7}  {'買點分':>7}  "
         f"{'3M%':>7}  {'20d%':>6}  {'60d%':>6}  {'結構':<8}  {'題材':<10}"
     )
-    print("-" * 122)
+    print("-" * 134)
     for row in top_display:
         name = row["name"][:10]
+        style = row["screen_style_label"][:6]
         structure = row["structure_label"] or "—"
         theme = row["primary_theme"] or "—"
         print(
-            f"{row['rank']:>3}. {row['screen_grade']:<5} {row['code']:<8} {name:<12} "
+            f"{row['rank']:>3}. {row['screen_grade']:<5} {row['code']:<8} {name:<12} {style:<8} "
             f"{row['screen_score']:>7.2f}  {row['selection_score']:>7.2f}  {row['buy_point_score']:>7.2f}  "
             f"{row['avg_3m_revenue_yoy_pct']:>+7.1f}%  {row['return_20d_pct']:>+5.1f}%  "
             f"{row['return_60d_pct']:>+5.1f}%  {structure:<8}  {theme:<10}"
@@ -1103,8 +1161,8 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
         + f"<a class=\"chip-button active\" href=\"web/early_breakout/early_breakout_latest.html\">查看完整早期起漲報表 {safe_html(screen_date)}</a>"
         + "</div>"
         + "<div class=\"metric-grid\">"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">符合早期起漲規則</div></article>"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">Focus</div><div class=\"metric-value\">{sum(1 for item in candidates if item['focus_candidate'] == 'Y')}</div><div class=\"subline\">買點分 >= {DEFAULT_FOCUS_BUY_POINT:.0f}</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">strict 主名單</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">早期 / 續攻</div><div class=\"metric-value\">{review_summary.get('early_candidate_count', 0)} / {review_summary.get('continuation_candidate_count', 0)}</div><div class=\"subline\">兩種型態拆分</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">核心條件</div><div class=\"metric-value\">{len([item for item in condition_stats if item['rule_role'] == 'core'])}</div><div class=\"subline\">命中率 >= 70%</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">strict {review_summary.get('candidate_count', 0)} 檔 / 寬版 {review_summary.get('broad_candidate_count', 0)} 檔</div></article>"
         + "</div>"
@@ -1282,6 +1340,7 @@ def main():
 
     screen_fields = [
         "rank", "screen_grade", "focus_candidate", "screen_score",
+        "screen_style", "screen_style_label",
         "core_match_count", "required_core_count", "support_match_count",
         "selection_score", "buy_point_score",
         "code", "name", "market", "industry", "current_price",

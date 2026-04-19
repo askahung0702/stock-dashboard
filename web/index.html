@@ -101,12 +101,14 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-buy.active{color:var(--orange);border-bottom-color:var(--orange)}
 .tab.tab-catalyst.active{color:#f59e0b;border-bottom-color:#f59e0b}
 .tab.tab-breakout.active{color:#22c55e;border-bottom-color:#22c55e}
+.tab.tab-continuation.active{color:#f97316;border-bottom-color:#f97316}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
 .tab.tab-mid.active .tcnt{background:var(--green)}
 .tab.tab-buy.active .tcnt{background:var(--orange);color:#fff}
 .tab.tab-catalyst.active .tcnt{background:#f59e0b;color:#fff}
 .tab.tab-breakout.active .tcnt{background:#22c55e;color:#fff}
+.tab.tab-continuation.active .tcnt{background:#f97316;color:#fff}
 
 /* Table */
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto}
@@ -308,6 +310,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-catalyst" data-t="catalyst" onclick="tab('catalyst')">🚀 催化成長 <span class="tcnt" id="tc-catalyst">0</span></div>
     <div class="tab tab-buy"   data-t="buy"   onclick="tab('buy')">🎯 買點佳 <span class="tcnt" id="tc-buy">0</span></div>
     <div class="tab tab-breakout" data-t="breakout" onclick="tab('breakout')">🌱 早期起漲 <span class="tcnt" id="tc-breakout">0</span></div>
+    <div class="tab tab-continuation" data-t="continuation" onclick="tab('continuation')">🔥 強勢續攻 <span class="tcnt" id="tc-continuation">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
@@ -829,6 +832,8 @@ function normalizeEarlyBreakoutRow(headers, values) {
   row.requiredCoreCount = Number(row.required_core_count) || 0;
   row.supportMatchCount = Number(row.support_match_count) || 0;
   row.focusCandidate = row.focus_candidate === 'Y';
+  row.screenStyle = row.screen_style || 'early';
+  row.screenStyleLabel = row.screen_style_label || (row.screenStyle === 'continuation' ? '強勢續攻' : '早期起漲');
   return row;
 }
 
@@ -878,7 +883,7 @@ async function loadEarlyBreakout() {
 }
 
 function applyEarlyBreakoutMeta(payload) {
-  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
+  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
   if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
     S.earlyBreakout = state;
     return;
@@ -888,13 +893,17 @@ function applyEarlyBreakoutMeta(payload) {
     state.byCode[row.code] = row;
     state.codeSet.add(row.code);
     if (row.focusCandidate) state.focusCount += 1;
+    if (row.screenStyle === 'continuation') state.continuationCount += 1;
+    else state.earlyCount += 1;
   });
   S.all = S.all.map(stock => {
     const breakout = state.byCode[stock.code];
-    if (!breakout) return { ...stock, earlyBreakoutCandidate: false, earlyBreakoutRank: 999999, earlyBreakoutScreenScore: 0, earlyBreakoutFocus: false };
+    if (!breakout) return { ...stock, earlyBreakoutCandidate: false, earlyBreakoutCategory: '', earlyBreakoutRank: 999999, earlyBreakoutScreenScore: 0, earlyBreakoutFocus: false };
     return {
       ...stock,
       earlyBreakoutCandidate: true,
+      earlyBreakoutCategory: breakout.screenStyle || 'early',
+      earlyBreakoutCategoryLabel: breakout.screenStyleLabel || '早期起漲',
       earlyBreakoutRank: breakout.rank || 999999,
       earlyBreakoutScreenScore: breakout.screenScore || 0,
       earlyBreakoutFocus: !!breakout.focusCandidate,
@@ -933,6 +942,8 @@ function renderEarlyBreakoutPanel() {
   const breadthLabel = summary?.breadth_label || '未判定';
   const broadCount = Number(summary?.broad_candidate_count) || 0;
   const identifiedCount = Number(summary?.identified_count) || 0;
+  const earlyCount = Number(summary?.early_candidate_count) || S.earlyBreakout.earlyCount || 0;
+  const continuationCount = Number(summary?.continuation_candidate_count) || S.earlyBreakout.continuationCount || 0;
   const reviewLine = Array.isArray(summary?.review_lines) && summary.review_lines.length ? summary.review_lines[0] : '';
   const featureChips = Array.isArray(summary?.identified_feature_lines) && summary.identified_feature_lines.length
     ? summary.identified_feature_lines
@@ -953,10 +964,11 @@ function renderEarlyBreakoutPanel() {
   document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
   document.getElementById('eb-sub').textContent =
     summary
-      ? `月檢視 ${studyWindow} 前20大漲股後，前端主名單採 strict 版 ${rows.length} 檔，寬版學習名單 ${broadCount || '—'} 檔；寬鬆度判定 ${breadthLabel}。`
+      ? `月檢視 ${studyWindow} 前20大漲股後，前端主名單 ${rows.length} 檔，其中早期起漲 ${earlyCount} 檔、強勢續攻 ${continuationCount} 檔；寬版學習名單 ${broadCount || '—'} 檔。`
       : `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
   document.getElementById('eb-grid').innerHTML = [
-    ['候選數', rows.length],
+    ['早期起漲', earlyCount || '—'],
+    ['強勢續攻', continuationCount || '—'],
     ['Focus', S.earlyBreakout.focusCount],
     ['已辨識起漲', identifiedCount || '—'],
     [summary ? '寬版學習' : '最高 Screen', summary ? (broadCount || '—') : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
@@ -967,8 +979,8 @@ function renderEarlyBreakoutPanel() {
       <div class="eb-stat-val">${value}</div>
     </div>`).join('');
   document.getElementById('eb-conds').innerHTML = [
-    ...featureChips.slice(0, 3).map(text => ['核心', text]),
-    ...strictRuleChips.slice(0, 2).map(text => ['加嚴', text]),
+    ...featureChips.slice(0, 2).map(text => ['核心', text]),
+    ...strictRuleChips.slice(0, 4).map(text => ['分流', text]),
     ['保護', '20日漲幅、量比與 RSI 不可過熱']
   ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role !== '核心' ? 'support' : ''}">${role} · ${text}</span>`).join('');
   document.getElementById('eb-note').textContent =
@@ -1040,7 +1052,8 @@ function updateTabCounts() {
   document.getElementById('tc-mid').textContent    = S.all.filter(s => s.midScore >= 65).length;
   document.getElementById('tc-catalyst').textContent = S.all.filter(isCatalystGrowth).length;
   document.getElementById('tc-buy').textContent    = S.all.filter(isGoodBuyPoint).length;
-  document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCandidate).length;
+  document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'early').length;
+  document.getElementById('tc-continuation').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'continuation').length;
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -1071,7 +1084,8 @@ function go() {
   else if (t === 'mid')   stocks = stocks.filter(s => s.midScore >= 65);
   else if (t === 'catalyst') stocks = stocks.filter(isCatalystGrowth);
   else if (t === 'buy')   stocks = stocks.filter(isGoodBuyPoint);
-  else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCandidate);
+  else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'early');
+  else if (t === 'continuation') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'continuation');
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
   if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
@@ -1091,7 +1105,7 @@ function go() {
 
   // 預設排序：短線tab用shortScore，中線tab用midScore
   let defaultKey = S.sortKey;
-  if (t === 'breakout' && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
+  if ((t === 'breakout' || t === 'continuation') && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -1125,7 +1139,7 @@ function tab(t) {
   else if (t === 'buy' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
   }
-  else if (t === 'breakout') {
+  else if (t === 'breakout' || t === 'continuation') {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (S.sortKey === 'earlyBreakoutScreenScore') {
