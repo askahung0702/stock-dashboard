@@ -49,6 +49,13 @@ if "%EXIT_CODE%"=="0" (
 )
 
 if "%EXIT_CODE%"=="0" (
+    echo.
+    echo Running early_breakout_forward_returns.py...
+    python "%~dp0scripts\early_breakout_forward_returns.py"
+    if errorlevel 1 echo [WARN] early_breakout_forward_returns.py exited with error, continuing...
+)
+
+if "%EXIT_CODE%"=="0" (
     if "%~1"=="" (
         if defined STOCK_SKIP_AUTO_PUSH (
             echo Auto push skipped because STOCK_SKIP_AUTO_PUSH is set.

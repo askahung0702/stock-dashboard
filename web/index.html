@@ -64,9 +64,18 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .eb-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.28);color:#bfdbfe;border-radius:999px;padding:6px 12px;font-size:12px}
 .eb-link:hover{background:rgba(59,130,246,.22)}
 .eb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+.eb-val-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px}
 .eb-stat{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
 .eb-stat-lbl{font-size:11px;color:var(--muted)}
 .eb-stat-val{font-size:19px;font-weight:700;margin-top:3px}
+.eb-val-card{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
+.eb-val-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.eb-val-title{font-size:12px;font-weight:700;color:#f8fafc}
+.eb-val-sample{font-size:11px;color:var(--muted)}
+.eb-val-rows{display:grid;gap:4px;margin-top:8px}
+.eb-val-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px}
+.eb-val-row span{color:#cbd5e1}
+.eb-val-row b{color:#86efac}
 .eb-conds{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .eb-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.42);color:#dbeafe}
 .eb-chip.guard{color:#bbf7d0;border-color:rgba(34,197,94,.28)}
@@ -102,6 +111,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-catalyst.active{color:#f59e0b;border-bottom-color:#f59e0b}
 .tab.tab-breakout.active{color:#22c55e;border-bottom-color:#22c55e}
 .tab.tab-continuation.active{color:#f97316;border-bottom-color:#f97316}
+.tab.tab-breakout1854.active{color:#a855f7;border-bottom-color:#a855f7}
+.tab.tab-continuation1854.active{color:#eab308;border-bottom-color:#eab308}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
 .tab.tab-mid.active .tcnt{background:var(--green)}
@@ -109,6 +120,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-catalyst.active .tcnt{background:#f59e0b;color:#fff}
 .tab.tab-breakout.active .tcnt{background:#22c55e;color:#fff}
 .tab.tab-continuation.active .tcnt{background:#f97316;color:#fff}
+.tab.tab-breakout1854.active .tcnt{background:#a855f7;color:#fff}
+.tab.tab-continuation1854.active .tcnt{background:#eab308;color:#111827}
 
 /* Table */
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto}
@@ -259,6 +272,7 @@ td{padding:7px 9px;vertical-align:middle}
       <a class="eb-link" id="eb-link" href="early_breakout/early_breakout_latest.html" target="_blank" rel="noopener">查看完整早期起漲報表</a>
     </div>
     <div class="eb-grid" id="eb-grid"></div>
+    <div class="eb-val-grid" id="eb-validation"></div>
     <div class="eb-conds" id="eb-conds"></div>
     <div class="eb-note" id="eb-note"></div>
   </div>
@@ -311,6 +325,8 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-buy"   data-t="buy"   onclick="tab('buy')">🎯 買點佳 <span class="tcnt" id="tc-buy">0</span></div>
     <div class="tab tab-breakout" data-t="breakout" onclick="tab('breakout')">🌱 早期起漲 <span class="tcnt" id="tc-breakout">0</span></div>
     <div class="tab tab-continuation" data-t="continuation" onclick="tab('continuation')">🔥 強勢續攻 <span class="tcnt" id="tc-continuation">0</span></div>
+    <div class="tab tab-breakout1854" data-t="breakout1854" onclick="tab('breakout1854')">🌿 早期起漲 18/54 <span class="tcnt" id="tc-breakout1854">0</span></div>
+    <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
@@ -443,6 +459,21 @@ function earlyBreakoutSummaryCandidates() {
   return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
 }
 
+function earlyBreakoutForwardSummaryCandidates() {
+  const staticCandidates = [
+    'early_breakout/early_breakout_forward_returns_latest.json',
+    'web/early_breakout/early_breakout_forward_returns_latest.json',
+    '/web/early_breakout/early_breakout_forward_returns_latest.json'
+  ];
+  const dynamicCandidates = [
+    '/web/early_breakout/early_breakout_forward_returns_latest.json',
+    'early_breakout/early_breakout_forward_returns_latest.json',
+    'web/early_breakout/early_breakout_forward_returns_latest.json',
+    '/early_breakout/early_breakout_forward_returns_latest.json'
+  ];
+  return uniq(isStaticPagesMode() ? staticCandidates : dynamicCandidates);
+}
+
 function earlyBreakoutCsvUrl() {
   return S.earlyBreakout?.csvUrl || earlyBreakoutCsvCandidates()[0];
 }
@@ -527,7 +558,7 @@ const S = {
   wl: new Set(),
   wlEntries: {},
   meta: {},
-  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' },
+  earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '', forwardSummary: null, forwardSummaryUrl: '' },
   rc: null, hc: null
 };
 
@@ -834,6 +865,14 @@ function normalizeEarlyBreakoutRow(headers, values) {
   row.focusCandidate = row.focus_candidate === 'Y';
   row.screenStyle = row.screen_style || 'early';
   row.screenStyleLabel = row.screen_style_label || (row.screenStyle === 'continuation' ? '強勢續攻' : '早期起漲');
+  row.inScreen2060 = row.in_screen_2060 === 'Y';
+  row.screenStyle2060 = row.screen_style_2060 || '';
+  row.screenStyle2060Label = row.screen_style_2060_label || (row.screenStyle2060 === 'continuation' ? '強勢續攻' : row.screenStyle2060 === 'early' ? '早期起漲' : '');
+  row.focusCandidate2060 = row.focus_candidate_2060 === 'Y';
+  row.inScreen1854 = row.in_screen_1854 === 'Y';
+  row.screenStyle1854 = row.screen_style_1854 || '';
+  row.screenStyle1854Label = row.screen_style_1854_label || (row.screenStyle1854 === 'continuation' ? '強勢續攻' : row.screenStyle1854 === 'early' ? '早期起漲' : '');
+  row.focusCandidate1854 = row.focus_candidate_1854 === 'Y';
   return row;
 }
 
@@ -874,7 +913,20 @@ async function loadEarlyBreakout() {
           lastError = error;
         }
       }
-      return { rows, csvUrl: url, htmlUrl, summary, summaryUrl };
+      let forwardSummary = null;
+      let forwardSummaryUrl = '';
+      for (const forwardCandidate of earlyBreakoutForwardSummaryCandidates()) {
+        try {
+          const forwardResp = await fetch(forwardCandidate, { cache: 'no-store' });
+          if (!forwardResp.ok) continue;
+          forwardSummary = await forwardResp.json();
+          forwardSummaryUrl = forwardCandidate;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      return { rows, csvUrl: url, htmlUrl, summary, summaryUrl, forwardSummary, forwardSummaryUrl };
     } catch (error) {
       lastError = error;
     }
@@ -883,7 +935,7 @@ async function loadEarlyBreakout() {
 }
 
 function applyEarlyBreakoutMeta(payload) {
-  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
+  const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, earlyCount1854: 0, continuationCount1854: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '', forwardSummary: null, forwardSummaryUrl: '' };
   if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
     S.earlyBreakout = state;
     return;
@@ -893,17 +945,25 @@ function applyEarlyBreakoutMeta(payload) {
     state.byCode[row.code] = row;
     state.codeSet.add(row.code);
     if (row.focusCandidate) state.focusCount += 1;
-    if (row.screenStyle === 'continuation') state.continuationCount += 1;
-    else state.earlyCount += 1;
+    if (row.inScreen2060) {
+      if (row.screenStyle2060 === 'continuation') state.continuationCount += 1;
+      else state.earlyCount += 1;
+    }
+    if (row.inScreen1854) {
+      if (row.screenStyle1854 === 'continuation') state.continuationCount1854 += 1;
+      else state.earlyCount1854 += 1;
+    }
   });
   S.all = S.all.map(stock => {
     const breakout = state.byCode[stock.code];
-    if (!breakout) return { ...stock, earlyBreakoutCandidate: false, earlyBreakoutCategory: '', earlyBreakoutRank: 999999, earlyBreakoutScreenScore: 0, earlyBreakoutFocus: false };
+    if (!breakout) return { ...stock, earlyBreakoutCandidate: false, earlyBreakoutCategory: '', earlyBreakoutCategory1854: '', earlyBreakoutRank: 999999, earlyBreakoutScreenScore: 0, earlyBreakoutFocus: false };
     return {
       ...stock,
-      earlyBreakoutCandidate: true,
-      earlyBreakoutCategory: breakout.screenStyle || 'early',
-      earlyBreakoutCategoryLabel: breakout.screenStyleLabel || '早期起漲',
+      earlyBreakoutCandidate: !!(breakout.inScreen2060 || breakout.inScreen1854),
+      earlyBreakoutCategory: breakout.inScreen2060 ? (breakout.screenStyle2060 || 'early') : '',
+      earlyBreakoutCategoryLabel: breakout.inScreen2060 ? (breakout.screenStyle2060Label || '早期起漲') : '',
+      earlyBreakoutCategory1854: breakout.inScreen1854 ? (breakout.screenStyle1854 || 'early') : '',
+      earlyBreakoutCategory1854Label: breakout.inScreen1854 ? (breakout.screenStyle1854Label || '早期起漲') : '',
       earlyBreakoutRank: breakout.rank || 999999,
       earlyBreakoutScreenScore: breakout.screenScore || 0,
       earlyBreakoutFocus: !!breakout.focusCandidate,
@@ -916,7 +976,27 @@ function applyEarlyBreakoutMeta(payload) {
   state.htmlUrl = payload.htmlUrl || earlyBreakoutHtmlCandidates()[0];
   state.summary = payload.summary || null;
   state.summaryUrl = payload.summaryUrl || '';
+  state.forwardSummary = payload.forwardSummary || null;
+  state.forwardSummaryUrl = payload.forwardSummaryUrl || '';
   S.earlyBreakout = state;
+}
+
+function renderForwardValidationCard(group) {
+  if (!group || !Number(group.sample_count_max)) return '';
+  const rows = [1, 2, 4].map(week => {
+    const item = group[`${week}w`] || {};
+    const avg = item.avg_return_pct === '' || item.avg_return_pct == null ? '—' : `${Number(item.avg_return_pct).toFixed(2)}%`;
+    const win = item.win_rate_pct === '' || item.win_rate_pct == null ? '—' : `${Number(item.win_rate_pct).toFixed(1)}%`;
+    return `<div class="eb-val-row"><span>${week}週後</span><b>${avg}</b><span>勝率 ${win}</span></div>`;
+  }).join('');
+  return `
+    <div class="eb-val-card">
+      <div class="eb-val-head">
+        <div class="eb-val-title">${group.variant_label} ${group.screen_style_label} ${group.scope_label}</div>
+        <div class="eb-val-sample">樣本 ${group.sample_count_max}</div>
+      </div>
+      <div class="eb-val-rows">${rows}</div>
+    </div>`;
 }
 
 function renderEarlyBreakoutPanel() {
@@ -944,6 +1024,9 @@ function renderEarlyBreakoutPanel() {
   const identifiedCount = Number(summary?.identified_count) || 0;
   const earlyCount = Number(summary?.early_candidate_count) || S.earlyBreakout.earlyCount || 0;
   const continuationCount = Number(summary?.continuation_candidate_count) || S.earlyBreakout.continuationCount || 0;
+  const earlyCount1854 = Number(summary?.early_candidate_count_1854) || S.earlyBreakout.earlyCount1854 || 0;
+  const continuationCount1854 = Number(summary?.continuation_candidate_count_1854) || S.earlyBreakout.continuationCount1854 || 0;
+  const unionCount = Number(summary?.candidate_union_count) || rows.length || 0;
   const reviewLine = Array.isArray(summary?.review_lines) && summary.review_lines.length ? summary.review_lines[0] : '';
   const featureChips = Array.isArray(summary?.identified_feature_lines) && summary.identified_feature_lines.length
     ? summary.identified_feature_lines
@@ -960,15 +1043,33 @@ function renderEarlyBreakoutPanel() {
         '20日報酬介於 3% 到 30%',
         'broker 主力買超比率 > 0'
       ];
+  const strictRuleChips1854 = Array.isArray(summary?.strict_rule_lines_1854) && summary.strict_rule_lines_1854.length
+    ? summary.strict_rule_lines_1854
+    : [
+        'MA18 > MA54',
+        '18日報酬介於 3% 到 30%',
+        '54日報酬需維持正向',
+        'broker 主力買超比率 > 0'
+      ];
+  const forwardSummary = S.earlyBreakout.forwardSummary || null;
+  const validationGroups = forwardSummary?.groups || {};
+  const validationCards = [
+    validationGroups.ma2060_early_focus,
+    validationGroups.ma2060_continuation_focus,
+    validationGroups.ma2060_early_all,
+    validationGroups.ma2060_continuation_all
+  ].map(renderForwardValidationCard).filter(Boolean).join('');
 
   document.getElementById('eb-link').href = earlyBreakoutHtmlUrl();
   document.getElementById('eb-sub').textContent =
     summary
-      ? `月檢視 ${studyWindow} 前20大漲股後，前端主名單 ${rows.length} 檔，其中早期起漲 ${earlyCount} 檔、強勢續攻 ${continuationCount} 檔；寬版學習名單 ${broadCount || '—'} 檔。`
+      ? `月檢視 ${studyWindow} 前20大漲股後，合併主名單 ${unionCount} 檔；MA20/60 為 ${earlyCount + continuationCount} 檔，MA18/54 為 ${earlyCount1854 + continuationCount1854} 檔。`
       : `這裡是用最近一次起漲研究整理出的早期起漲候選。共 ${rows.length} 檔，Focus ${S.earlyBreakout.focusCount} 檔；題材以 ${themeSummary || '一般'} 為主。`;
   document.getElementById('eb-grid').innerHTML = [
-    ['早期起漲', earlyCount || '—'],
-    ['強勢續攻', continuationCount || '—'],
+    ['20/60 起漲', earlyCount || '—'],
+    ['20/60 續攻', continuationCount || '—'],
+    ['18/54 起漲', earlyCount1854 || '—'],
+    ['18/54 續攻', continuationCount1854 || '—'],
     ['Focus', S.earlyBreakout.focusCount],
     ['已辨識起漲', identifiedCount || '—'],
     [summary ? '寬版學習' : '最高 Screen', summary ? (broadCount || '—') : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
@@ -980,12 +1081,18 @@ function renderEarlyBreakoutPanel() {
     </div>`).join('');
   document.getElementById('eb-conds').innerHTML = [
     ...featureChips.slice(0, 2).map(text => ['核心', text]),
-    ...strictRuleChips.slice(0, 4).map(text => ['分流', text]),
-    ['保護', '20日漲幅、量比與 RSI 不可過熱']
+    ...strictRuleChips.slice(0, 2).map(text => ['20/60', text]),
+    ...strictRuleChips1854.slice(0, 2).map(text => ['18/54', text]),
+    ['保護', '短中期漲幅、量比與 RSI 不可過熱']
   ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role !== '核心' ? 'support' : ''}">${role} · ${text}</span>`).join('');
+  document.getElementById('eb-validation').innerHTML = validationCards || `
+    <div class="eb-val-card">
+      <div class="eb-val-title">快照驗證</div>
+      <div class="eb-sub">目前尚無可用的 1 到 4 週驗證摘要。</div>
+    </div>`;
   document.getElementById('eb-note').textContent =
     summary
-      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
+      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${forwardSummary ? ` 快照驗證區間 ${fmtDate(forwardSummary.snapshot_start)} → ${fmtDate(forwardSummary.snapshot_end)}。` : ''}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
       : '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
   panel.style.display = '';
 }
@@ -1054,6 +1161,8 @@ function updateTabCounts() {
   document.getElementById('tc-buy').textContent    = S.all.filter(isGoodBuyPoint).length;
   document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'early').length;
   document.getElementById('tc-continuation').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'continuation').length;
+  document.getElementById('tc-breakout1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'early').length;
+  document.getElementById('tc-continuation1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'continuation').length;
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -1086,6 +1195,8 @@ function go() {
   else if (t === 'buy')   stocks = stocks.filter(isGoodBuyPoint);
   else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'early');
   else if (t === 'continuation') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'continuation');
+  else if (t === 'breakout1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'early');
+  else if (t === 'continuation1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'continuation');
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
   if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
@@ -1105,7 +1216,7 @@ function go() {
 
   // 預設排序：短線tab用shortScore，中線tab用midScore
   let defaultKey = S.sortKey;
-  if ((t === 'breakout' || t === 'continuation') && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
+  if ((t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -1139,7 +1250,7 @@ function tab(t) {
   else if (t === 'buy' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
   }
-  else if (t === 'breakout' || t === 'continuation') {
+  else if (t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (S.sortKey === 'earlyBreakoutScreenScore') {
@@ -1222,6 +1333,7 @@ function mkRow(s) {
     const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
     nameExtra = `<div class="et">進 ${fmtDateShort(e.date)} $${e.price} <span style="color:${pc};font-weight:700">${pl>0?'+':''}${pl.toFixed(1)}%</span></div>`;
   }
+  nameExtra += bearishWarningBadge(s);
 
   // 短中線分用漸層背景
   const ssColor = s.shortScore >= 65 ? 'var(--blue)' : s.shortScore >= 40 ? 'var(--muted)' : 'var(--muted)';
@@ -1267,6 +1379,27 @@ function fmtDays(d) {
 function fmtPct(v) {
   if (!v) return '<td style="color:var(--muted)">—</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${v.toFixed(2)}%</td>`;
+}
+function bearishSignals(s) {
+  const hits = [];
+  const structureLabel = String(s.structureLabel || '');
+  const postCloseCategory = String(s.postCloseCategory || '');
+  const ret20 = Number(s.return20DayPct || 0);
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  if (structureLabel === '結構未完成') hits.push('結構未完成');
+  if (postCloseCategory === '暫不出手') hits.push('暫不出手');
+  if (ret20 <= -8) hits.push('20日報酬明顯轉負');
+  if (price > 0 && ma20 > 0 && price < ma20) hits.push('股價跌回 MA20 下');
+  return hits;
+}
+function bearishWarningBadge(s) {
+  const hits = bearishSignals(s);
+  if (!hits.length) return '';
+  const count = hits.length;
+  const fg = count >= 3 ? 'var(--red)' : count >= 2 ? 'var(--orange)' : 'var(--yellow)';
+  const bg = count >= 3 ? 'rgba(239,68,68,.16)' : count >= 2 ? 'rgba(249,115,22,.16)' : 'rgba(234,179,8,.16)';
+  return `<div class="et"><span title="${hits.join('｜')}" style="display:inline-block;padding:2px 8px;border-radius:999px;background:${bg};color:${fg};font-weight:700">轉空警示 ${count}/4</span></div>`;
 }
 function isGoodBuyPoint(s) {
   return (s.buyPointScore || 0) >= 75 && !!s.selectionQualified;
@@ -1430,6 +1563,15 @@ function renderDB(s, history) {
   const oneOffRiskScore = s.oneOffRiskScore || 0;
   const marketScore = S.meta.marketScore || 50;
   const buyLabel = s.buyPointLabel || (buyScore >= 85 ? 'A級買點' : buyScore >= 75 ? 'B級買點' : buyScore >= 60 ? '等確認' : '暫不建議');
+  const bearishHits = bearishSignals(s);
+  const bearishBox = bearishHits.length ? `
+    <div class="rsn risk-box">
+      <div class="rsn-hdr">
+        <span class="rsn-lbl" style="color:var(--red)">⚠ 轉空警示</span>
+        <span class="rsn-score" style="color:var(--red)">${bearishHits.length}/4</span>
+      </div>
+      <div class="rsn-txt">${bearishHits.join('、')}</div>
+    </div>` : '';
 
   // ── 投資建議卡 ──
   const invConclusion = buildConclusion(s, ss, ms);
@@ -1550,6 +1692,7 @@ function renderDB(s, history) {
       ${trackHtml}
     </div>
     ${buyCard}
+    ${bearishBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">

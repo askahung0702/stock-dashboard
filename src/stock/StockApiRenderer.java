@@ -472,11 +472,15 @@ public class StockApiRenderer {
         obj.put("postCloseAction",                 row.postCloseAction);
         obj.put("postCloseReason",                 row.postCloseReason);
         obj.put("price",                           Double.valueOf(row.price));
+        obj.put("movingAverage18",                 Double.valueOf(row.movingAverage18));
         obj.put("movingAverage20",                 Double.valueOf(row.movingAverage20));
+        obj.put("movingAverage54",                 Double.valueOf(row.movingAverage54));
         obj.put("movingAverage60",                 Double.valueOf(row.movingAverage60));
         obj.put("movingAverage120",                Double.valueOf(row.movingAverage120));
         obj.put("volumeRatio",                     Double.valueOf(row.volumeRatio));
+        obj.put("return18DayPct",                  Double.valueOf(row.return18DayPct));
         obj.put("return20DayPct",                  Double.valueOf(row.return20DayPct));
+        obj.put("return54DayPct",                  Double.valueOf(row.return54DayPct));
         obj.put("return60DayPct",                  Double.valueOf(row.return60DayPct));
         obj.put("averageLots20",                   Double.valueOf(row.averageLots20));
         obj.put("averageTradeValue20Billion",      Double.valueOf(row.averageTradeValue20Billion));

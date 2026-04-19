@@ -71,7 +71,7 @@
 
 <div class="panel">
   <b>月檢視判讀</b><br>
-  研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。<br>真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 &gt;= 2 100.0%<br>寬版學習名單 198 檔；前端 strict 主名單 86 檔，其中早期起漲 46 檔、強勢續攻 40 檔，Focus 60 檔；判定為「較平衡」。目前名單 86 檔，占全市場 4.4% ，約為 identified 樣本的 10.8 倍，整體寬鬆度在可操作範圍。<br>前端主名單目前採雙路徑：早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20 &gt; MA60，20日報酬介於 3% 到 30%；早期起漲：距60日高點回檔介於 -25% 到 -2%，broker 主力買超 &gt; 0；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。其中早期起漲路徑回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8；雙路徑合併後最新市場約 86 檔。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。
+  研究區間 20260317 → 20260418 的前 20 大漲股中，identified 8 檔、window_start 9 檔、fallback 3 檔。<br>真正 identified 樣本最穩的共同特徵：法人/主力籌碼未明顯轉弱 100.0%；未過熱 100.0%；20日報酬為正 100.0%；近3月營收維持年增，且正成長月數 &gt;= 2 100.0%<br>寬版學習名單 198 檔；MA20/60 strict 主名單 86 檔，其中早期起漲 46 檔、強勢續攻 40 檔；MA18/54 strict 主名單 3 檔，其中早期起漲 1 檔、強勢續攻 2 檔；合併前端主名單 86 檔。判定為「較平衡」。目前名單 86 檔，占全市場 4.4% ，約為 identified 樣本的 10.8 倍，整體寬鬆度在可操作範圍。<br>MA20/60 路徑：早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20 &gt; MA60，20日報酬介於 3% 到 30%；早期起漲：距60日高點回檔介於 -25% 到 -2%，broker 主力買超 &gt; 0；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 9/17、identified 6/8。<br>MA18/54 路徑：早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA18 &gt; MA54，18日報酬介於 3% 到 30%；強勢續攻：股價 &gt; MA18 &gt; MA54，18日報酬介於 3% 到 25%；強勢續攻：54日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 0/17、identified 0/8。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。
 </div>
 
 <table>
@@ -102,7 +102,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2382</b></td>
   <td>廣達</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>323.00</td>
   <td class="score-hi">95.38</td>
   <td>89.04</td>
@@ -121,7 +121,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3090</b></td>
   <td>日電貿</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>108.50</td>
   <td class="score-hi">94.02</td>
   <td>85.53</td>
@@ -140,7 +140,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2330</b></td>
   <td>台積電</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>2,030.00</td>
   <td class="score-hi">93.75</td>
   <td>83.33</td>
@@ -159,7 +159,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6139</b></td>
   <td>亞翔</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻 / MA18/54 強勢續攻</td>
   <td>723.00</td>
   <td class="score-hi">93.38</td>
   <td>85.49</td>
@@ -178,7 +178,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6788</b></td>
   <td>華景電</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>431.00</td>
   <td class="score-hi">93.35</td>
   <td>85.49</td>
@@ -197,7 +197,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2395</b></td>
   <td>研華</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>366.00</td>
   <td class="score-hi">92.87</td>
   <td>79.33</td>
@@ -216,7 +216,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3189</b></td>
   <td>景碩</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>391.50</td>
   <td class="score-hi">92.37</td>
   <td>79.08</td>
@@ -235,7 +235,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2347</b></td>
   <td>聯強</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>83.90</td>
   <td class="score-hi">92.13</td>
   <td>77.37</td>
@@ -254,7 +254,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3702</b></td>
   <td>大聯大</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>98.80</td>
   <td class="score-hi">92.12</td>
   <td>77.18</td>
@@ -273,7 +273,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>8064</b></td>
   <td>東捷</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>78.00</td>
   <td class="score-hi">92.12</td>
   <td>78.26</td>
@@ -292,7 +292,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6261</b></td>
   <td>久元</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>78.30</td>
   <td class="score-hi">91.52</td>
   <td>73.89</td>
@@ -311,7 +311,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6568</b></td>
   <td>宏觀</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>225.00</td>
   <td class="score-hi">91.24</td>
   <td>87.34</td>
@@ -330,7 +330,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3044</b></td>
   <td>健鼎</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>411.50</td>
   <td class="score-hi">90.97</td>
   <td>74.98</td>
@@ -349,7 +349,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6531</b></td>
   <td>愛普*</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>644.00</td>
   <td class="score-hi">90.93</td>
   <td>78.33</td>
@@ -368,7 +368,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2481</b></td>
   <td>強茂</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>118.00</td>
   <td class="score-hi">90.57</td>
   <td>75.37</td>
@@ -387,7 +387,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3491</b></td>
   <td>昇達科</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>1,670.00</td>
   <td class="score-hi">90.42</td>
   <td>74.53</td>
@@ -406,7 +406,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>5234</b></td>
   <td>達興材料</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>443.00</td>
   <td class="score-hi">90.42</td>
   <td>74.57</td>
@@ -425,7 +425,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>1815</b></td>
   <td>富喬</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>127.00</td>
   <td class="score-hi">89.44</td>
   <td>81.53</td>
@@ -444,7 +444,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6739</b></td>
   <td>竹陞科技</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>1,560.00</td>
   <td class="score-hi">89.41</td>
   <td>77.13</td>
@@ -463,7 +463,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3689</b></td>
   <td>湧德</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>132.50</td>
   <td class="score-hi">89.38</td>
   <td>80.09</td>
@@ -482,7 +482,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3406</b></td>
   <td>玉晶光</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>503.00</td>
   <td class="score-hi">89.06</td>
   <td>71.17</td>
@@ -501,7 +501,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>1560</b></td>
   <td>中砂</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>533.00</td>
   <td class="score-hi">89.02</td>
   <td>80.50</td>
@@ -520,7 +520,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>5274</b></td>
   <td>信驊</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>13,805.00</td>
   <td class="score-hi">88.84</td>
   <td>69.22</td>
@@ -539,7 +539,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>6163</b></td>
   <td>華電網</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>67.40</td>
   <td class="score-hi">88.82</td>
   <td>70.99</td>
@@ -558,7 +558,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>3711</b></td>
   <td>日月光投控</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>442.00</td>
   <td class="score-hi">88.60</td>
   <td>72.66</td>
@@ -577,7 +577,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>7769</b></td>
   <td>鴻勁</td>
-  <td><span class="tag tag-signal">早期起漲</span></td>
+  <td>MA20/60 早期起漲</td>
   <td>4,500.00</td>
   <td class="score-hi">88.08</td>
   <td>73.89</td>
@@ -596,7 +596,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>8039</b></td>
   <td>台虹</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>143.50</td>
   <td class="score-hi">87.98</td>
   <td>66.74</td>
@@ -615,7 +615,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2885</b></td>
   <td>元大金</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>50.20</td>
   <td class="score-hi">87.98</td>
   <td>70.66</td>
@@ -634,7 +634,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>8086</b></td>
   <td>宏捷科</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>148.50</td>
   <td class="score-hi">87.96</td>
   <td>77.44</td>
@@ -653,7 +653,7 @@
   <td><span class="grade grade-a">A</span></td>
   <td><b>2495</b></td>
   <td>普安</td>
-  <td><span class="tag tag-signal">強勢續攻</span></td>
+  <td>MA20/60 強勢續攻</td>
   <td>42.85</td>
   <td class="score-hi">87.88</td>
   <td>79.82</td>

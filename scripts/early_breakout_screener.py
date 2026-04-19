@@ -50,6 +50,13 @@ DEFAULT_CONTINUATION_DRAWDOWN_MAX = 1.0
 DEFAULT_CONTINUATION_NEAR_HIGH = -4.0
 DEFAULT_CONTINUATION_STRONG_RETURN60 = 20.0
 
+VARIANT_2060 = "ma2060"
+VARIANT_1854 = "ma1854"
+VARIANT_LABELS = {
+    VARIANT_2060: "MA20/60",
+    VARIANT_1854: "MA18/54",
+}
+
 DASHBOARD_PANEL_START = "<!-- EARLY_BREAKOUT_PANEL_START -->"
 DASHBOARD_PANEL_END = "<!-- EARLY_BREAKOUT_PANEL_END -->"
 DASHBOARD_INSERT_MARKER = "<section class=\"panel\"><div class=\"section-head\"><div><h2>收盤後高勝率候選</h2>"
@@ -338,6 +345,62 @@ def load_history_snapshots():
     return dates, rows_by_date, series_by_code
 
 
+def list_daily_snapshot_files():
+    return sorted(
+        p for p in SNAPSHOTS.glob("stock_candidates_*.csv")
+        if p.stem[-8:].isdigit()
+    )
+
+
+def load_daily_price_series():
+    rows_by_date = {}
+    series_by_code = {}
+    for path in list_daily_snapshot_files():
+        date_str = path.stem[-8:]
+        rows = load_csv(path)
+        row_map = {}
+        for row in rows:
+            row["_date"] = date_str
+            code = sv(row, "code")
+            row_map[code] = row
+            series_by_code.setdefault(code, []).append(row)
+        rows_by_date[date_str] = row_map
+    for code in series_by_code:
+        series_by_code[code].sort(key=lambda item: sv(item, "_date"))
+    return rows_by_date, series_by_code
+
+
+def hydrate_alt_metrics(row, series_by_code):
+    if fv(row, "ma18", 0.0) > 0 and fv(row, "ma54", 0.0) > 0:
+        return row
+    code = sv(row, "code")
+    date_str = sv(row, "_date")
+    series = [item for item in series_by_code.get(code, []) if sv(item, "_date") <= date_str]
+    closes = [fv(item, "current_price", 0.0) for item in series if fv(item, "current_price", 0.0) > 0]
+    current_price = fv(row, "current_price", 0.0)
+    if not closes or current_price <= 0:
+        return row
+
+    def avg_last(values, span):
+        if len(values) < span:
+            return 0.0
+        return sum(values[-span:]) / span
+
+    def return_from_days_ago(values, span, current):
+        if len(values) <= span:
+            return 0.0
+        base = values[-(span + 1)]
+        if base <= 0:
+            return 0.0
+        return (current - base) * 100.0 / base
+
+    row["ma18"] = f"{avg_last(closes, 18):.6f}"
+    row["ma54"] = f"{avg_last(closes, 54):.6f}"
+    row["return_18d_pct"] = f"{return_from_days_ago(closes, 18, current_price):.6f}"
+    row["return_54d_pct"] = f"{return_from_days_ago(closes, 54, current_price):.6f}"
+    return row
+
+
 def resolve_default_study_window(dates):
     if not dates:
         return None, None
@@ -438,6 +501,36 @@ def strong_continuation_ready(row):
     )
 
 
+def strict_breakout_ready_1854(row):
+    return (
+        fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
+        and iv(row, "positive_revenue_months", 0) >= 2
+        and fv(row, "ma18", 0.0) > fv(row, "ma54", 0.0) > 0
+        and DEFAULT_STRICT_RETURN20_MIN <= fv(row, "return_18d_pct", 0.0) <= DEFAULT_STRICT_RETURN20_MAX
+        and fv(row, "return_54d_pct", 0.0) > 0
+        and DEFAULT_STRICT_DRAWDOWN_MIN
+        <= fv(row, "drawdown_from_high60_pct", -999.0)
+        <= DEFAULT_STRICT_DRAWDOWN_MAX
+        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+    )
+
+
+def strong_continuation_ready_1854(row):
+    return (
+        fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
+        and iv(row, "positive_revenue_months", 0) >= 2
+        and fv(row, "current_price", 0.0) > fv(row, "ma18", 0.0) > fv(row, "ma54", 0.0) > 0
+        and DEFAULT_CONTINUATION_RETURN20_MIN
+        <= fv(row, "return_18d_pct", 0.0)
+        <= DEFAULT_CONTINUATION_RETURN20_MAX
+        and fv(row, "return_54d_pct", 0.0) > DEFAULT_CONTINUATION_RETURN60_MIN
+        and DEFAULT_CONTINUATION_DRAWDOWN_MIN
+        <= fv(row, "drawdown_from_high60_pct", -999.0)
+        <= DEFAULT_CONTINUATION_DRAWDOWN_MAX
+        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+    )
+
+
 def screen_style_of(row):
     drawdown = fv(row, "drawdown_from_high60_pct", 0.0)
     return60 = fv(row, "return_60d_pct", 0.0)
@@ -445,6 +538,19 @@ def screen_style_of(row):
     if strong_continuation_ready(row) and (
         drawdown > DEFAULT_CONTINUATION_NEAR_HIGH
         or return60 >= DEFAULT_CONTINUATION_STRONG_RETURN60
+        or signal_type == "5-10日波段"
+    ):
+        return "continuation", "強勢續攻"
+    return "early", "早期起漲"
+
+
+def screen_style_of_1854(row):
+    drawdown = fv(row, "drawdown_from_high60_pct", 0.0)
+    return54 = fv(row, "return_54d_pct", 0.0)
+    signal_type = sv(row, "signal_type")
+    if strong_continuation_ready_1854(row) and (
+        drawdown > DEFAULT_CONTINUATION_NEAR_HIGH
+        or return54 >= DEFAULT_CONTINUATION_STRONG_RETURN60
         or signal_type == "5-10日波段"
     ):
         return "continuation", "強勢續攻"
@@ -526,6 +632,8 @@ def build_review_summary(
     launch_rows,
     condition_stats,
     screened,
+    screened_1854,
+    combined_screened,
     broad_screened,
     current_rows,
     previous_meta,
@@ -536,14 +644,22 @@ def build_review_summary(
         [row["_launch_row"] for row in identified_rows if row.get("_launch_row")]
     )
     broad_label, broad_note, candidate_ratio_pct, identified_multiplier = classify_screen_breadth(
-        len(screened), len(current_rows), len(identified_rows)
+        len(combined_screened), len(current_rows), len(identified_rows)
     )
 
     strict_latest_count = len(screened)
+    strict_latest_count_1854 = len(screened_1854)
+    strict_latest_count_union = len(combined_screened)
     broad_candidate_count = len(broad_screened)
     early_candidate_count = sum(1 for row in screened if row.get("screen_style") == "early")
     continuation_candidate_count = sum(
         1 for row in screened if row.get("screen_style") == "continuation"
+    )
+    early_candidate_count_1854 = sum(
+        1 for row in screened_1854 if row.get("screen_style") == "early"
+    )
+    continuation_candidate_count_1854 = sum(
+        1 for row in screened_1854 if row.get("screen_style") == "continuation"
     )
     early_focus_count = sum(
         1 for row in screened if row.get("screen_style") == "early" and row["focus_candidate"] == "Y"
@@ -553,11 +669,25 @@ def build_review_summary(
         for row in screened
         if row.get("screen_style") == "continuation" and row["focus_candidate"] == "Y"
     )
+    early_focus_count_1854 = sum(
+        1 for row in screened_1854 if row.get("screen_style") == "early" and row["focus_candidate"] == "Y"
+    )
+    continuation_focus_count_1854 = sum(
+        1
+        for row in screened_1854
+        if row.get("screen_style") == "continuation" and row["focus_candidate"] == "Y"
+    )
     strict_non_fallback_hit = sum(
         1 for row in non_fallback_rows if strict_breakout_ready(row.get("_launch_row", {}))
     )
     strict_identified_hit = sum(
         1 for row in identified_rows if strict_breakout_ready(row.get("_launch_row", {}))
+    )
+    strict_non_fallback_hit_1854 = sum(
+        1 for row in non_fallback_rows if strict_breakout_ready_1854(row.get("_launch_row", {}))
+    )
+    strict_identified_hit_1854 = sum(
+        1 for row in identified_rows if strict_breakout_ready_1854(row.get("_launch_row", {}))
     )
 
     identified_feature_lines = pick_summary_labels(
@@ -577,6 +707,12 @@ def build_review_summary(
         f"強勢續攻：股價 > MA20 > MA60，20日報酬介於 {DEFAULT_CONTINUATION_RETURN20_MIN:.0f}% 到 {DEFAULT_CONTINUATION_RETURN20_MAX:.0f}%",
         f"強勢續攻：60日報酬 > {DEFAULT_CONTINUATION_RETURN60_MIN:.0f}% ，距60日高點介於 {DEFAULT_CONTINUATION_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_CONTINUATION_DRAWDOWN_MAX:.0f}%",
     ]
+    strict_rule_lines_1854 = [
+        f"早期起漲：近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
+        f"早期起漲：MA18 > MA54，18日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        f"強勢續攻：股價 > MA18 > MA54，18日報酬介於 {DEFAULT_CONTINUATION_RETURN20_MIN:.0f}% 到 {DEFAULT_CONTINUATION_RETURN20_MAX:.0f}%",
+        f"強勢續攻：54日報酬 > {DEFAULT_CONTINUATION_RETURN60_MIN:.0f}% ，距60日高點介於 {DEFAULT_CONTINUATION_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_CONTINUATION_DRAWDOWN_MAX:.0f}%",
+    ]
     previous_window = (
         f"{previous_meta.get('study_start', '')} → {previous_meta.get('study_end', '')}"
         if previous_meta
@@ -585,8 +721,9 @@ def build_review_summary(
     review_lines = [
         f"研究區間 {study_start} → {study_end} 的前 {analysis_top} 大漲股中，identified {len(identified_rows)} 檔、window_start {sum(1 for row in launch_rows if row['launch_status'] == 'window_start')} 檔、fallback {sum(1 for row in launch_rows if row['launch_status'] == 'fallback')} 檔。",
         f"真正 identified 樣本最穩的共同特徵：{'；'.join(identified_feature_lines) if identified_feature_lines else '目前樣本不足。'}",
-        f"寬版學習名單 {broad_candidate_count} 檔；前端 strict 主名單 {len(screened)} 檔，其中早期起漲 {early_candidate_count} 檔、強勢續攻 {continuation_candidate_count} 檔，Focus {sum(1 for row in screened if row['focus_candidate'] == 'Y')} 檔；判定為「{broad_label}」。{broad_note}",
-        f"前端主名單目前採雙路徑：{'；'.join(strict_rule_lines)}。其中早期起漲路徑回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}；雙路徑合併後最新市場約 {strict_latest_count} 檔。",
+        f"寬版學習名單 {broad_candidate_count} 檔；MA20/60 strict 主名單 {len(screened)} 檔，其中早期起漲 {early_candidate_count} 檔、強勢續攻 {continuation_candidate_count} 檔；MA18/54 strict 主名單 {len(screened_1854)} 檔，其中早期起漲 {early_candidate_count_1854} 檔、強勢續攻 {continuation_candidate_count_1854} 檔；合併前端主名單 {strict_latest_count_union} 檔。判定為「{broad_label}」。{broad_note}",
+        f"MA20/60 路徑：{'；'.join(strict_rule_lines)}。回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit}/{len(non_fallback_rows)}、identified {strict_identified_hit}/{max(len(identified_rows), 1)}。",
+        f"MA18/54 路徑：{'；'.join(strict_rule_lines_1854)}。回頭看本次樣本，可命中 non-fallback {strict_non_fallback_hit_1854}/{len(non_fallback_rows)}、identified {strict_identified_hit_1854}/{max(len(identified_rows), 1)}。",
         "建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。",
     ]
     if previous_window:
@@ -602,11 +739,19 @@ def build_review_summary(
         "fallback_count": sum(1 for row in launch_rows if row["launch_status"] == "fallback"),
         "screen_mode": "strict",
         "candidate_count": len(screened),
+        "candidate_count_1854": len(screened_1854),
+        "candidate_union_count": strict_latest_count_union,
         "focus_count": sum(1 for row in screened if row["focus_candidate"] == "Y"),
+        "focus_count_1854": sum(1 for row in screened_1854 if row["focus_candidate"] == "Y"),
+        "focus_union_count": sum(1 for row in combined_screened if row["focus_candidate"] == "Y"),
         "early_candidate_count": early_candidate_count,
         "continuation_candidate_count": continuation_candidate_count,
+        "early_candidate_count_1854": early_candidate_count_1854,
+        "continuation_candidate_count_1854": continuation_candidate_count_1854,
         "early_focus_count": early_focus_count,
         "continuation_focus_count": continuation_focus_count,
+        "early_focus_count_1854": early_focus_count_1854,
+        "continuation_focus_count_1854": continuation_focus_count_1854,
         "broad_candidate_count": broad_candidate_count,
         "broad_focus_count": sum(1 for row in broad_screened if row["focus_candidate"] == "Y"),
         "universe_count": len(current_rows),
@@ -617,11 +762,16 @@ def build_review_summary(
         "common_feature_lines": common_feature_lines,
         "identified_feature_lines": identified_feature_lines,
         "strict_rule_lines": strict_rule_lines,
+        "strict_rule_lines_1854": strict_rule_lines_1854,
         "strict_latest_count": strict_latest_count,
+        "strict_latest_count_1854": strict_latest_count_1854,
+        "strict_latest_count_union": strict_latest_count_union,
         "strict_non_fallback_hit": strict_non_fallback_hit,
         "strict_non_fallback_total": len(non_fallback_rows),
         "strict_identified_hit": strict_identified_hit,
         "strict_identified_total": len(identified_rows),
+        "strict_non_fallback_hit_1854": strict_non_fallback_hit_1854,
+        "strict_identified_hit_1854": strict_identified_hit_1854,
         "backtest_recommended": True,
         "review_lines": review_lines,
         "previous_window": previous_window,
@@ -928,7 +1078,16 @@ def find_latest_candidates(date_str=None):
     return None, None
 
 
-def screen_candidates(rows, condition_stats, strict_mode=False):
+def best_grade(left, right):
+    order = {"A": 0, "B": 1, "C": 2}
+    if not left:
+        return right
+    if not right:
+        return left
+    return left if order.get(left, 9) <= order.get(right, 9) else right
+
+
+def screen_candidates(rows, condition_stats, strict_mode=False, variant=VARIANT_2060):
     guard = next((item for item in condition_stats if item["rule_role"] == "guard"), None)
     core = [item for item in condition_stats if item["rule_role"] == "core"]
     support = [item for item in condition_stats if item["rule_role"] == "support"]
@@ -941,8 +1100,12 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
         cmap = condition_map(row)
         if guard and not cmap.get(guard["key"]):
             continue
-        if strict_mode and not (strict_breakout_ready(row) or strong_continuation_ready(row)):
-            continue
+        if strict_mode:
+            if variant == VARIANT_1854:
+                if not (strict_breakout_ready_1854(row) or strong_continuation_ready_1854(row)):
+                    continue
+            elif not (strict_breakout_ready(row) or strong_continuation_ready(row)):
+                continue
         if selection_score_of(row) < DEFAULT_MIN_SELECTION_GATE:
             continue
 
@@ -971,7 +1134,10 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
             grade = "C"
 
         focus_candidate = buy_point_of(row) >= DEFAULT_FOCUS_BUY_POINT and grade in ("A", "B")
-        screen_style, screen_style_label = screen_style_of(row)
+        if variant == VARIANT_1854:
+            screen_style, screen_style_label = screen_style_of_1854(row)
+        else:
+            screen_style, screen_style_label = screen_style_of(row)
         missing_core = [item["label"] for item in core if not cmap.get(item["key"])]
         matched_labels = [item["label"] for item in matched]
         screened.append(
@@ -979,6 +1145,8 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
                 "screen_grade": grade,
                 "screen_style": screen_style,
                 "screen_style_label": screen_style_label,
+                "screen_variant": variant,
+                "screen_variant_label": VARIANT_LABELS.get(variant, variant),
                 "focus_candidate": "Y" if focus_candidate else "N",
                 "screen_score": screen_score,
                 "core_match_count": core_match,
@@ -1034,9 +1202,77 @@ def screen_candidates(rows, condition_stats, strict_mode=False):
     return screened
 
 
+def merge_screened_variants(primary_rows, alt_rows):
+    merged = {}
+
+    def ensure_entry(source):
+        code = source["code"]
+        current = merged.get(code)
+        if current is None:
+            current = dict(source)
+            current["in_screen_2060"] = "N"
+            current["focus_candidate_2060"] = "N"
+            current["screen_style_2060"] = ""
+            current["screen_style_2060_label"] = ""
+            current["in_screen_1854"] = "N"
+            current["focus_candidate_1854"] = "N"
+            current["screen_style_1854"] = ""
+            current["screen_style_1854_label"] = ""
+            merged[code] = current
+        elif source["screen_score"] > current["screen_score"]:
+            keep = {
+                "in_screen_2060": current.get("in_screen_2060", "N"),
+                "focus_candidate_2060": current.get("focus_candidate_2060", "N"),
+                "screen_style_2060": current.get("screen_style_2060", ""),
+                "screen_style_2060_label": current.get("screen_style_2060_label", ""),
+                "in_screen_1854": current.get("in_screen_1854", "N"),
+                "focus_candidate_1854": current.get("focus_candidate_1854", "N"),
+                "screen_style_1854": current.get("screen_style_1854", ""),
+                "screen_style_1854_label": current.get("screen_style_1854_label", ""),
+            }
+            current.update(source)
+            current.update(keep)
+        current["screen_grade"] = best_grade(current.get("screen_grade"), source.get("screen_grade"))
+        current["focus_candidate"] = (
+            "Y"
+            if current.get("focus_candidate") == "Y" or source.get("focus_candidate") == "Y"
+            else "N"
+        )
+        return current
+
+    for row in primary_rows:
+        entry = ensure_entry(row)
+        entry["in_screen_2060"] = "Y"
+        entry["focus_candidate_2060"] = row["focus_candidate"]
+        entry["screen_style_2060"] = row["screen_style"]
+        entry["screen_style_2060_label"] = row["screen_style_label"]
+
+    for row in alt_rows:
+        entry = ensure_entry(row)
+        entry["in_screen_1854"] = "Y"
+        entry["focus_candidate_1854"] = row["focus_candidate"]
+        entry["screen_style_1854"] = row["screen_style"]
+        entry["screen_style_1854_label"] = row["screen_style_label"]
+
+    rows = list(merged.values())
+    grade_order = {"A": 0, "B": 1, "C": 2}
+    rows.sort(
+        key=lambda item: (
+            item["focus_candidate"] != "Y",
+            grade_order.get(item["screen_grade"], 9),
+            -item["screen_score"],
+            -item["buy_point_score"],
+            -item["selection_score"],
+        )
+    )
+    for idx, row in enumerate(rows, 1):
+        row["rank"] = idx
+    return rows
+
+
 def write_csv(path, fieldnames, rows):
     with open(path, "w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for row in rows:
             clean = dict(row)
@@ -1053,12 +1289,18 @@ def tag_html(text, cls):
 def build_html_row(candidate):
     reason_items = candidate["matched_conditions"].split(" | ")
     reason_text = "；".join(reason_items[:3])
+    route_tags = []
+    if candidate.get("in_screen_2060") == "Y":
+        route_tags.append(f"MA20/60 {candidate.get('screen_style_2060_label') or '命中'}")
+    if candidate.get("in_screen_1854") == "Y":
+        route_tags.append(f"MA18/54 {candidate.get('screen_style_1854_label') or '命中'}")
+    route_text = " / ".join(route_tags) if route_tags else candidate["screen_style_label"]
     return f"""<tr>
   <td>{candidate['rank']}</td>
   <td><span class="grade {grade_class(candidate['screen_grade'])}">{candidate['screen_grade']}</span></td>
   <td><b>{safe_html(candidate['code'])}</b></td>
   <td>{safe_html(candidate['name'])}</td>
-  <td>{tag_html(candidate['screen_style_label'], 'tag tag-signal')}</td>
+  <td>{safe_html(route_text)}</td>
   <td>{candidate['current_price']:,.2f}</td>
   <td class="{score_class(candidate['screen_score'])}">{candidate['screen_score']:.2f}</td>
   <td>{candidate['selection_score']:.2f}</td>
@@ -1093,7 +1335,12 @@ def print_console_summary(top_display):
     print("-" * 134)
     for row in top_display:
         name = row["name"][:10]
-        style = row["screen_style_label"][:6]
+        style = []
+        if row.get("in_screen_2060") == "Y":
+            style.append(f"20/60-{(row.get('screen_style_2060_label') or '命中')[:4]}")
+        if row.get("in_screen_1854") == "Y":
+            style.append(f"18/54-{(row.get('screen_style_1854_label') or '命中')[:4]}")
+        style = "/".join(style)[:18] or row["screen_style_label"][:6]
         structure = row["structure_label"] or "—"
         theme = row["primary_theme"] or "—"
         print(
@@ -1140,10 +1387,17 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
 
     rows_html = []
     for candidate in top:
+        route_parts = []
+        if candidate.get("in_screen_2060") == "Y":
+            route_parts.append(f"MA20/60 {candidate.get('screen_style_2060_label') or '命中'}")
+        if candidate.get("in_screen_1854") == "Y":
+            route_parts.append(f"MA18/54 {candidate.get('screen_style_1854_label') or '命中'}")
         rows_html.append(
             "<tr>"
             f"<td><strong>{safe_html(candidate['code'])} {safe_html(candidate['name'])}</strong>"
-            f"<div class=\"subline\">Screen {candidate['screen_score']:.2f} / 策略 {candidate['selection_score']:.2f} / 買點 {candidate['buy_point_score']:.2f}</div></td>"
+            f"<div class=\"subline\">Screen {candidate['screen_score']:.2f} / 策略 {candidate['selection_score']:.2f} / 買點 {candidate['buy_point_score']:.2f}"
+            + (f" / {'；'.join(route_parts)}" if route_parts else "")
+            + "</div></td>"
             f"<td>{safe_html(candidate['structure_label'] or '—')}</td>"
             f"<td>{safe_html(candidate['primary_theme'] or '一般')}</td>"
             f"<td>{safe_html('Focus' if candidate['focus_candidate'] == 'Y' else candidate['screen_grade'])}</td>"
@@ -1161,10 +1415,10 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
         + f"<a class=\"chip-button active\" href=\"web/early_breakout/early_breakout_latest.html\">查看完整早期起漲報表 {safe_html(screen_date)}</a>"
         + "</div>"
         + "<div class=\"metric-grid\">"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">strict 主名單</div></article>"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">早期 / 續攻</div><div class=\"metric-value\">{review_summary.get('early_candidate_count', 0)} / {review_summary.get('continuation_candidate_count', 0)}</div><div class=\"subline\">兩種型態拆分</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">目前候選</div><div class=\"metric-value\">{len(candidates)}</div><div class=\"subline\">兩組 tab 合併名單</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">20/60 與 18/54</div><div class=\"metric-value\">{review_summary.get('candidate_count', 0)} / {review_summary.get('candidate_count_1854', 0)}</div><div class=\"subline\">兩組均線主名單</div></article>"
         + f"<article class=\"metric-card\"><div class=\"metric-label\">核心條件</div><div class=\"metric-value\">{len([item for item in condition_stats if item['rule_role'] == 'core'])}</div><div class=\"subline\">命中率 >= 70%</div></article>"
-        + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">strict {review_summary.get('candidate_count', 0)} 檔 / 寬版 {review_summary.get('broad_candidate_count', 0)} 檔</div></article>"
+        + f"<article class=\"metric-card\"><div class=\"metric-label\">寬鬆度</div><div class=\"metric-value\">{safe_html(review_summary.get('breadth_label', '-'))}</div><div class=\"subline\">合併 {review_summary.get('candidate_union_count', 0)} 檔 / 寬版 {review_summary.get('broad_candidate_count', 0)} 檔</div></article>"
         + "</div>"
         + f"<div class=\"empty\" style=\"margin-bottom:14px;\"><strong>本次核心：</strong> {safe_html(core_line)}<br><strong>和前次相比：</strong> {safe_html(compare_line)}<br><strong>月檢視：</strong> {review_line}</div>"
         + "<div class=\"table-shell\"><table><thead><tr><th>股票</th><th>結構</th><th>題材</th><th>等級</th></tr></thead><tbody>"
@@ -1208,6 +1462,10 @@ def main():
     args = parser.parse_args()
 
     dates, rows_by_date, series_by_code = load_history_snapshots()
+    _, daily_series_by_code = load_daily_price_series()
+    for code_rows in series_by_code.values():
+        for row in code_rows:
+            hydrate_alt_metrics(row, daily_series_by_code)
     if len(dates) < 5:
         print("[ERROR] history snapshots not enough.")
         sys.exit(1)
@@ -1238,14 +1496,17 @@ def main():
     current_rows = load_csv(latest_path)
     for row in current_rows:
         row["_date"] = screen_date
+        hydrate_alt_metrics(row, daily_series_by_code)
     broad_screened = screen_candidates(current_rows, condition_stats, strict_mode=False)
-    screened = screen_candidates(current_rows, condition_stats, strict_mode=True)
-    top_display = screened[:args.top]
+    screened = screen_candidates(current_rows, condition_stats, strict_mode=True, variant=VARIANT_2060)
+    screened_1854 = screen_candidates(current_rows, condition_stats, strict_mode=True, variant=VARIANT_1854)
+    combined_screened = merge_screened_variants(screened, screened_1854)
+    top_display = combined_screened[:args.top]
 
     identified_count = sum(1 for row in launch_rows if row["launch_status"] == "identified")
     window_start_count = sum(1 for row in launch_rows if row["launch_status"] == "window_start")
     fallback_count = sum(1 for row in launch_rows if row["launch_status"] == "fallback")
-    focus_count = sum(1 for row in screened if row["focus_candidate"] == "Y")
+    focus_count = sum(1 for row in combined_screened if row["focus_candidate"] == "Y")
 
     common_csv = HISTORY / f"early_breakout_common_conditions_{study_start}_{study_end}.csv"
     common_rows = []
@@ -1283,6 +1544,8 @@ def main():
         launch_rows,
         condition_stats,
         screened,
+        screened_1854,
+        combined_screened,
         broad_screened,
         current_rows,
         previous_meta,
@@ -1301,7 +1564,9 @@ def main():
         print("[INFO] Previous comparison: none")
     print(f"[INFO] Screening snapshot: {latest_path.name}")
     print(f"[INFO] Broad screen: {len(broad_screened)}")
-    print(f"[INFO] Strict screen: {len(screened)} (focus {focus_count})")
+    print(f"[INFO] Strict screen MA20/60: {len(screened)}")
+    print(f"[INFO] Strict screen MA18/54: {len(screened_1854)}")
+    print(f"[INFO] Combined screen: {len(combined_screened)} (focus {focus_count})")
     print()
     print_console_summary(top_display)
 
@@ -1341,6 +1606,8 @@ def main():
     screen_fields = [
         "rank", "screen_grade", "focus_candidate", "screen_score",
         "screen_style", "screen_style_label",
+        "in_screen_2060", "focus_candidate_2060", "screen_style_2060", "screen_style_2060_label",
+        "in_screen_1854", "focus_candidate_1854", "screen_style_1854", "screen_style_1854_label",
         "core_match_count", "required_core_count", "support_match_count",
         "selection_score", "buy_point_score",
         "code", "name", "market", "industry", "current_price",
@@ -1352,7 +1619,7 @@ def main():
         "drawdown_from_high60_pct", "liquidity_score", "financial_quality_score",
         "matched_conditions", "missing_core_conditions", "screen_reason",
     ]
-    write_csv(report_csv, screen_fields, screened)
+    write_csv(report_csv, screen_fields, combined_screened)
     latest_csv.write_text(report_csv.read_text(encoding="utf-8-sig"), encoding="utf-8-sig")
     report_summary_json.write_text(
         json.dumps(review_summary, ensure_ascii=False, indent=2),
@@ -1383,7 +1650,7 @@ def main():
         identified_count=identified_count,
         window_start_count=window_start_count,
         fallback_count=fallback_count,
-        candidate_count=len(screened),
+        candidate_count=len(combined_screened),
         focus_count=focus_count,
         breadth_label=review_summary["breadth_label"],
         broad_candidate_count=review_summary["broad_candidate_count"],
@@ -1397,7 +1664,7 @@ def main():
     latest_html.write_text(html_content, encoding="utf-8")
 
     panel_html = dashboard_panel_html(
-        screen_date, condition_stats, compared_rows, previous_meta, screened, review_summary
+        screen_date, condition_stats, compared_rows, previous_meta, combined_screened, review_summary
     )
     inject_panel_into_dashboard(panel_html)
 

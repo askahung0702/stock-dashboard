@@ -314,10 +314,14 @@ public class YahooTaiwanStockService {
             currentPrice = closes.get(closes.size() - 1).doubleValue();
         }
 
+        double movingAverage18 = averageLast(closes, 18);
         double movingAverage20 = averageLast(closes, 20);
+        double movingAverage54 = averageLast(closes, 54);
         double movingAverage60 = averageLast(closes, 60);
         double movingAverage120 = averageLast(closes, 120);
+        double return18DayPct = percentChange(valueDaysAgo(closes, 18), currentPrice);
         double return20DayPct = percentChange(valueDaysAgo(closes, 20), currentPrice);
+        double return54DayPct = percentChange(valueDaysAgo(closes, 54), currentPrice);
         double return60DayPct = percentChange(valueDaysAgo(closes, 60), currentPrice);
         long currentVolume = volumes.isEmpty() ? 0L : volumes.get(volumes.size() - 1).longValue();
         double averageVolume20 = volumes.isEmpty() ? 0D : averageLastLong(volumes, 20);
@@ -328,9 +332,10 @@ public class YahooTaiwanStockService {
         double rsi14 = computeRsi14(closes);
         double[] kd = computeStochasticKD(closes, highs.isEmpty() ? closes : highs, lows.isEmpty() ? closes : lows);
 
-        return new TechnicalSnapshotVO(currentPrice, movingAverage20, movingAverage60, movingAverage120,
-                return20DayPct, return60DayPct, currentVolume, averageVolume20, averageTradeValue20Billion,
-                averageLots20, volatility20Pct, drawdownFromHigh60Pct, rsi14, kd[0], kd[1]);
+        return new TechnicalSnapshotVO(currentPrice, movingAverage18, movingAverage20, movingAverage54,
+                movingAverage60, movingAverage120, return18DayPct, return20DayPct, return54DayPct,
+                return60DayPct, currentVolume, averageVolume20, averageTradeValue20Billion, averageLots20,
+                volatility20Pct, drawdownFromHigh60Pct, rsi14, kd[0], kd[1]);
     }
 
     private double parseCurrentPriceFromQuoteText(String text) {

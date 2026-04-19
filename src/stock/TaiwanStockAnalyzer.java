@@ -219,7 +219,7 @@ public class TaiwanStockAnalyzer {
                 new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8")));
         writer.write('\uFEFF');
         writer.println(
-                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma20,ma60,ma120,return_20d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
+                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
 
         for (StockAnalysisResultVO result : results) {
             writer.println(csv(result.getStock().getCode()) + "," + csv(result.getStock().getName()) + ","
@@ -280,8 +280,10 @@ public class TaiwanStockAnalyzer {
                     + format(result.getLatestQuarterEpsYoYPct()) + "," + result.getPositiveEpsQuarters() + ","
                     + result.getLatestOperatingCashFlow() + "," + result.getLatestFreeCashFlow() + ","
                     + result.getPositiveOperatingCashFlowQuarters() + "," + result.getPositiveFreeCashFlowQuarters()
-                    + "," + format(result.getMovingAverage20()) + "," + format(result.getMovingAverage60()) + ","
-                    + format(result.getMovingAverage120()) + "," + format(result.getReturn20DayPct()) + ","
+                    + "," + format(result.getMovingAverage18()) + "," + format(result.getMovingAverage20()) + ","
+                    + format(result.getMovingAverage54()) + "," + format(result.getMovingAverage60()) + ","
+                    + format(result.getMovingAverage120()) + "," + format(result.getReturn18DayPct()) + ","
+                    + format(result.getReturn20DayPct()) + "," + format(result.getReturn54DayPct()) + ","
                     + format(result.getReturn60DayPct()) + "," + format(result.getVolumeRatio()) + ","
                     + format(result.getAverageLots20()) + "," + format(result.getAverageTradeValue20Billion()) + ","
                     + format(result.getVolatility20Pct()) + "," + format(result.getDrawdownFromHigh60Pct()) + ","
@@ -1367,10 +1369,14 @@ public class TaiwanStockAnalyzer {
         double brokerNetRatioPct = broker.getNetVolumeRatioPct();
 
         double currentPrice = profile.getCurrentPrice() > 0D ? profile.getCurrentPrice() : technical.getCurrentPrice();
+        double movingAverage18 = technical.getMovingAverage18();
         double movingAverage20 = technical.getMovingAverage20();
+        double movingAverage54 = technical.getMovingAverage54();
         double movingAverage60 = technical.getMovingAverage60();
         double movingAverage120 = technical.getMovingAverage120();
+        double return18DayPct = technical.getReturn18DayPct();
         double return20DayPct = technical.getReturn20DayPct();
+        double return54DayPct = technical.getReturn54DayPct();
         double return60DayPct = technical.getReturn60DayPct();
         double volumeRatio = technical.getAverageVolume20() <= 0D ? 0D
                 : technical.getCurrentVolume() / technical.getAverageVolume20();
@@ -1515,10 +1521,14 @@ public class TaiwanStockAnalyzer {
         result.setLatestFreeCashFlow(latestFreeCashFlow);
         result.setPositiveOperatingCashFlowQuarters(positiveOperatingCashFlowQuarters);
         result.setPositiveFreeCashFlowQuarters(positiveFreeCashFlowQuarters);
+        result.setMovingAverage18(movingAverage18);
         result.setMovingAverage20(movingAverage20);
+        result.setMovingAverage54(movingAverage54);
         result.setMovingAverage60(movingAverage60);
         result.setMovingAverage120(movingAverage120);
+        result.setReturn18DayPct(return18DayPct);
         result.setReturn20DayPct(return20DayPct);
+        result.setReturn54DayPct(return54DayPct);
         result.setReturn60DayPct(return60DayPct);
         result.setVolumeRatio(volumeRatio);
         result.setAverageLots20(averageLots20);

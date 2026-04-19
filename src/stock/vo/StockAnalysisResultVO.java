@@ -30,10 +30,14 @@ public class StockAnalysisResultVO {
     private long latestFreeCashFlow;
     private int positiveOperatingCashFlowQuarters;
     private int positiveFreeCashFlowQuarters;
+    private double movingAverage18;
     private double movingAverage20;
+    private double movingAverage54;
     private double movingAverage60;
     private double movingAverage120;
+    private double return18DayPct;
     private double return20DayPct;
+    private double return54DayPct;
     private double return60DayPct;
     private double volumeRatio;
     private double averageLots20;
@@ -350,8 +354,24 @@ public class StockAnalysisResultVO {
         return movingAverage20;
     }
 
+    public double getMovingAverage18() {
+        return movingAverage18;
+    }
+
+    public void setMovingAverage18(double movingAverage18) {
+        this.movingAverage18 = movingAverage18;
+    }
+
     public void setMovingAverage20(double movingAverage20) {
         this.movingAverage20 = movingAverage20;
+    }
+
+    public double getMovingAverage54() {
+        return movingAverage54;
+    }
+
+    public void setMovingAverage54(double movingAverage54) {
+        this.movingAverage54 = movingAverage54;
     }
 
     public double getMovingAverage60() {
@@ -374,8 +394,24 @@ public class StockAnalysisResultVO {
         return return20DayPct;
     }
 
+    public double getReturn18DayPct() {
+        return return18DayPct;
+    }
+
+    public void setReturn18DayPct(double return18DayPct) {
+        this.return18DayPct = return18DayPct;
+    }
+
     public void setReturn20DayPct(double return20DayPct) {
         this.return20DayPct = return20DayPct;
+    }
+
+    public double getReturn54DayPct() {
+        return return54DayPct;
+    }
+
+    public void setReturn54DayPct(double return54DayPct) {
+        this.return54DayPct = return54DayPct;
     }
 
     public double getReturn60DayPct() {
