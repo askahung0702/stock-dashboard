@@ -2,6 +2,23 @@
 setlocal
 
 cd /d "%~dp0"
+set "EXIT_CODE=0"
+set "LOCK_DIR=%~dp0.run_stock_analysis.lock"
+
+if exist "%LOCK_DIR%" (
+    echo Another run is already in progress. Skip duplicated launch.
+    set "EXIT_CODE=9"
+    goto cleanup
+)
+
+mkdir "%LOCK_DIR%" >nul 2>nul
+if errorlevel 1 (
+    echo Cannot acquire run lock. Skip duplicated launch.
+    set "EXIT_CODE=9"
+    goto cleanup
+)
+set "LOCK_ACQUIRED=1"
+> "%LOCK_DIR%\started_at.txt" echo %DATE% %TIME%
 
 set "JAVAC_CMD=javac"
 set "JAVA_CMD=java"
@@ -21,14 +38,33 @@ if exist "C:\Progra~1\Java\jdk1.8.0_202\bin\javac.exe" if /I "%JAVAC_CMD%"=="jav
 )
 
 set "APP_CLASSPATH=lib\*"
+set "RUN_STAGE=full"
+set "RUN_STAGE_EXPLICIT="
+set "HAS_LIMITED_ARGS="
+
+if /I "%~1"=="close" (
+    set "RUN_STAGE=close"
+    set "RUN_STAGE_EXPLICIT=1"
+) else (
+    if /I "%~1"=="full" (
+        set "RUN_STAGE=full"
+        set "RUN_STAGE_EXPLICIT=1"
+    )
+)
+
+if defined RUN_STAGE_EXPLICIT (
+    if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+) else (
+    if not "%~1"=="" set "HAS_LIMITED_ARGS=1"
+)
 
 echo Compiling StockAnalysis.java...
 "%JAVAC_CMD%" -encoding UTF-8 -cp "%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockAnalysis.java
 if errorlevel 1 (
     echo.
     echo Compile failed.
-    if not defined STOCK_ANALYSIS_NO_PAUSE pause
-    exit /b 1
+    set "EXIT_CODE=1"
+    goto cleanup
 )
 
 echo.
@@ -48,20 +84,27 @@ if "%EXIT_CODE%"=="0" (
     if errorlevel 1 echo [WARN] early_breakout_screener.py exited with error, continuing...
 )
 
-if "%EXIT_CODE%"=="0" (
+if "%EXIT_CODE%"=="0" if /I not "%RUN_STAGE%"=="close" (
     echo.
     echo Running early_breakout_forward_returns.py...
     python "%~dp0scripts\early_breakout_forward_returns.py"
     if errorlevel 1 echo [WARN] early_breakout_forward_returns.py exited with error, continuing...
 )
 
+if "%EXIT_CODE%"=="0" if /I not "%RUN_STAGE%"=="close" (
+    echo.
+    echo Running early_breakout_portfolio_tracker.py...
+    python "%~dp0scripts\early_breakout_portfolio_tracker.py"
+    if errorlevel 1 echo [WARN] early_breakout_portfolio_tracker.py exited with error, continuing...
+)
+
 if "%EXIT_CODE%"=="0" (
-    if "%~1"=="" (
+    if not defined HAS_LIMITED_ARGS (
         if defined STOCK_SKIP_AUTO_PUSH (
             echo Auto push skipped because STOCK_SKIP_AUTO_PUSH is set.
         ) else (
             echo Auto-pushing site updates to GitHub...
-            "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\auto_git_push.ps1" -Mode analysis
+            "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\auto_git_push.ps1" -Mode %RUN_STAGE%
             if errorlevel 1 (
                 set "EXIT_CODE=%ERRORLEVEL%"
                 echo Auto push failed with code %EXIT_CODE%.
@@ -72,5 +115,7 @@ if "%EXIT_CODE%"=="0" (
     )
 )
 
+:cleanup
+if defined LOCK_ACQUIRED rd /s /q "%LOCK_DIR%" >nul 2>nul
 if not defined STOCK_ANALYSIS_NO_PAUSE pause
 exit /b %EXIT_CODE%

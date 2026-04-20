@@ -43,6 +43,7 @@ public class StockAnalysisResultVO {
     private double averageLots20;
     private double averageTradeValue20Billion;
     private double volatility20Pct;
+    private double atr20;
     private double drawdownFromHigh60Pct;
     private String industry;
     private double peerAveragePe;
@@ -65,6 +66,15 @@ public class StockAnalysisResultVO {
     private double valuationScore;
     private double technicalScore;
     private double financialQualityScore;
+    private double valuationIndustryPercentile;
+    private double financialQualityIndustryPercentile;
+    private double grossMarginIndustryPercentile;
+    private double operatingMarginIndustryPercentile;
+    private double roaIndustryPercentile;
+    private double roeIndustryPercentile;
+    private double pegIndustryPercentile;
+    private double relativePeIndustryPercentile;
+    private double nonOperatingIndustryPercentile;
     private double rawScore;
     private double selectionScore;
     private double momentumScore;
@@ -94,13 +104,23 @@ public class StockAnalysisResultVO {
     private double oneOffRiskScore;
     private double suggestedStopPrice;
     private double suggestedStopPct;
+    private double suggestedTrailingStopPrice;
     private double suggestedTargetPrice;
     private double upsidePotentialPct;
+    private double sellSignalScore;
+    private String sellSignalLabel;
+    private boolean reducePositionSize;
     private double buyPointScore;
     private double dataConfidence;
     private boolean selectionQualified;
     private double score;
     private String analysisNote;
+    private String companySummary;
+    private String recentNewsBrief;
+    private String transformationHint;
+    private String practicalAdvice;
+    private double adviceConfidence;
+    private String marketRegime;
     private String primaryTheme;
     private String themeTags;
     private String newsSummary;
@@ -454,6 +474,14 @@ public class StockAnalysisResultVO {
         this.volatility20Pct = volatility20Pct;
     }
 
+    public double getAtr20() {
+        return atr20;
+    }
+
+    public void setAtr20(double atr20) {
+        this.atr20 = atr20;
+    }
+
     public double getDrawdownFromHigh60Pct() {
         return drawdownFromHigh60Pct;
     }
@@ -628,6 +656,78 @@ public class StockAnalysisResultVO {
 
     public void setFinancialQualityScore(double financialQualityScore) {
         this.financialQualityScore = financialQualityScore;
+    }
+
+    public double getValuationIndustryPercentile() {
+        return valuationIndustryPercentile;
+    }
+
+    public void setValuationIndustryPercentile(double valuationIndustryPercentile) {
+        this.valuationIndustryPercentile = valuationIndustryPercentile;
+    }
+
+    public double getFinancialQualityIndustryPercentile() {
+        return financialQualityIndustryPercentile;
+    }
+
+    public void setFinancialQualityIndustryPercentile(double financialQualityIndustryPercentile) {
+        this.financialQualityIndustryPercentile = financialQualityIndustryPercentile;
+    }
+
+    public double getGrossMarginIndustryPercentile() {
+        return grossMarginIndustryPercentile;
+    }
+
+    public void setGrossMarginIndustryPercentile(double grossMarginIndustryPercentile) {
+        this.grossMarginIndustryPercentile = grossMarginIndustryPercentile;
+    }
+
+    public double getOperatingMarginIndustryPercentile() {
+        return operatingMarginIndustryPercentile;
+    }
+
+    public void setOperatingMarginIndustryPercentile(double operatingMarginIndustryPercentile) {
+        this.operatingMarginIndustryPercentile = operatingMarginIndustryPercentile;
+    }
+
+    public double getRoaIndustryPercentile() {
+        return roaIndustryPercentile;
+    }
+
+    public void setRoaIndustryPercentile(double roaIndustryPercentile) {
+        this.roaIndustryPercentile = roaIndustryPercentile;
+    }
+
+    public double getRoeIndustryPercentile() {
+        return roeIndustryPercentile;
+    }
+
+    public void setRoeIndustryPercentile(double roeIndustryPercentile) {
+        this.roeIndustryPercentile = roeIndustryPercentile;
+    }
+
+    public double getPegIndustryPercentile() {
+        return pegIndustryPercentile;
+    }
+
+    public void setPegIndustryPercentile(double pegIndustryPercentile) {
+        this.pegIndustryPercentile = pegIndustryPercentile;
+    }
+
+    public double getRelativePeIndustryPercentile() {
+        return relativePeIndustryPercentile;
+    }
+
+    public void setRelativePeIndustryPercentile(double relativePeIndustryPercentile) {
+        this.relativePeIndustryPercentile = relativePeIndustryPercentile;
+    }
+
+    public double getNonOperatingIndustryPercentile() {
+        return nonOperatingIndustryPercentile;
+    }
+
+    public void setNonOperatingIndustryPercentile(double nonOperatingIndustryPercentile) {
+        this.nonOperatingIndustryPercentile = nonOperatingIndustryPercentile;
     }
 
     public double getScore() {
@@ -870,6 +970,14 @@ public class StockAnalysisResultVO {
         this.suggestedStopPct = suggestedStopPct;
     }
 
+    public double getSuggestedTrailingStopPrice() {
+        return suggestedTrailingStopPrice;
+    }
+
+    public void setSuggestedTrailingStopPrice(double suggestedTrailingStopPrice) {
+        this.suggestedTrailingStopPrice = suggestedTrailingStopPrice;
+    }
+
     public double getSuggestedTargetPrice() {
         return suggestedTargetPrice;
     }
@@ -884,6 +992,30 @@ public class StockAnalysisResultVO {
 
     public void setUpsidePotentialPct(double upsidePotentialPct) {
         this.upsidePotentialPct = upsidePotentialPct;
+    }
+
+    public double getSellSignalScore() {
+        return sellSignalScore;
+    }
+
+    public void setSellSignalScore(double sellSignalScore) {
+        this.sellSignalScore = sellSignalScore;
+    }
+
+    public String getSellSignalLabel() {
+        return sellSignalLabel;
+    }
+
+    public void setSellSignalLabel(String sellSignalLabel) {
+        this.sellSignalLabel = sellSignalLabel;
+    }
+
+    public boolean isReducePositionSize() {
+        return reducePositionSize;
+    }
+
+    public void setReducePositionSize(boolean reducePositionSize) {
+        this.reducePositionSize = reducePositionSize;
     }
 
     public double getBuyPointScore() {
@@ -916,6 +1048,54 @@ public class StockAnalysisResultVO {
 
     public void setAnalysisNote(String analysisNote) {
         this.analysisNote = analysisNote;
+    }
+
+    public String getCompanySummary() {
+        return companySummary;
+    }
+
+    public void setCompanySummary(String companySummary) {
+        this.companySummary = companySummary;
+    }
+
+    public String getRecentNewsBrief() {
+        return recentNewsBrief;
+    }
+
+    public void setRecentNewsBrief(String recentNewsBrief) {
+        this.recentNewsBrief = recentNewsBrief;
+    }
+
+    public String getTransformationHint() {
+        return transformationHint;
+    }
+
+    public void setTransformationHint(String transformationHint) {
+        this.transformationHint = transformationHint;
+    }
+
+    public String getPracticalAdvice() {
+        return practicalAdvice;
+    }
+
+    public void setPracticalAdvice(String practicalAdvice) {
+        this.practicalAdvice = practicalAdvice;
+    }
+
+    public double getAdviceConfidence() {
+        return adviceConfidence;
+    }
+
+    public void setAdviceConfidence(double adviceConfidence) {
+        this.adviceConfidence = adviceConfidence;
+    }
+
+    public String getMarketRegime() {
+        return marketRegime;
+    }
+
+    public void setMarketRegime(String marketRegime) {
+        this.marketRegime = marketRegime;
     }
 
     public String getPrimaryTheme() {

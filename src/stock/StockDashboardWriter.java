@@ -300,6 +300,11 @@ public class StockDashboardWriter {
             result.setNewsSourceCount(point.newsSourceCount);
             result.setNewsOfficialSourceCount(point.newsOfficialSourceCount);
             result.setNewsMediaSourceCount(point.newsMediaSourceCount);
+            result.setCompanySummary(point.companySummary);
+            result.setRecentNewsBrief(point.recentNewsBrief);
+            result.setTransformationHint(point.transformationHint);
+            result.setPracticalAdvice(point.practicalAdvice);
+            result.setAdviceConfidence(point.adviceConfidence);
             result.setSignalType(point.signalType);
             result.setSignalHorizonDays(point.signalHorizonDays);
             result.setEntryRule(point.entryRule);
@@ -967,6 +972,11 @@ public class StockDashboardWriter {
             point.newsSourceCount = row.newsSourceCount;
             point.newsOfficialSourceCount = row.newsOfficialSourceCount;
             point.newsMediaSourceCount = row.newsMediaSourceCount;
+            point.companySummary = row.companySummary;
+            point.recentNewsBrief = row.recentNewsBrief;
+            point.transformationHint = row.transformationHint;
+            point.practicalAdvice = row.practicalAdvice;
+            point.adviceConfidence = row.adviceConfidence;
             point.likely = row.likely;
             converted.rows.add(point);
             converted.byCode.put(point.code, point);
@@ -1080,6 +1090,11 @@ public class StockDashboardWriter {
                         .parseDouble(valueAt(fields, indexes, "news_official_source_count"));
                 point.newsMediaSourceCount = (int) NumberParser
                         .parseDouble(valueAt(fields, indexes, "news_media_source_count"));
+                point.companySummary = valueAt(fields, indexes, "company_summary");
+                point.recentNewsBrief = valueAt(fields, indexes, "recent_news_brief");
+                point.transformationHint = valueAt(fields, indexes, "transformation_hint");
+                point.practicalAdvice = valueAt(fields, indexes, "practical_advice");
+                point.adviceConfidence = NumberParser.parseDouble(valueAt(fields, indexes, "advice_confidence"));
                 point.signalType = valueAt(fields, indexes, "signal_type");
                 point.signalHorizonDays = (int) NumberParser.parseDouble(valueAt(fields, indexes, "signal_horizon_days"));
                 point.entryRule = valueAt(fields, indexes, "entry_rule");
@@ -1182,6 +1197,11 @@ public class StockDashboardWriter {
             point.newsSourceCount = result.getNewsSourceCount();
             point.newsOfficialSourceCount = result.getNewsOfficialSourceCount();
             point.newsMediaSourceCount = result.getNewsMediaSourceCount();
+            point.companySummary = result.getCompanySummary();
+            point.recentNewsBrief = result.getRecentNewsBrief();
+            point.transformationHint = result.getTransformationHint();
+            point.practicalAdvice = result.getPracticalAdvice();
+            point.adviceConfidence = result.getAdviceConfidence();
             point.signalType = result.getSignalType();
             point.signalHorizonDays = result.getSignalHorizonDays();
             point.entryRule = result.getEntryRule();
@@ -1760,6 +1780,11 @@ public class StockDashboardWriter {
         private int newsSourceCount;
         private int newsOfficialSourceCount;
         private int newsMediaSourceCount;
+        private String companySummary;
+        private String recentNewsBrief;
+        private String transformationHint;
+        private String practicalAdvice;
+        private double adviceConfidence;
         private String signalType;
         private int signalHorizonDays;
         private String entryRule;

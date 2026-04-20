@@ -110,6 +110,16 @@ public class StockApiRenderer {
         String marketAlertText = buildMarketAlertText(marketAlert, marketDangerScore, newsRiskCount, likelyCount,
                 prevLikelyCount, averageSelectionScore, prevAverageSelectionScore);
         JSONArray themes = buildThemeHeatJson(snapshot.rows, prevRows);
+        MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(snapshot.rows, prevRows,
+                snapshots, snapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
+        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        MarketRegime marketRegime = resolveSnapshotMarketRegime(snapshot.rows, breadthSnapshot);
+        MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
+                marketIndexSnapshot);
+        MarketReversalSignal marketReversal = new MarketReversalAnalyzer().analyze(marketRegime, breadthSnapshot,
+                marketIndexSnapshot);
+        MarketWeaknessReport marketWeakness = new MarketWeaknessAnalyzer().analyze(snapshots, snapshot.date,
+                snapshot.rows, breadthSnapshot, marketIndexSnapshot);
 
         // 市場動能訊號（基於本系統多因子評分）
         String marketSignal;
@@ -167,6 +177,13 @@ public class StockApiRenderer {
         result.put("marketDangerScore", Double.valueOf(Math.round(marketDangerScore * 10) / 10.0));
         result.put("marketAlert",       marketAlert);
         result.put("marketAlertText",   marketAlertText);
+        result.put("marketRegime",      marketRegime.name());
+        result.put("marketRegimeLabel", marketRegime.getLabel());
+        result.put("marketBreadth",     marketBreadthToJson(breadthSnapshot));
+        result.put("marketIndex",       marketIndexToJson(marketIndexSnapshot));
+        result.put("marketAdvisor",     marketAdvisorToJson(marketAdvisor));
+        result.put("marketReversal",    marketReversalToJson(marketReversal));
+        result.put("marketWeakness",    marketWeaknessToJson(marketWeakness));
         result.put("themes",            themes);
         result.put("rows",              rows);
         return result.toJSONString();
@@ -274,6 +291,16 @@ public class StockApiRenderer {
         String marketAlertText = buildMarketAlertText(marketAlert, marketDangerScore, newsRiskCount, likelyCount,
                 prevLikelyCount, averageSelectionScore, prevAverageSelectionScore);
         JSONArray themes = buildThemeHeatJson(currentSnapshot.rows, prevRows);
+        MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(currentSnapshot.rows, prevRows,
+                snapshots, currentSnapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
+        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        MarketRegime marketRegime = resolveSnapshotMarketRegime(currentSnapshot.rows, breadthSnapshot);
+        MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
+                marketIndexSnapshot);
+        MarketReversalSignal marketReversal = new MarketReversalAnalyzer().analyze(marketRegime, breadthSnapshot,
+                marketIndexSnapshot);
+        MarketWeaknessReport marketWeakness = new MarketWeaknessAnalyzer().analyze(snapshots, currentSnapshot.date,
+                currentSnapshot.rows, breadthSnapshot, marketIndexSnapshot);
 
         String marketSignal;
         String marketSignalText;
@@ -330,6 +357,13 @@ public class StockApiRenderer {
         result.put("marketDangerScore", Double.valueOf(Math.round(marketDangerScore * 10) / 10.0));
         result.put("marketAlert", marketAlert);
         result.put("marketAlertText", marketAlertText);
+        result.put("marketRegime", marketRegime.name());
+        result.put("marketRegimeLabel", marketRegime.getLabel());
+        result.put("marketBreadth", marketBreadthToJson(breadthSnapshot));
+        result.put("marketIndex", marketIndexToJson(marketIndexSnapshot));
+        result.put("marketAdvisor", marketAdvisorToJson(marketAdvisor));
+        result.put("marketReversal", marketReversalToJson(marketReversal));
+        result.put("marketWeakness", marketWeaknessToJson(marketWeakness));
         result.put("themes", themes);
         result.put("rows", rows);
         return result.toJSONString();
@@ -431,6 +465,11 @@ public class StockApiRenderer {
         obj.put("eventFreshnessDays",              Long.valueOf(row.eventFreshnessDays));
         obj.put("eventTypeSummary",                row.eventTypeSummary);
         obj.put("newsSummary",                     row.newsSummary);
+        obj.put("recentNewsBrief",                row.recentNewsBrief);
+        obj.put("companySummary",                 row.companySummary);
+        obj.put("transformationHint",             row.transformationHint);
+        obj.put("practicalAdvice",                row.practicalAdvice);
+        obj.put("adviceConfidence",               Double.valueOf(row.adviceConfidence));
         obj.put("structureScore",                  Double.valueOf(row.structureScore));
         obj.put("structureLabel",                  row.structureLabel);
         obj.put("riskRewardScore",                 Double.valueOf(row.riskRewardScore));
@@ -445,8 +484,12 @@ public class StockApiRenderer {
         obj.put("turnaroundReason",                row.turnaroundReason);
         obj.put("suggestedStopPrice",              Double.valueOf(row.suggestedStopPrice));
         obj.put("suggestedStopPct",                Double.valueOf(row.suggestedStopPct));
+        obj.put("suggestedTrailingStopPrice",      Double.valueOf(row.suggestedTrailingStopPrice));
         obj.put("suggestedTargetPrice",            Double.valueOf(row.suggestedTargetPrice));
         obj.put("upsidePotentialPct",              Double.valueOf(row.upsidePotentialPct));
+        obj.put("sellSignalScore",                 Double.valueOf(row.sellSignalScore));
+        obj.put("sellSignalLabel",                 row.sellSignalLabel);
+        obj.put("reducePositionSize",              Boolean.valueOf(row.reducePositionSize));
         obj.put("buyPointScore",                   Double.valueOf(buyPointScoreOf(row)));
         obj.put("buyPointLabel",                   row.buyPointLabel);
         obj.put("buyPointReason",                  row.buyPointReason);
@@ -466,6 +509,7 @@ public class StockApiRenderer {
         obj.put("maxDrawdownPenalty",              Double.valueOf(row.maxDrawdownPenalty));
         obj.put("backtestCohort",                  row.backtestCohort);
         obj.put("selectionQualified",              Boolean.valueOf(row.selectionQualified));
+        obj.put("marketRegime",                    row.marketRegime);
         obj.put("eligibilityReason",               row.eligibilityReason);
         obj.put("postClosePriorityScore",          Double.valueOf(row.postClosePriorityScore));
         obj.put("postCloseCategory",               row.postCloseCategory);
@@ -485,6 +529,7 @@ public class StockApiRenderer {
         obj.put("averageLots20",                   Double.valueOf(row.averageLots20));
         obj.put("averageTradeValue20Billion",      Double.valueOf(row.averageTradeValue20Billion));
         obj.put("volatility20Pct",                 Double.valueOf(row.volatility20Pct));
+        obj.put("atr20",                           Double.valueOf(row.atr20));
         obj.put("drawdownFromHigh60Pct",           Double.valueOf(row.drawdownFromHigh60Pct));
         obj.put("revenueScore",                    Double.valueOf(row.revenueScore));
         obj.put("chipsScore",                      Double.valueOf(row.chipsScore));
@@ -492,6 +537,17 @@ public class StockApiRenderer {
         obj.put("valuationScore",                  Double.valueOf(row.valuationScore));
         obj.put("technicalScore",                  Double.valueOf(row.technicalScore));
         obj.put("financialQualityScore",           Double.valueOf(row.financialQualityScore));
+        obj.put("valuationIndustryPercentile",     Double.valueOf(row.valuationIndustryPercentile));
+        obj.put("financialQualityIndustryPercentile",
+                Double.valueOf(row.financialQualityIndustryPercentile));
+        obj.put("grossMarginIndustryPercentile",   Double.valueOf(row.grossMarginIndustryPercentile));
+        obj.put("operatingMarginIndustryPercentile",
+                Double.valueOf(row.operatingMarginIndustryPercentile));
+        obj.put("roaIndustryPercentile",           Double.valueOf(row.roaIndustryPercentile));
+        obj.put("roeIndustryPercentile",           Double.valueOf(row.roeIndustryPercentile));
+        obj.put("pegIndustryPercentile",           Double.valueOf(row.pegIndustryPercentile));
+        obj.put("relativePeIndustryPercentile",    Double.valueOf(row.relativePeIndustryPercentile));
+        obj.put("nonOperatingIndustryPercentile",  Double.valueOf(row.nonOperatingIndustryPercentile));
         obj.put("fiveDayInstitutionalNetRatioPct", Double.valueOf(row.fiveDayInstitutionalNetRatioPct));
         obj.put("brokerNetRatioPct",               Double.valueOf(row.brokerNetRatioPct));
         obj.put("rsi14",                           Double.valueOf(row.rsi14));
@@ -585,6 +641,168 @@ public class StockApiRenderer {
             parts.add("目前未見全面性風險擴散");
         }
         return marketAlert + "：" + join(parts, "，");
+    }
+
+    private MarketRegime resolveSnapshotMarketRegime(List<SnapshotRow> rows, MarketBreadthSnapshot breadthSnapshot) {
+        if (rows != null) {
+            for (SnapshotRow row : rows) {
+                String label = row.marketRegime == null ? "" : row.marketRegime.trim();
+                if (label.length() == 0) {
+                    continue;
+                }
+                if (MarketRegime.BULL_TREND.getLabel().equals(label)) {
+                    return MarketRegime.BULL_TREND;
+                }
+                if (MarketRegime.BEAR_CORRECTION.getLabel().equals(label)) {
+                    return MarketRegime.BEAR_CORRECTION;
+                }
+                if (MarketRegime.PANIC_SELLOFF.getLabel().equals(label)) {
+                    return MarketRegime.PANIC_SELLOFF;
+                }
+                if (MarketRegime.RANGE_BOUND.getLabel().equals(label) || "區間盤整".equals(label)) {
+                    return MarketRegime.RANGE_BOUND;
+                }
+            }
+        }
+        if (breadthSnapshot == null) {
+            return MarketRegime.RANGE_BOUND;
+        }
+        if (breadthSnapshot.getAboveMa20Pct() < 18D || breadthSnapshot.getAdr() < 0.62D) {
+            return MarketRegime.PANIC_SELLOFF;
+        }
+        if (breadthSnapshot.getAboveMa20Pct() < 32D || breadthSnapshot.getAdr() < 0.9D
+                || breadthSnapshot.getBreadthDeteriorationDays() >= 3) {
+            return MarketRegime.BEAR_CORRECTION;
+        }
+        if (breadthSnapshot.getAboveMa20Pct() >= 58D && breadthSnapshot.getAdr() >= 1.15D
+                && breadthSnapshot.getScoreUpPct() >= 46D) {
+            return MarketRegime.BULL_TREND;
+        }
+        return MarketRegime.RANGE_BOUND;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketBreadthToJson(MarketBreadthSnapshot breadthSnapshot) {
+        JSONObject obj = new JSONObject();
+        if (breadthSnapshot == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.TRUE);
+        obj.put("total", Long.valueOf(breadthSnapshot.getTotal()));
+        obj.put("advancingCount", Long.valueOf(breadthSnapshot.getAdvancingCount()));
+        obj.put("decliningCount", Long.valueOf(breadthSnapshot.getDecliningCount()));
+        obj.put("unchangedCount", Long.valueOf(breadthSnapshot.getUnchangedCount()));
+        obj.put("adr", Double.valueOf(round1(breadthSnapshot.getAdr())));
+        obj.put("aboveMa20Pct", Double.valueOf(round1(breadthSnapshot.getAboveMa20Pct())));
+        obj.put("aboveMa18Pct", Double.valueOf(round1(breadthSnapshot.getAboveMa18Pct())));
+        obj.put("belowMa20Pct", Double.valueOf(round1(breadthSnapshot.getBelowMa20Pct())));
+        obj.put("likelyPct", Double.valueOf(round1(breadthSnapshot.getLikelyPct())));
+        obj.put("qualifiedPct", Double.valueOf(round1(breadthSnapshot.getQualifiedPct())));
+        obj.put("buyReadyPct", Double.valueOf(round1(breadthSnapshot.getBuyReadyPct())));
+        obj.put("scoreUpPct", Double.valueOf(round1(breadthSnapshot.getScoreUpPct())));
+        obj.put("breadthDeteriorationDays", Long.valueOf(breadthSnapshot.getBreadthDeteriorationDays()));
+        obj.put("breadthWeakening", Boolean.valueOf(breadthSnapshot.isBreadthWeakening()));
+        obj.put("breadthHealthy", Boolean.valueOf(breadthSnapshot.isBreadthHealthy()));
+        obj.put("averageSelectionScore", Double.valueOf(round1(breadthSnapshot.getAverageSelectionScore())));
+        obj.put("averageNewsRiskScore", Double.valueOf(round1(breadthSnapshot.getAverageNewsRiskScore())));
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketIndexToJson(MarketIndexSnapshot marketIndexSnapshot) {
+        JSONObject obj = new JSONObject();
+        if (marketIndexSnapshot == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.valueOf(marketIndexSnapshot.isAvailable()));
+        obj.put("symbol", marketIndexSnapshot.getSymbol());
+        obj.put("name", marketIndexSnapshot.getName());
+        obj.put("source", marketIndexSnapshot.getSource());
+        obj.put("errorMessage", marketIndexSnapshot.getErrorMessage());
+        obj.put("currentPrice", Double.valueOf(round1(marketIndexSnapshot.getCurrentPrice())));
+        obj.put("movingAverage20", Double.valueOf(round1(marketIndexSnapshot.getMovingAverage20())));
+        obj.put("movingAverage60", Double.valueOf(round1(marketIndexSnapshot.getMovingAverage60())));
+        obj.put("return20DayPct", Double.valueOf(round1(marketIndexSnapshot.getReturn20DayPct())));
+        obj.put("volumeRatio", Double.valueOf(round1(marketIndexSnapshot.getVolumeRatio())));
+        obj.put("macd", Double.valueOf(round1(marketIndexSnapshot.getMacd())));
+        obj.put("macdSignal", Double.valueOf(round1(marketIndexSnapshot.getMacdSignal())));
+        obj.put("macdHistogram", Double.valueOf(round1(marketIndexSnapshot.getMacdHistogram())));
+        obj.put("ma20Slope", Double.valueOf(round1(marketIndexSnapshot.getMa20Slope())));
+        obj.put("recent20High", Boolean.valueOf(marketIndexSnapshot.isRecent20High()));
+        obj.put("atr20Pct", Double.valueOf(round1(marketIndexSnapshot.getAtr20Pct())));
+        obj.put("atr60Pct", Double.valueOf(round1(marketIndexSnapshot.getAtr60Pct())));
+        obj.put("trendLabel", marketIndexSnapshot.getTrendLabel());
+        obj.put("divergenceLabel", marketIndexSnapshot.getDivergenceLabel());
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketAdvisorToJson(MarketAdvisorReport marketAdvisor) {
+        JSONObject obj = new JSONObject();
+        if (marketAdvisor == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.TRUE);
+        obj.put("regime", marketAdvisor.getRegime().name());
+        obj.put("regimeLabel", marketAdvisor.getRegime().getLabel());
+        obj.put("summary", marketAdvisor.getSummary());
+        obj.put("exposureMinPct", Long.valueOf(marketAdvisor.getExposureMinPct()));
+        obj.put("exposureMaxPct", Long.valueOf(marketAdvisor.getExposureMaxPct()));
+        obj.put("exposureGuidance", marketAdvisor.getExposureGuidance());
+        obj.put("strategyGuidance", marketAdvisor.getStrategyGuidance());
+        obj.put("atrMultiplier", Double.valueOf(round1(marketAdvisor.getAtrMultiplier())));
+        obj.put("riskGuidance", marketAdvisor.getRiskGuidance());
+        JSONArray preferredTabs = new JSONArray();
+        preferredTabs.addAll(marketAdvisor.getPreferredTabs());
+        JSONArray avoidTabs = new JSONArray();
+        avoidTabs.addAll(marketAdvisor.getAvoidTabs());
+        JSONArray alerts = new JSONArray();
+        alerts.addAll(marketAdvisor.getAlerts());
+        obj.put("preferredTabs", preferredTabs);
+        obj.put("avoidTabs", avoidTabs);
+        obj.put("alerts", alerts);
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketReversalToJson(MarketReversalSignal marketReversal) {
+        JSONObject obj = new JSONObject();
+        if (marketReversal == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.TRUE);
+        obj.put("score", Double.valueOf(round1(marketReversal.getScore())));
+        obj.put("label", marketReversal.getLabel());
+        obj.put("reason", marketReversal.getReason());
+        obj.put("riskRising", Boolean.valueOf(marketReversal.isRiskRising()));
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketWeaknessToJson(MarketWeaknessReport marketWeakness) {
+        JSONObject obj = new JSONObject();
+        if (marketWeakness == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.TRUE);
+        obj.put("warningCount", Long.valueOf(marketWeakness.getWarningCount()));
+        obj.put("breadthDivergence", Boolean.valueOf(marketWeakness.isBreadthDivergence()));
+        obj.put("breadthDivergenceReason", marketWeakness.getBreadthDivergenceReason());
+        obj.put("momentumBreakdown", Boolean.valueOf(marketWeakness.isMomentumBreakdown()));
+        obj.put("momentumBreakdownReason", marketWeakness.getMomentumBreakdownReason());
+        obj.put("newLowExpansion", Boolean.valueOf(marketWeakness.isNewLowExpansion()));
+        obj.put("newLowExpansionReason", marketWeakness.getNewLowExpansionReason());
+        obj.put("volatilityExpansion", Boolean.valueOf(marketWeakness.isVolatilityExpansion()));
+        obj.put("volatilityExpansionReason", marketWeakness.getVolatilityExpansionReason());
+        JSONArray alerts = new JSONArray();
+        alerts.addAll(marketWeakness.getAlerts());
+        obj.put("alerts", alerts);
+        return obj;
     }
 
     @SuppressWarnings("unchecked")

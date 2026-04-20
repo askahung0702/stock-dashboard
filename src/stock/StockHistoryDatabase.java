@@ -327,6 +327,11 @@ public class StockHistoryDatabase {
         row.newsSourceCount = (int) numberValue(rowObject.get("newsSourceCount"));
         row.newsOfficialSourceCount = (int) numberValue(rowObject.get("newsOfficialSourceCount"));
         row.newsMediaSourceCount = (int) numberValue(rowObject.get("newsMediaSourceCount"));
+        row.companySummary = safeText(rowObject.get("companySummary"));
+        row.recentNewsBrief = safeText(rowObject.get("recentNewsBrief"));
+        row.transformationHint = safeText(rowObject.get("transformationHint"));
+        row.practicalAdvice = safeText(rowObject.get("practicalAdvice"));
+        row.adviceConfidence = numberValue(rowObject.get("adviceConfidence"));
         row.structureScore = numberValue(rowObject.get("structureScore"));
         row.riskRewardScore = numberValue(rowObject.get("riskRewardScore"));
         row.riskRewardRatio = numberValue(rowObject.get("riskRewardRatio"));
@@ -337,17 +342,31 @@ public class StockHistoryDatabase {
         row.oneOffRiskScore = numberValue(rowObject.get("oneOffRiskScore"));
         row.suggestedStopPrice = numberValue(rowObject.get("suggestedStopPrice"));
         row.suggestedStopPct = numberValue(rowObject.get("suggestedStopPct"));
+        row.suggestedTrailingStopPrice = numberValue(rowObject.get("suggestedTrailingStopPrice"));
         row.suggestedTargetPrice = numberValue(rowObject.get("suggestedTargetPrice"));
         row.upsidePotentialPct = numberValue(rowObject.get("upsidePotentialPct"));
+        row.sellSignalScore = numberValue(rowObject.get("sellSignalScore"));
+        row.sellSignalLabel = safeText(rowObject.get("sellSignalLabel"));
+        row.reducePositionSize = booleanValue(rowObject.get("reducePositionSize"));
         row.buyPointScore = numberValue(rowObject.get("buyPointScore"));
         row.dataConfidence = numberValue(rowObject.get("dataConfidence"));
         row.selectionQualified = booleanValue(rowObject.get("selectionQualified"));
+        row.marketRegime = safeText(rowObject.get("marketRegime"));
         row.liquidityScore = numberValue(rowObject.get("liquidityScore"));
         row.revenueScore = numberValue(rowObject.get("revenueScore"));
         row.chipsScore = numberValue(rowObject.get("chipsScore"));
         row.valuationScore = numberValue(rowObject.get("valuationScore"));
         row.technicalScore = numberValue(rowObject.get("technicalScore"));
         row.financialQualityScore = numberValue(rowObject.get("financialQualityScore"));
+        row.valuationIndustryPercentile = numberValue(rowObject.get("valuationIndustryPercentile"));
+        row.financialQualityIndustryPercentile = numberValue(rowObject.get("financialQualityIndustryPercentile"));
+        row.grossMarginIndustryPercentile = numberValue(rowObject.get("grossMarginIndustryPercentile"));
+        row.operatingMarginIndustryPercentile = numberValue(rowObject.get("operatingMarginIndustryPercentile"));
+        row.roaIndustryPercentile = numberValue(rowObject.get("roaIndustryPercentile"));
+        row.roeIndustryPercentile = numberValue(rowObject.get("roeIndustryPercentile"));
+        row.pegIndustryPercentile = numberValue(rowObject.get("pegIndustryPercentile"));
+        row.relativePeIndustryPercentile = numberValue(rowObject.get("relativePeIndustryPercentile"));
+        row.nonOperatingIndustryPercentile = numberValue(rowObject.get("nonOperatingIndustryPercentile"));
         row.fiveDayInstitutionalNetRatioPct = numberValue(rowObject.get("fiveDayInstitutionalNetRatioPct"));
         row.brokerNetRatioPct = numberValue(rowObject.get("brokerNetRatioPct"));
         row.rsi14 = numberValue(rowObject.get("rsi14"));
@@ -365,6 +384,7 @@ public class StockHistoryDatabase {
         row.averageLots20 = numberValue(rowObject.get("averageLots20"));
         row.averageTradeValue20Billion = numberValue(rowObject.get("averageTradeValue20Billion"));
         row.volatility20Pct = numberValue(rowObject.get("volatility20Pct"));
+        row.atr20 = numberValue(rowObject.get("atr20"));
         row.drawdownFromHigh60Pct = numberValue(rowObject.get("drawdownFromHigh60Pct"));
         row.epsAccelerationPct = numberValue(rowObject.get("epsAccelerationPct"));
         row.peg = numberValue(rowObject.get("peg"));
@@ -471,11 +491,16 @@ public class StockHistoryDatabase {
         row.oneOffRiskScore = safeNumber(result.getOneOffRiskScore());
         row.suggestedStopPrice = safeNumber(result.getSuggestedStopPrice());
         row.suggestedStopPct = safeNumber(result.getSuggestedStopPct());
+        row.suggestedTrailingStopPrice = safeNumber(result.getSuggestedTrailingStopPrice());
         row.suggestedTargetPrice = safeNumber(result.getSuggestedTargetPrice());
         row.upsidePotentialPct = safeNumber(result.getUpsidePotentialPct());
+        row.sellSignalScore = safeNumber(result.getSellSignalScore());
+        row.sellSignalLabel = safeText(result.getSellSignalLabel());
+        row.reducePositionSize = result.isReducePositionSize();
         row.buyPointScore = safeNumber(result.getBuyPointScore());
         row.dataConfidence = safeNumber(result.getDataConfidence());
         row.selectionQualified = result.isSelectionQualified();
+        row.marketRegime = safeText(result.getMarketRegime());
         row.price = safeNumber(result.getCurrentPrice());
         row.volumeRatio = safeNumber(result.getVolumeRatio());
         row.return18DayPct = safeNumber(result.getReturn18DayPct());
@@ -490,6 +515,7 @@ public class StockHistoryDatabase {
         row.averageLots20 = safeNumber(result.getAverageLots20());
         row.averageTradeValue20Billion = safeNumber(result.getAverageTradeValue20Billion());
         row.volatility20Pct = safeNumber(result.getVolatility20Pct());
+        row.atr20 = safeNumber(result.getAtr20());
         row.drawdownFromHigh60Pct = safeNumber(result.getDrawdownFromHigh60Pct());
         row.liquidityScore = safeNumber(result.getLiquidityScore());
         row.revenueScore = safeNumber(result.getRevenueScore());
@@ -497,6 +523,15 @@ public class StockHistoryDatabase {
         row.valuationScore = safeNumber(result.getValuationScore());
         row.technicalScore = safeNumber(result.getTechnicalScore());
         row.financialQualityScore = safeNumber(result.getFinancialQualityScore());
+        row.valuationIndustryPercentile = safeNumber(result.getValuationIndustryPercentile());
+        row.financialQualityIndustryPercentile = safeNumber(result.getFinancialQualityIndustryPercentile());
+        row.grossMarginIndustryPercentile = safeNumber(result.getGrossMarginIndustryPercentile());
+        row.operatingMarginIndustryPercentile = safeNumber(result.getOperatingMarginIndustryPercentile());
+        row.roaIndustryPercentile = safeNumber(result.getRoaIndustryPercentile());
+        row.roeIndustryPercentile = safeNumber(result.getRoeIndustryPercentile());
+        row.pegIndustryPercentile = safeNumber(result.getPegIndustryPercentile());
+        row.relativePeIndustryPercentile = safeNumber(result.getRelativePeIndustryPercentile());
+        row.nonOperatingIndustryPercentile = safeNumber(result.getNonOperatingIndustryPercentile());
         row.fiveDayInstitutionalNetRatioPct = safeNumber(result.getFiveDayInstitutionalNetRatioPct());
         row.brokerNetRatioPct = safeNumber(result.getBrokerNetRatioPct());
         row.rsi14 = safeNumber(result.getRsi14());
@@ -524,6 +559,11 @@ public class StockHistoryDatabase {
         row.newsSourceCount = result.getNewsSourceCount();
         row.newsOfficialSourceCount = result.getNewsOfficialSourceCount();
         row.newsMediaSourceCount = result.getNewsMediaSourceCount();
+        row.companySummary = safeText(result.getCompanySummary());
+        row.recentNewsBrief = safeText(result.getRecentNewsBrief());
+        row.transformationHint = safeText(result.getTransformationHint());
+        row.practicalAdvice = safeText(result.getPracticalAdvice());
+        row.adviceConfidence = safeNumber(result.getAdviceConfidence());
         row.structureLabel = safeText(result.getStructureLabel());
         row.turnaroundLabel = safeText(result.getTurnaroundLabel());
         row.turnaroundReason = safeText(result.getTurnaroundReason());
@@ -588,11 +628,16 @@ public class StockHistoryDatabase {
         rowObject.put("oneOffRiskScore", Double.valueOf(safeNumber(row.oneOffRiskScore)));
         rowObject.put("suggestedStopPrice", Double.valueOf(safeNumber(row.suggestedStopPrice)));
         rowObject.put("suggestedStopPct", Double.valueOf(safeNumber(row.suggestedStopPct)));
+        rowObject.put("suggestedTrailingStopPrice", Double.valueOf(safeNumber(row.suggestedTrailingStopPrice)));
         rowObject.put("suggestedTargetPrice", Double.valueOf(safeNumber(row.suggestedTargetPrice)));
         rowObject.put("upsidePotentialPct", Double.valueOf(safeNumber(row.upsidePotentialPct)));
+        rowObject.put("sellSignalScore", Double.valueOf(safeNumber(row.sellSignalScore)));
+        rowObject.put("sellSignalLabel", safeText(row.sellSignalLabel));
+        rowObject.put("reducePositionSize", Boolean.valueOf(row.reducePositionSize));
         rowObject.put("buyPointScore", Double.valueOf(safeNumber(row.buyPointScore)));
         rowObject.put("dataConfidence", Double.valueOf(safeNumber(row.dataConfidence)));
         rowObject.put("selectionQualified", Boolean.valueOf(row.selectionQualified));
+        rowObject.put("marketRegime", safeText(row.marketRegime));
         rowObject.put("price", Double.valueOf(safeNumber(row.price)));
         rowObject.put("volumeRatio", Double.valueOf(safeNumber(row.volumeRatio)));
         rowObject.put("return18DayPct", Double.valueOf(safeNumber(row.return18DayPct)));
@@ -607,6 +652,7 @@ public class StockHistoryDatabase {
         rowObject.put("averageLots20", Double.valueOf(safeNumber(row.averageLots20)));
         rowObject.put("averageTradeValue20Billion", Double.valueOf(safeNumber(row.averageTradeValue20Billion)));
         rowObject.put("volatility20Pct", Double.valueOf(safeNumber(row.volatility20Pct)));
+        rowObject.put("atr20", Double.valueOf(safeNumber(row.atr20)));
         rowObject.put("drawdownFromHigh60Pct", Double.valueOf(safeNumber(row.drawdownFromHigh60Pct)));
         rowObject.put("liquidityScore", Double.valueOf(safeNumber(row.liquidityScore)));
         rowObject.put("revenueScore", Double.valueOf(safeNumber(row.revenueScore)));
@@ -614,6 +660,19 @@ public class StockHistoryDatabase {
         rowObject.put("valuationScore", Double.valueOf(safeNumber(row.valuationScore)));
         rowObject.put("technicalScore", Double.valueOf(safeNumber(row.technicalScore)));
         rowObject.put("financialQualityScore", Double.valueOf(safeNumber(row.financialQualityScore)));
+        rowObject.put("valuationIndustryPercentile", Double.valueOf(safeNumber(row.valuationIndustryPercentile)));
+        rowObject.put("financialQualityIndustryPercentile",
+                Double.valueOf(safeNumber(row.financialQualityIndustryPercentile)));
+        rowObject.put("grossMarginIndustryPercentile",
+                Double.valueOf(safeNumber(row.grossMarginIndustryPercentile)));
+        rowObject.put("operatingMarginIndustryPercentile",
+                Double.valueOf(safeNumber(row.operatingMarginIndustryPercentile)));
+        rowObject.put("roaIndustryPercentile", Double.valueOf(safeNumber(row.roaIndustryPercentile)));
+        rowObject.put("roeIndustryPercentile", Double.valueOf(safeNumber(row.roeIndustryPercentile)));
+        rowObject.put("pegIndustryPercentile", Double.valueOf(safeNumber(row.pegIndustryPercentile)));
+        rowObject.put("relativePeIndustryPercentile", Double.valueOf(safeNumber(row.relativePeIndustryPercentile)));
+        rowObject.put("nonOperatingIndustryPercentile",
+                Double.valueOf(safeNumber(row.nonOperatingIndustryPercentile)));
         rowObject.put("fiveDayInstitutionalNetRatioPct",
                 Double.valueOf(safeNumber(row.fiveDayInstitutionalNetRatioPct)));
         rowObject.put("brokerNetRatioPct", Double.valueOf(safeNumber(row.brokerNetRatioPct)));
@@ -642,6 +701,11 @@ public class StockHistoryDatabase {
         rowObject.put("newsSourceCount", Integer.valueOf(row.newsSourceCount));
         rowObject.put("newsOfficialSourceCount", Integer.valueOf(row.newsOfficialSourceCount));
         rowObject.put("newsMediaSourceCount", Integer.valueOf(row.newsMediaSourceCount));
+        rowObject.put("companySummary", safeText(row.companySummary));
+        rowObject.put("recentNewsBrief", safeText(row.recentNewsBrief));
+        rowObject.put("transformationHint", safeText(row.transformationHint));
+        rowObject.put("practicalAdvice", safeText(row.practicalAdvice));
+        rowObject.put("adviceConfidence", Double.valueOf(safeNumber(row.adviceConfidence)));
         rowObject.put("structureLabel", safeText(row.structureLabel));
         rowObject.put("turnaroundLabel", safeText(row.turnaroundLabel));
         rowObject.put("turnaroundReason", safeText(row.turnaroundReason));
@@ -731,6 +795,11 @@ public class StockHistoryDatabase {
                         .parseDouble(valueAt(fields, indexes, "news_official_source_count"));
                 row.newsMediaSourceCount = (int) NumberParser
                         .parseDouble(valueAt(fields, indexes, "news_media_source_count"));
+                row.companySummary = valueAt(fields, indexes, "company_summary");
+                row.recentNewsBrief = valueAt(fields, indexes, "recent_news_brief");
+                row.transformationHint = valueAt(fields, indexes, "transformation_hint");
+                row.practicalAdvice = valueAt(fields, indexes, "practical_advice");
+                row.adviceConfidence = NumberParser.parseDouble(valueAt(fields, indexes, "advice_confidence"));
                 if (row.newsDigest.length() == 0) {
                     row.newsDigest = row.newsSummary;
                 }
@@ -1079,11 +1148,16 @@ public class StockHistoryDatabase {
         public double oneOffRiskScore;
         public double suggestedStopPrice;
         public double suggestedStopPct;
+        public double suggestedTrailingStopPrice;
         public double suggestedTargetPrice;
         public double upsidePotentialPct;
+        public double sellSignalScore;
+        public String sellSignalLabel = "";
+        public boolean reducePositionSize;
         public double buyPointScore;
         public double dataConfidence;
         public boolean selectionQualified;
+        public String marketRegime = "";
         public double price;
         public double movingAverage18;
         public double movingAverage20;
@@ -1098,6 +1172,7 @@ public class StockHistoryDatabase {
         public double averageLots20;
         public double averageTradeValue20Billion;
         public double volatility20Pct;
+        public double atr20;
         public double drawdownFromHigh60Pct;
         public double liquidityScore;
         public double revenueScore;
@@ -1105,6 +1180,15 @@ public class StockHistoryDatabase {
         public double valuationScore;
         public double technicalScore;
         public double financialQualityScore;
+        public double valuationIndustryPercentile;
+        public double financialQualityIndustryPercentile;
+        public double grossMarginIndustryPercentile;
+        public double operatingMarginIndustryPercentile;
+        public double roaIndustryPercentile;
+        public double roeIndustryPercentile;
+        public double pegIndustryPercentile;
+        public double relativePeIndustryPercentile;
+        public double nonOperatingIndustryPercentile;
         public double fiveDayInstitutionalNetRatioPct;
         public double brokerNetRatioPct;
         public double rsi14;
@@ -1132,6 +1216,11 @@ public class StockHistoryDatabase {
         public int newsSourceCount;
         public int newsOfficialSourceCount;
         public int newsMediaSourceCount;
+        public String companySummary = "";
+        public String recentNewsBrief = "";
+        public String transformationHint = "";
+        public String practicalAdvice = "";
+        public double adviceConfidence;
         public String structureLabel = "";
         public String turnaroundLabel = "";
         public String turnaroundReason = "";

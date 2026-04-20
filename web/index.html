@@ -50,6 +50,27 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .mkt-chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
 .mkt-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted)}
 .mkt-chip b{color:var(--text)}
+
+/* Market advisor */
+.ma-panel{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(15,23,42,.8));border:1px solid rgba(96,165,250,.24);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.ma-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.ma-title{font-size:15px;font-weight:700;color:#fff}
+.ma-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.7}
+.ma-regime{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(59,130,246,.12);border:1px solid rgba(96,165,250,.26);color:#bfdbfe}
+.ma-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:10px}
+.ma-card{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.14);border-radius:8px;padding:10px 12px}
+.ma-card-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.35px}
+.ma-main{font-size:22px;font-weight:700;margin-top:4px}
+.ma-text{font-size:12px;color:var(--muted);line-height:1.7;margin-top:6px}
+.ma-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ma-tag{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;background:rgba(59,130,246,.12);border:1px solid rgba(96,165,250,.24);color:#dbeafe}
+.ma-tag.warn{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.24);color:#fed7aa}
+.ma-tag.safe{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#bbf7d0}
+.ma-alerts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-top:10px}
+.ma-alert{background:rgba(15,23,42,.45);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:9px 11px;font-size:12px;color:#fecaca;line-height:1.7}
+.ma-metrics{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.ma-metric{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;font-size:11px;background:rgba(15,23,42,.42);border:1px solid rgba(148,163,184,.16);color:#cbd5e1}
+.ma-metric b{color:#fff}
 .theme-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px}
 .theme-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
 .theme-name{font-size:13px;font-weight:700}
@@ -254,6 +275,36 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="mkt-chips" id="mkt-chips"></div>
   </div>
 
+  <div class="ma-panel" id="ma-panel" style="display:none">
+    <div class="ma-head">
+      <div>
+        <div class="ma-title">大盤戰術指引</div>
+        <div class="ma-sub" id="ma-sub"></div>
+      </div>
+      <div class="ma-regime" id="ma-regime">—</div>
+    </div>
+    <div class="ma-metrics" id="ma-metrics"></div>
+    <div class="ma-grid">
+      <div class="ma-card">
+        <div class="ma-card-title">資金水位</div>
+        <div class="ma-main" id="ma-exposure">—</div>
+        <div class="ma-text" id="ma-exposure-text"></div>
+      </div>
+      <div class="ma-card">
+        <div class="ma-card-title">策略輪動</div>
+        <div class="ma-main" id="ma-rotation">—</div>
+        <div class="ma-text" id="ma-rotation-text"></div>
+        <div class="ma-tags" id="ma-tabs"></div>
+      </div>
+      <div class="ma-card">
+        <div class="ma-card-title">風控與停損</div>
+        <div class="ma-main" id="ma-risk">—</div>
+        <div class="ma-text" id="ma-risk-text"></div>
+      </div>
+    </div>
+    <div class="ma-alerts" id="ma-alerts"></div>
+  </div>
+
   <div class="theme-strip" id="theme-strip"></div>
 
   <div class="eb-panel" id="eb-panel" style="display:none">
@@ -402,6 +453,20 @@ function oldDashboardUrl() {
 
 function uniq(arr) {
   return [...new Set(arr.filter(Boolean))];
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function fmt1(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num.toFixed(1) : '0.0';
 }
 
 function earlyBreakoutCsvCandidates() {
@@ -744,6 +809,7 @@ async function init() {
     document.getElementById('s-watch').textContent  = (d.watchlistCount||0).toLocaleString();
 
     renderMarketBanner(d);
+    renderMarketAdvisor(d);
     renderThemeHeat(d.themes || []);
     renderEarlyBreakoutPanel();
     fillIndustries();
@@ -1062,6 +1128,59 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
 }
 
+function renderMarketAdvisor(d) {
+  const panel = document.getElementById('ma-panel');
+  const advisor = d.marketAdvisor;
+  if (!panel || !advisor || !advisor.available) {
+    if (panel) panel.style.display = 'none';
+    return;
+  }
+
+  const breadth = d.marketBreadth || {};
+  const index = d.marketIndex || {};
+  const reversal = d.marketReversal || {};
+  const weakness = d.marketWeakness || {};
+  panel.style.display = '';
+  document.getElementById('ma-regime').textContent = advisor.regimeLabel || d.marketRegimeLabel || '—';
+  document.getElementById('ma-sub').textContent =
+    `${advisor.summary || '—'}${reversal.available ? `｜大盤反轉：${reversal.label || '—'} ${(reversal.score || 0).toFixed(1)}分` : ''}${weakness.available ? `｜轉弱警示 ${weakness.warningCount || 0} 項` : ''}`;
+  document.getElementById('ma-exposure').textContent = `${advisor.exposureMinPct || 0}% - ${advisor.exposureMaxPct || 0}%`;
+  document.getElementById('ma-exposure-text').textContent = advisor.exposureGuidance || '';
+
+  const preferred = advisor.preferredTabs || [];
+  const avoid = advisor.avoidTabs || [];
+  document.getElementById('ma-rotation').textContent = preferred.length ? preferred[0] : '—';
+  document.getElementById('ma-rotation-text').textContent = advisor.strategyGuidance || '';
+  document.getElementById('ma-risk').textContent = `ATR x ${(advisor.atrMultiplier || 0).toFixed(2)}`;
+  document.getElementById('ma-risk-text').textContent = advisor.riskGuidance || '';
+
+  document.getElementById('ma-tabs').innerHTML =
+    preferred.map(t => `<span class="ma-tag safe">${escapeHtml(t)}</span>`).join('') +
+    avoid.map(t => `<span class="ma-tag warn">${escapeHtml(t)}</span>`).join('');
+
+  document.getElementById('ma-metrics').innerHTML =
+    `<span class="ma-metric">ADR <b>${fmt1(breadth.adr)}</b></span>` +
+    `<span class="ma-metric">站上 MA20 <b>${fmt1(breadth.aboveMa20Pct)}%</b></span>` +
+    `<span class="ma-metric">站上 MA18 <b>${fmt1(breadth.aboveMa18Pct)}%</b></span>` +
+    `<span class="ma-metric">跌破 MA20 <b>${fmt1(breadth.belowMa20Pct)}%</b></span>` +
+    `<span class="ma-metric">反轉風險 <b>${escapeHtml(reversal.label || '未提供')}</b></span>` +
+    `<span class="ma-metric">寬度背離 <b>${weakness.breadthDivergence ? '是' : '否'}</b></span>` +
+    `<span class="ma-metric">動能破位 <b>${weakness.momentumBreakdown ? '是' : '否'}</b></span>` +
+    `<span class="ma-metric">新低擴張 <b>${weakness.newLowExpansion ? '是' : '否'}</b></span>` +
+    `<span class="ma-metric">波動擴張 <b>${weakness.volatilityExpansion ? '是' : '否'}</b></span>` +
+    `<span class="ma-metric">指數趨勢 <b>${escapeHtml(index.trendLabel || '資料不足')}</b></span>` +
+    `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>`;
+
+  const alerts = advisor.alerts || [];
+  const mergedAlerts = [];
+  if (reversal.available && reversal.reason) mergedAlerts.push(reversal.reason);
+  if (weakness.available && weakness.alerts && weakness.alerts.length) mergedAlerts.push(...weakness.alerts);
+  mergedAlerts.push(...alerts);
+  document.getElementById('ma-alerts').innerHTML = mergedAlerts
+    .map(a => `<div class="ma-alert">${escapeHtml(a)}</div>`)
+    .join('');
+}
+
 function renderThemeHeat(themes) {
   const el = document.getElementById('theme-strip');
   if (!el) return;
@@ -1246,6 +1365,7 @@ function mkRow(s) {
   const wl  = S.wl.has(s.code);
   const sc  = s.likely ? 'sl' : s.score >= getWatchlistThreshold() ? 'sw' : 'sn';
   const buy = s.buyPointScore || 0;
+  const buyLabelText = explainBuyPointLabel(s) || s.buyPointLabel;
   const confidenceReady = hasConfidenceData(s);
   const conf = confidenceReady ? (s.dataConfidence || 0) : 0;
   const dv  = s.scoreDelta || 0;
@@ -1268,7 +1388,7 @@ function mkRow(s) {
     const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
     nameExtra = `<div class="et">進 ${fmtDateShort(e.date)} $${e.price} <span style="color:${pc};font-weight:700">${pl>0?'+':''}${pl.toFixed(1)}%</span></div>`;
   }
-  nameExtra += bearishWarningBadge(s);
+  nameExtra += warningBadgesHtml(s);
 
   // 短中線分用漸層背景
   const ssColor = s.shortScore >= 65 ? 'var(--blue)' : s.shortScore >= 40 ? 'var(--muted)' : 'var(--muted)';
@@ -1281,7 +1401,7 @@ function mkRow(s) {
     `<td><span class="mb ${s.market==='TWSE'?'mt':'mx'}">${s.market==='TWSE'?'上市':'上櫃'}</span></td>` +
     `<td style="color:var(--muted);max-width:105px;overflow:hidden;text-overflow:ellipsis" title="${s.industry||''}">${s.industry||''}</td>` +
     `<td><span class="sb ${sc}">${s.score.toFixed(0)}</span></td>` +
-    `<td>${fmtBuyBadge(buy, s.buyPointLabel)}</td>` +
+    `<td>${fmtBuyBadge(buy, buyLabelText)}</td>` +
     `<td title="${s.themeTags||s.primaryTheme||''}" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;color:${(s.themeScore||0)>=65?'var(--green)':(s.themeScore||0)>=55?'var(--yellow)':'var(--muted)'}">${s.primaryTheme||'—'}</td>` +
     `<td style="color:${(s.newsScore||0)>=65?'var(--green)':(s.newsRiskScore||0)>=65?'var(--red)':'var(--muted)'}">${(s.newsScore||0).toFixed(0)}</td>` +
     `<td>${fmtConfidenceBadge(conf, confidenceReady)}</td>` +
@@ -1315,26 +1435,73 @@ function fmtPct(v) {
   if (!v) return '<td style="color:var(--muted)">—</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${v.toFixed(2)}%</td>`;
 }
-function bearishSignals(s) {
-  const hits = [];
+function warningBuckets(s) {
   const structureLabel = String(s.structureLabel || '');
   const postCloseCategory = String(s.postCloseCategory || '');
+  const postCloseAction = String(s.postCloseAction || '');
+  const buyPointLabel = String(explainBuyPointLabel(s) || s.buyPointLabel || '');
+  const signalType = String(s.signalType || '');
+  const sellSignalLabel = String(s.sellSignalLabel || '');
   const ret20 = Number(s.return20DayPct || 0);
   const price = Number(s.price || 0);
   const ma20 = Number(s.movingAverage20 || 0);
-  if (structureLabel === '結構未完成') hits.push('結構未完成');
-  if (postCloseCategory === '暫不出手') hits.push('暫不出手');
-  if (ret20 <= -8) hits.push('20日報酬明顯轉負');
-  if (price > 0 && ma20 > 0 && price < ma20) hits.push('股價跌回 MA20 下');
-  return hits;
+  const rsi = Number(s.rsi14 || 0);
+  const volumeRatio = Number(s.volumeRatio || 0);
+  const drawdown = Number(s.drawdownFromHigh60Pct || 0);
+
+  const bearish = [];
+  const observation = [];
+  const overheated = [];
+
+  if (sellSignalLabel.includes('轉弱') || sellSignalLabel.includes('出場')) bearish.push(`賣訊：${sellSignalLabel}`);
+  if (ret20 <= -8) bearish.push('20日報酬明顯轉負');
+  if (price > 0 && ma20 > 0 && price < ma20) bearish.push('股價跌回 MA20 下');
+
+  if (structureLabel === '結構未完成') observation.push('結構未完成：等結構完成');
+  if (postCloseCategory === '暫不出手') observation.push('暫不出手：先等更清楚訊號');
+  if (postCloseAction.includes('只觀察不追')) observation.push('只觀察不追：先不要追價');
+  if (signalType === '待確認') observation.push(explainPendingSignal(s));
+  if (buyPointLabel.includes('等確認') || buyPointLabel.includes('時機差')) observation.push(`買點：${buyPointLabel}`);
+
+  if (structureLabel === '追高風險') overheated.push('追高風險');
+  if (ret20 > 25) overheated.push('20日漲幅過大');
+  if (rsi >= 75) overheated.push('RSI 過熱');
+  if (volumeRatio > 2.8) overheated.push('量比過熱');
+  if (drawdown > -2) overheated.push('貼近 60 日高點');
+  if (buyPointLabel === '不建議追') overheated.push('不建議追');
+
+  return { bearish, observation, overheated };
 }
-function bearishWarningBadge(s) {
-  const hits = bearishSignals(s);
+
+function explainPendingSignal(s) {
+  const structure = String(s.structureLabel || '');
+  const drawdown = Number(s.drawdownFromHigh60Pct || 0);
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const volumeRatio = Number(s.volumeRatio || 0);
+
+  if (price > 0 && ma20 > 0 && price < ma20) return '訊號待確認：等站回 MA20';
+  if (structure === '平台突破' || drawdown > -3) return '訊號待確認：等帶量突破';
+  if (structure === '回踩承接' || (drawdown >= -10 && drawdown <= -3)) return '訊號待確認：等回踩止穩';
+  if (structure === '整理待確認' || structure === '結構未完成') return '訊號待確認：等整理完成';
+  if (volumeRatio > 0 && volumeRatio < 0.8) return '訊號待確認：等量能放大';
+  return '訊號待確認：等下一步確認';
+}
+
+function warningBadge(label, hits, fg, bg) {
   if (!hits.length) return '';
-  const count = hits.length;
-  const fg = count >= 3 ? 'var(--red)' : count >= 2 ? 'var(--orange)' : 'var(--yellow)';
-  const bg = count >= 3 ? 'rgba(239,68,68,.16)' : count >= 2 ? 'rgba(249,115,22,.16)' : 'rgba(234,179,8,.16)';
-  return `<div class="et"><span title="${hits.join('｜')}" style="display:inline-block;padding:2px 8px;border-radius:999px;background:${bg};color:${fg};font-weight:700">轉空警示 ${count}/4</span></div>`;
+  return `<span title="${hits.join('｜')}" style="display:inline-block;padding:2px 8px;border-radius:999px;background:${bg};color:${fg};font-weight:700">${label} ${hits.length}項</span>`;
+}
+
+function warningBadgesHtml(s) {
+  const buckets = warningBuckets(s);
+  const badges = [
+    warningBadge('轉空', buckets.bearish, 'var(--red)', 'rgba(239,68,68,.16)'),
+    warningBadge('觀察', buckets.observation, 'var(--yellow)', 'rgba(234,179,8,.16)'),
+    warningBadge('過熱', buckets.overheated, 'var(--orange)', 'rgba(249,115,22,.16)')
+  ].filter(Boolean);
+  if (!badges.length) return '';
+  return `<div class="et">${badges.join(' ')}</div>`;
 }
 function isGoodBuyPoint(s) {
   return (s.buyPointScore || 0) >= 75 && !!s.selectionQualified;
@@ -1419,6 +1586,26 @@ function isCatalystGrowth(s) {
   const fundFlowPositive = (s.fiveDayInstitutionalNetRatioPct || 0) > 0 || (s.brokerNetRatioPct || 0) > 0;
   const catalystNews = hasCatalystKeyword(s.newsSummary) || hasCatalystKeyword(s.buyPointReason) || hasCatalystKeyword(s.scoreReason);
   return revenueStrong && chipsStrong && strategyReady && entryHealthy && hasTurnaroundSignal(s) && fundFlowPositive && catalystNews;
+}
+function explainBuyPointLabel(s) {
+  const label = String(s.buyPointLabel || '');
+  if (!label) return '';
+  if (!label.includes('等確認') && !label.includes('時機差')) return label;
+  const structure = String(s.structureLabel || '');
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const ma60 = Number(s.movingAverage60 || 0);
+  const drawdown = Number(s.drawdownFromHigh60Pct || 0);
+  const volumeRatio = Number(s.volumeRatio || 0);
+  const signalType = String(s.signalType || '');
+
+  if (price > 0 && ma20 > 0 && price < ma20) return '可觀察：等站穩 MA20';
+  if (structure === '平台突破' || drawdown > -3) return '可觀察：等帶量突破';
+  if (structure === '回踩承接' || (drawdown >= -10 && drawdown <= -3)) return '可觀察：等回踩止穩';
+  if (structure === '整理待確認' || structure === '結構未完成' || signalType === '待確認') return '可觀察：等結構完成';
+  if (volumeRatio > 0 && volumeRatio < 0.8) return '可觀察：等量能放大';
+  if (price > 0 && ma60 > 0 && price < ma60) return '基本面可：等站回 MA60';
+  return label.includes('時機差') ? '基本面可：等更好時機' : '可觀察：等確認';
 }
 function fmtBuyBadge(score, label) {
   if (!score) return '<span style="color:var(--muted)">—</span>';
@@ -1546,16 +1733,34 @@ function renderDB(s, history) {
   const turnaroundReason = s.turnaroundReason || '';
   const oneOffRiskScore = s.oneOffRiskScore || 0;
   const marketScore = S.meta.marketScore || 50;
-  const buyLabel = s.buyPointLabel || (buyScore >= 85 ? 'A級買點' : buyScore >= 75 ? 'B級買點' : buyScore >= 60 ? '等確認' : '暫不建議');
-  const bearishHits = bearishSignals(s);
-  const bearishBox = bearishHits.length ? `
+  const buyLabel = explainBuyPointLabel(s) || s.buyPointLabel || (buyScore >= 85 ? 'A級買點' : buyScore >= 75 ? 'B級買點' : buyScore >= 60 ? '等確認' : '暫不建議');
+  const warningGroups = warningBuckets(s);
+  const warningBox = [
+    warningGroups.bearish.length ? `
     <div class="rsn risk-box">
       <div class="rsn-hdr">
-        <span class="rsn-lbl" style="color:var(--red)">⚠ 轉空警示</span>
-        <span class="rsn-score" style="color:var(--red)">${bearishHits.length}/4</span>
+        <span class="rsn-lbl" style="color:var(--red)">⚠ 轉空</span>
+        <span class="rsn-score" style="color:var(--red)">${warningGroups.bearish.length}項</span>
       </div>
-      <div class="rsn-txt">${bearishHits.join('、')}</div>
-    </div>` : '';
+      <div class="rsn-txt">${warningGroups.bearish.join('、')}</div>
+    </div>` : '',
+    warningGroups.observation.length ? `
+    <div class="rsn">
+      <div class="rsn-hdr">
+        <span class="rsn-lbl" style="color:var(--yellow)">👀 觀察未完成</span>
+        <span class="rsn-score" style="color:var(--yellow)">${warningGroups.observation.length}項</span>
+      </div>
+      <div class="rsn-txt">${warningGroups.observation.join('、')}</div>
+    </div>` : '',
+    warningGroups.overheated.length ? `
+    <div class="rsn">
+      <div class="rsn-hdr">
+        <span class="rsn-lbl" style="color:var(--orange)">🔥 過熱不追</span>
+        <span class="rsn-score" style="color:var(--orange)">${warningGroups.overheated.length}項</span>
+      </div>
+      <div class="rsn-txt">${warningGroups.overheated.join('、')}</div>
+    </div>` : ''
+  ].filter(Boolean).join('');
 
   // ── 投資建議卡 ──
   const invConclusion = buildConclusion(s, ss, ms);
@@ -1676,7 +1881,7 @@ function renderDB(s, history) {
       ${trackHtml}
     </div>
     ${buyCard}
-    ${bearishBox}
+    ${warningBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">

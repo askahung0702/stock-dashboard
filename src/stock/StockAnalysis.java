@@ -1,13 +1,25 @@
 package stock;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import org.json.simple.JSONObject;
 
 import stock.vo.StockAnalysisResultVO;
 
 public class StockAnalysis {
 
+    private static final String STAGE_FULL = "full";
+    private static final String STAGE_CLOSE = "close";
+
     public static void main(String[] args) throws Exception {
-        int maxStocks = args.length > 0 ? Integer.parseInt(args[0]) : -1;
+        RunOptions runOptions = parseArgs(args);
+        int maxStocks = runOptions.maxStocks;
+        boolean closeStage = STAGE_CLOSE.equals(runOptions.stage);
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
         String allFileName = analyzer.buildDatedFileName("stock_candidates");
         String likelyFileName = analyzer.buildDatedFileName("stock_candidates_likely");
@@ -52,18 +64,50 @@ public class StockAnalysis {
         } else {
             writeHistorySafely(analyzer, results);
         }
-        writeBacktestSafely();
+        if (closeStage) {
+            System.out.println("Backtest, calibration, and walk-forward optimization skipped in close stage.");
+        } else {
+            writeBacktestSafely();
+        }
         writeHistoryDashboardSafely(dashboardWriter, results, likelyCandidates, watchlistCandidates,
                 likelyVolumeCandidates, nonLikelyVolumeCandidates, latestHistoryDashboardFileName);
         writeStaticSiteDataSafely();
+        writeSnapshotStatusSafely(runOptions.stage, maxStocks > 0);
 
         System.out.println("");
         System.out.println("Analyzed stocks: " + results.size());
         if (maxStocks > 0) {
-            System.out.println("Mode: limited run (" + maxStocks + " stocks)");
+            System.out.println("Mode: " + runOptions.stage + " limited run (" + maxStocks + " stocks)");
+        } else if (closeStage) {
+            System.out.println("Mode: close stage full-market run");
         } else {
             System.out.println("Mode: full TWSE + TPEX run");
         }
+    }
+
+    private static RunOptions parseArgs(String[] args) {
+        RunOptions options = new RunOptions();
+        for (String arg : args) {
+            if (arg == null) {
+                continue;
+            }
+            String trimmed = arg.trim();
+            if (trimmed.length() == 0) {
+                continue;
+            }
+            if ("close".equalsIgnoreCase(trimmed) || "--stage=close".equalsIgnoreCase(trimmed)
+                    || "--mode=close".equalsIgnoreCase(trimmed)) {
+                options.stage = STAGE_CLOSE;
+                continue;
+            }
+            if ("full".equalsIgnoreCase(trimmed) || "--stage=full".equalsIgnoreCase(trimmed)
+                    || "--mode=full".equalsIgnoreCase(trimmed)) {
+                options.stage = STAGE_FULL;
+                continue;
+            }
+            options.maxStocks = Integer.parseInt(trimmed);
+        }
+        return options;
     }
 
     private static void writeCsvSafely(TaiwanStockAnalyzer analyzer, List<StockAnalysisResultVO> results, String fileName,
@@ -122,6 +166,14 @@ public class StockAnalysis {
                 }
                 if (artifacts.excludeRulesPath.length() > 0) {
                     System.out.println("Exclude rules: " + artifacts.excludeRulesPath);
+                }
+                WalkForwardOptimizationService.OptimizationArtifacts optimizationArtifacts = new WalkForwardOptimizationService()
+                        .writeDefaultArtifacts();
+                if (optimizationArtifacts.reportPath.length() > 0) {
+                    System.out.println("Walk-forward optimization: " + optimizationArtifacts.reportPath);
+                }
+                if (optimizationArtifacts.recommendationPath.length() > 0) {
+                    System.out.println("Parameter recommendations: " + optimizationArtifacts.recommendationPath);
                 }
             }
         } catch (Exception ex) {
@@ -229,5 +281,35 @@ public class StockAnalysis {
         } catch (Exception ex) {
             System.out.println("Cannot write static site data: " + ex.getMessage());
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void writeSnapshotStatusSafely(String stage, boolean limitedRun) {
+        File statusFile = new File("web\\data", "snapshot_status.json");
+        try {
+            File parent = statusFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            JSONObject result = new JSONObject();
+            result.put("snapshotStage", stage);
+            result.put("stageLabel", STAGE_CLOSE.equals(stage) ? "盤後初版" : "夜間完整版");
+            result.put("limitedRun", Boolean.valueOf(limitedRun));
+            result.put("generatedAt", LocalDateTime.now().toString());
+            Writer writer = new OutputStreamWriter(new FileOutputStream(statusFile), "UTF-8");
+            try {
+                writer.write(result.toJSONString());
+            } finally {
+                writer.close();
+            }
+            System.out.println("Snapshot status: " + statusFile.getAbsolutePath());
+        } catch (Exception ex) {
+            System.out.println("Cannot write snapshot status: " + ex.getMessage());
+        }
+    }
+
+    private static class RunOptions {
+        private String stage = STAGE_FULL;
+        private int maxStocks = -1;
     }
 }

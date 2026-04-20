@@ -17,6 +17,7 @@ public class TechnicalSnapshotVO {
     private final double averageTradeValue20Billion;
     private final double averageLots20;
     private final double volatility20Pct;
+    private final double atr20;
     private final double drawdownFromHigh60Pct;
     private final double rsi14;
     private final double stochasticK;
@@ -26,7 +27,7 @@ public class TechnicalSnapshotVO {
             double movingAverage54, double movingAverage60, double movingAverage120, double return18DayPct,
             double return20DayPct, double return54DayPct, double return60DayPct, long currentVolume,
             double averageVolume20, double averageTradeValue20Billion, double averageLots20, double volatility20Pct,
-            double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD) {
+            double atr20, double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD) {
         this.currentPrice = currentPrice;
         this.movingAverage18 = movingAverage18;
         this.movingAverage20 = movingAverage20;
@@ -42,6 +43,7 @@ public class TechnicalSnapshotVO {
         this.averageTradeValue20Billion = averageTradeValue20Billion;
         this.averageLots20 = averageLots20;
         this.volatility20Pct = volatility20Pct;
+        this.atr20 = atr20;
         this.drawdownFromHigh60Pct = drawdownFromHigh60Pct;
         this.rsi14 = rsi14;
         this.stochasticK = stochasticK;
@@ -106,6 +108,10 @@ public class TechnicalSnapshotVO {
 
     public double getVolatility20Pct() {
         return volatility20Pct;
+    }
+
+    public double getAtr20() {
+        return atr20;
     }
 
     public double getDrawdownFromHigh60Pct() {

@@ -328,6 +328,7 @@ public class YahooTaiwanStockService {
         double averageTradeValue20Billion = averageTradeValueLast(closes, volumes, 20);
         double averageLots20 = averageVolume20 / 1000D;
         double volatility20Pct = volatilityLast(closes, 20);
+        double atr20 = averageTrueRange(highs.isEmpty() ? closes : highs, lows.isEmpty() ? closes : lows, closes, 20);
         double drawdownFromHigh60Pct = percentChange(maxLast(highs.isEmpty() ? closes : highs, 60), currentPrice);
         double rsi14 = computeRsi14(closes);
         double[] kd = computeStochasticKD(closes, highs.isEmpty() ? closes : highs, lows.isEmpty() ? closes : lows);
@@ -335,7 +336,7 @@ public class YahooTaiwanStockService {
         return new TechnicalSnapshotVO(currentPrice, movingAverage18, movingAverage20, movingAverage54,
                 movingAverage60, movingAverage120, return18DayPct, return20DayPct, return54DayPct,
                 return60DayPct, currentVolume, averageVolume20, averageTradeValue20Billion, averageLots20,
-                volatility20Pct, drawdownFromHigh60Pct, rsi14, kd[0], kd[1]);
+                volatility20Pct, atr20, drawdownFromHigh60Pct, rsi14, kd[0], kd[1]);
     }
 
     private double parseCurrentPriceFromQuoteText(String text) {
@@ -665,6 +666,26 @@ public class YahooTaiwanStockService {
             variance += difference * difference;
         }
         return Math.sqrt(variance / returns.size());
+    }
+
+    private double averageTrueRange(List<Double> highs, List<Double> lows, List<Double> closes, int count) {
+        int size = Math.min(highs.size(), Math.min(lows.size(), closes.size()));
+        if (size <= 1) {
+            return 0D;
+        }
+
+        int start = Math.max(1, size - count);
+        double total = 0D;
+        int samples = 0;
+        for (int i = start; i < size; i++) {
+            double high = highs.get(i).doubleValue();
+            double low = lows.get(i).doubleValue();
+            double prevClose = closes.get(i - 1).doubleValue();
+            double trueRange = Math.max(high - low, Math.max(Math.abs(high - prevClose), Math.abs(low - prevClose)));
+            total += trueRange;
+            samples++;
+        }
+        return samples == 0 ? 0D : total / samples;
     }
 
     private double maxLast(List<Double> values, int count) {

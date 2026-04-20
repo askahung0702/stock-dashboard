@@ -91,8 +91,13 @@ public class TaiwanStockAnalyzer {
     private final ThemeBasketRepository themeBasketRepository = new ThemeBasketRepository();
     private final NewsThemeReferenceAnalyzer newsThemeReferenceAnalyzer = new NewsThemeReferenceAnalyzer();
     private final MarketThemeNewsAnalyzer marketThemeNewsAnalyzer = new MarketThemeNewsAnalyzer();
+    private final NewsCompanySummarizer newsCompanySummarizer = new NewsCompanySummarizer();
+    private final ScoringConfig scoringConfig = ScoringConfig.loadDefault();
     private MarketThemeNewsAnalyzer.ReferenceBundle lastMarketThemeReferenceBundle = MarketThemeNewsAnalyzer.ReferenceBundle.empty();
     private String lastNewsOnlyReferenceDate = "";
+    private MarketRegime activeMarketRegime = MarketRegime.RANGE_BOUND;
+    private ScoringStrategy activeScoringStrategy = new ConfiguredScoringStrategy(scoringConfig.getQualification(),
+            scoringConfig.getProfile(activeMarketRegime));
 
     public List<StockAnalysisResultVO> analyze(int maxStocks) throws Exception {
         List<TaiwanStockVO> allStocks = marketProvider.loadAllStocks();
@@ -201,6 +206,7 @@ public class TaiwanStockAnalyzer {
         newsThemeReferenceAnalyzer.apply(results);
         for (StockAnalysisResultVO result : results) {
             result.setAnalysisNote(buildNewsOnlyAnalysisNote(result, snapshotContext.date));
+            applyNarrativeSummary(result);
         }
         Collections.sort(results, new Comparator<StockAnalysisResultVO>() {
             public int compare(StockAnalysisResultVO left, StockAnalysisResultVO right) {
@@ -219,7 +225,7 @@ public class TaiwanStockAnalyzer {
                 new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8")));
         writer.write('\uFEFF');
         writer.println(
-                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
+                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,company_summary,recent_news_brief,transformation_hint,practical_advice,advice_confidence,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
 
         for (StockAnalysisResultVO result : results) {
             writer.println(csv(result.getStock().getCode()) + "," + csv(result.getStock().getName()) + ","
@@ -241,6 +247,9 @@ public class TaiwanStockAnalyzer {
                     + format(result.getNewsSourceCredibilityScore()) + ","
                     + format(result.getNewsFreshnessScore()) + "," + result.getNewsSourceCount() + ","
                     + result.getNewsOfficialSourceCount() + "," + result.getNewsMediaSourceCount() + ","
+                    + csv(result.getCompanySummary()) + "," + csv(result.getRecentNewsBrief()) + ","
+                    + csv(result.getTransformationHint()) + "," + csv(result.getPracticalAdvice()) + ","
+                    + format(result.getAdviceConfidence()) + ","
                     + format(result.getStructureScore()) + "," + csv(result.getStructureLabel()) + ","
                     + format(result.getRiskRewardScore()) + "," + format(result.getRiskRewardRatio()) + ","
                     + format(result.getTurnaroundScore()) + ","
@@ -530,7 +539,7 @@ public class TaiwanStockAnalyzer {
     }
 
     public double getLikelyThreshold() {
-        return LIKELY_THRESHOLD;
+        return activeLikelyThreshold();
     }
 
     public double getWatchlistThreshold() {
@@ -823,6 +832,21 @@ public class TaiwanStockAnalyzer {
 
         Map<String, List<StockHistoryDatabase.SnapshotRow>> recentHistoryByCode = buildRecentHistoryByCode(historicalSnapshots,
                 6);
+        IndustryMetricsSnapshot industryMetrics = IndustryMetricsSnapshot.build(results);
+        MarketRegime resolvedRegime = MarketRegimeResolver.resolve(results, historicalSnapshots, currentDateStamp(),
+                WATCHLIST_THRESHOLD, activeLikelyThreshold());
+        activeMarketRegime = resolvedRegime;
+        activeScoringStrategy = new ConfiguredScoringStrategy(scoringConfig.getQualification(),
+                scoringConfig.getProfile(resolvedRegime));
+
+        for (StockAnalysisResultVO result : results) {
+            applyIndustryRelativeScoring(result, industryMetrics);
+            boolean selectionQualified = isSelectionQualified(result.getLiquidityScore(),
+                    result.getFinancialQualityScore(), result.getVolumeRatio(), result.getDataConfidence());
+            result.setSelectionQualified(selectionQualified);
+            result.setMarketRegime(resolvedRegime.getLabel());
+        }
+
         Map<String, TrendProfile> trendProfiles = new HashMap<String, TrendProfile>();
         for (StockAnalysisResultVO result : results) {
             TrendProfile profile = evaluateTrendProfile(result, recentHistoryByCode.get(result.getStock().getCode()));
@@ -853,8 +877,8 @@ public class TaiwanStockAnalyzer {
                     result.getStochasticK(), result.getStochasticD());
             RiskRewardProfile riskRewardProfile = buildRiskRewardProfile(result.getCurrentPrice(),
                     result.getMovingAverage20(), result.getMovingAverage60(), result.getMovingAverage120(),
-                    result.getDrawdownFromHigh60Pct(), result.getVolatility20Pct(), structureProfile.score,
-                    finalSelectionScore);
+                    result.getDrawdownFromHigh60Pct(), result.getVolatility20Pct(), result.getAtr20(),
+                    structureProfile.score, finalSelectionScore);
 
             double baseBuyPointScore = scoreBuyPointProfile(finalSelectionScore, result.getMomentumScore(),
                     result.getQualityScore(), result.getCurrentPrice(), result.getMovingAverage20(),
@@ -872,8 +896,12 @@ public class TaiwanStockAnalyzer {
             result.setRiskRewardRatio(riskRewardProfile.riskRewardRatio);
             result.setSuggestedStopPrice(riskRewardProfile.stopLossPrice);
             result.setSuggestedStopPct(riskRewardProfile.stopLossPct);
+            result.setSuggestedTrailingStopPrice(riskRewardProfile.trailingStopPrice);
             result.setSuggestedTargetPrice(riskRewardProfile.targetPrice);
             result.setUpsidePotentialPct(riskRewardProfile.upsidePotentialPct);
+            result.setSellSignalScore(riskRewardProfile.sellSignalScore);
+            result.setSellSignalLabel(riskRewardProfile.sellSignalLabel);
+            result.setReducePositionSize(riskRewardProfile.reducePositionSize);
             result.setBuyPointScore(finalBuyPointScore);
             result.setBuyPointLabel(resolveBuyPointLabel(finalBuyPointScore, result.isSelectionQualified(),
                     result.getFinancialQualityScore(), result.getDataConfidence(), structureProfile.score,
@@ -884,6 +912,7 @@ public class TaiwanStockAnalyzer {
             applyBacktestCalibration(result, backtestSummaryByHorizon);
             result.setAnalysisNote(buildAnalysisNote(result));
             result.setScoreReason(buildScoreReason(result));
+            applyNarrativeSummary(result);
         }
     }
 
@@ -953,14 +982,15 @@ public class TaiwanStockAnalyzer {
             recentAverage /= recentCount;
         }
 
+        double likelyThreshold = activeLikelyThreshold();
         int strongDays = 0;
         for (int i = Math.max(0, historyRows.size() - 5); i < historyRows.size(); i++) {
-            if (selectionScoreOf(historyRows.get(i)) >= LIKELY_THRESHOLD) {
+            if (selectionScoreOf(historyRows.get(i)) >= likelyThreshold) {
                 strongDays++;
             }
         }
 
-        double score = currentSelectionScore >= LIKELY_THRESHOLD ? 28D
+        double score = currentSelectionScore >= likelyThreshold ? 28D
                 : currentSelectionScore >= WATCHLIST_THRESHOLD ? 18D : 8D;
         if (consecutiveDays >= 5) {
             score += 28D;
@@ -970,7 +1000,7 @@ public class TaiwanStockAnalyzer {
             score += 18D;
         } else if (consecutiveDays >= 2) {
             score += 10D;
-        } else if (consecutiveDays == 1 && currentSelectionScore >= LIKELY_THRESHOLD) {
+        } else if (consecutiveDays == 1 && currentSelectionScore >= likelyThreshold) {
             score += 4D;
         }
 
@@ -1003,7 +1033,7 @@ public class TaiwanStockAnalyzer {
             score += 10D;
         } else if (strongDays >= 1) {
             score += 4D;
-        } else if (historyRows.isEmpty() && currentSelectionScore >= LIKELY_THRESHOLD) {
+        } else if (historyRows.isEmpty() && currentSelectionScore >= activeLikelyThreshold()) {
             score += 6D;
         }
 
@@ -1036,7 +1066,7 @@ public class TaiwanStockAnalyzer {
             if (baseSelectionScore >= WATCHLIST_THRESHOLD) {
                 aggregate.breadthCount++;
             }
-            if (baseSelectionScore >= LIKELY_THRESHOLD) {
+            if (baseSelectionScore >= activeLikelyThreshold()) {
                 aggregate.strongCount++;
             }
         }
@@ -1150,11 +1180,11 @@ public class TaiwanStockAnalyzer {
     }
 
     private List<StockAnalysisResultVO> filterLikelyCandidates(List<StockAnalysisResultVO> results) {
-        return filterByPostCloseSort(filterByMinimumScore(results, LIKELY_THRESHOLD));
+        return filterByPostCloseSort(filterByMinimumScore(results, activeLikelyThreshold()));
     }
 
     private List<StockAnalysisResultVO> filterWatchlistCandidates(List<StockAnalysisResultVO> results) {
-        return filterByPostCloseSort(filterByScoreRange(results, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD));
+        return filterByPostCloseSort(filterByScoreRange(results, WATCHLIST_THRESHOLD, activeLikelyThreshold()));
     }
 
     private List<StockAnalysisResultVO> filterByPostCloseCategory(List<StockAnalysisResultVO> results, String category) {
@@ -1222,13 +1252,13 @@ public class TaiwanStockAnalyzer {
     }
 
     private boolean isSelectionQualified(StockAnalysisResultVO result) {
-        return result.getLiquidityScore() >= MIN_LIQUIDITY_SCORE
-                && result.getFinancialQualityScore() >= MIN_SELECTION_FINANCIAL_SCORE;
+        return isSelectionQualified(result.getLiquidityScore(), result.getFinancialQualityScore(),
+                result.getVolumeRatio(), result.getDataConfidence());
     }
 
     private boolean isLikelyCandidate(StockAnalysisResultVO result) {
-        return result.getSelectionScore() >= LIKELY_THRESHOLD
-                && result.getFinancialQualityScore() >= MIN_LIKELY_FINANCIAL_SCORE
+        return result.getSelectionScore() >= activeLikelyThreshold()
+                && result.getFinancialQualityScore() >= activeLikelyMinFinancialScore()
                 && isVolumeRangeHealthy(result.getVolumeRatio()) && isSelectionQualified(result);
     }
 
@@ -1383,6 +1413,7 @@ public class TaiwanStockAnalyzer {
         double averageLots20 = technical.getAverageLots20();
         double averageTradeValue20Billion = technical.getAverageTradeValue20Billion();
         double volatility20Pct = technical.getVolatility20Pct();
+        double atr20 = technical.getAtr20();
         double drawdownFromHigh60Pct = technical.getDrawdownFromHigh60Pct();
 
         double trailingFourQuarterEps = sumTrailingEps(epsRecords, epsWindow);
@@ -1478,21 +1509,23 @@ public class TaiwanStockAnalyzer {
         double qualityScore = scoreQualityProfile(revenueScore, financialQualityScore, valuationScore, liquidityScore);
         double momentumScore = scoreMomentumProfile(chipsScore, technicalScore, volumeRatio, return20DayPct, rsi14,
                 stochasticK, stochasticD);
-        boolean selectionQualified = isSelectionQualified(liquidityScore, financialQualityScore);
+        double dataConfidence = scoreDataConfidence(hasProfileData, hasEpsData, hasCashFlowData, hasIncomeData,
+                hasBalanceData, hasBrokerData);
+        boolean selectionQualified = isSelectionQualified(liquidityScore, financialQualityScore, volumeRatio,
+                dataConfidence);
         double selectionScore = scoreSelectionProfile(rawScore, qualityScore, momentumScore, volumeRatio,
                 eventRisk.getPenalty(), selectionQualified);
         StructureProfile structureProfile = buildStructureProfile(currentPrice, movingAverage20, movingAverage60,
                 movingAverage120, volumeRatio, drawdownFromHigh60Pct, return20DayPct, rsi14, stochasticK,
                 stochasticD);
         RiskRewardProfile riskRewardProfile = buildRiskRewardProfile(currentPrice, movingAverage20, movingAverage60,
-                movingAverage120, drawdownFromHigh60Pct, volatility20Pct, structureProfile.score, selectionScore);
+                movingAverage120, drawdownFromHigh60Pct, volatility20Pct, atr20, structureProfile.score,
+                selectionScore);
         double buyPointScore = scoreBuyPointComposite(scoreBuyPointProfile(selectionScore, momentumScore, qualityScore, currentPrice,
                 movingAverage20, movingAverage60, movingAverage120, return20DayPct, volumeRatio, drawdownFromHigh60Pct,
                 rsi14, stochasticK, stochasticD, eventRisk.getPenalty(), selectionQualified,
                 financialQualityScore), structureProfile.score, 0D, riskRewardProfile.score, 50D, newsScore,
                 newsRiskScore);
-        double dataConfidence = scoreDataConfidence(hasProfileData, hasEpsData, hasCashFlowData, hasIncomeData,
-                hasBalanceData, hasBrokerData);
         String eligibilityReason = buildEligibilityReason(selectionQualified, liquidityScore, financialQualityScore,
                 volumeRatio);
         String dataConfidenceReason = buildDataConfidenceReason(hasProfileData, hasEpsData, hasCashFlowData,
@@ -1534,6 +1567,7 @@ public class TaiwanStockAnalyzer {
         result.setAverageLots20(averageLots20);
         result.setAverageTradeValue20Billion(averageTradeValue20Billion);
         result.setVolatility20Pct(volatility20Pct);
+        result.setAtr20(atr20);
         result.setDrawdownFromHigh60Pct(drawdownFromHigh60Pct);
         result.setGrossMarginPct(grossMarginPct);
         result.setOperatingMarginPct(operatingMarginPct);
@@ -1581,11 +1615,16 @@ public class TaiwanStockAnalyzer {
         result.setOneOffRiskScore(turnaroundProfile.oneOffRiskScore);
         result.setSuggestedStopPrice(riskRewardProfile.stopLossPrice);
         result.setSuggestedStopPct(riskRewardProfile.stopLossPct);
+        result.setSuggestedTrailingStopPrice(riskRewardProfile.trailingStopPrice);
         result.setSuggestedTargetPrice(riskRewardProfile.targetPrice);
         result.setUpsidePotentialPct(riskRewardProfile.upsidePotentialPct);
+        result.setSellSignalScore(riskRewardProfile.sellSignalScore);
+        result.setSellSignalLabel(riskRewardProfile.sellSignalLabel);
+        result.setReducePositionSize(riskRewardProfile.reducePositionSize);
         result.setBuyPointScore(buyPointScore);
         result.setDataConfidence(dataConfidence);
         result.setSelectionQualified(selectionQualified);
+        result.setMarketRegime(activeMarketRegime.getLabel());
         result.setEventRiskPenalty(eventRisk.getPenalty());
         result.setEligibilityReason(eligibilityReason);
         result.setBuyPointLabel(resolveBuyPointLabel(buyPointScore, selectionQualified, financialQualityScore,
@@ -2604,30 +2643,14 @@ public class TaiwanStockAnalyzer {
 
     private double scoreSelectionProfile(double rawScore, double qualityScore, double momentumScore, double volumeRatio,
             double eventRiskPenalty, boolean selectionQualified) {
-        double rawNormalized = rawScore * 100D / RAW_SCORE_MAX;
-        double score = qualityScore * 0.45D + momentumScore * 0.35D + rawNormalized * 0.20D - eventRiskPenalty * 4D;
-        if (!selectionQualified) {
-            score -= 12D;
-        }
-        if (volumeRatio < 0.6D) {
-            score -= 6D;
-        } else if (volumeRatio < LIKELY_MIN_VOLUME_RATIO) {
-            score -= 2D;
-        } else if (volumeRatio > 3.5D) {
-            score -= 6D;
-        } else if (volumeRatio > LIKELY_MAX_VOLUME_RATIO) {
-            score -= 3D;
-        }
-        return NumberParser.clamp(score, 0D, 100D);
+        return activeScoringStrategy.scoreSelectionProfile(rawScore, qualityScore, momentumScore, volumeRatio,
+                eventRiskPenalty, selectionQualified);
     }
 
     private double scoreSelectionComposite(double baseSelectionScore, double trendPersistenceScore, double sectorScore,
             double newsRiskScore) {
-        double score = baseSelectionScore * 0.82D + trendPersistenceScore * 0.08D + sectorScore * 0.06D + 5D;
-        if (newsRiskScore > 60D) {
-            score -= (newsRiskScore - 60D) * 0.15D;
-        }
-        return NumberParser.clamp(score, 0D, 100D);
+        return activeScoringStrategy.scoreSelectionComposite(baseSelectionScore, trendPersistenceScore, sectorScore,
+                newsRiskScore);
     }
 
     private double scoreBuyPointProfile(double selectionScore, double momentumScore, double qualityScore,
@@ -2701,7 +2724,7 @@ public class TaiwanStockAnalyzer {
         if (!selectionQualified) {
             score -= 15D;
         }
-        if (financialQualityScore < MIN_LIKELY_FINANCIAL_SCORE) {
+        if (financialQualityScore < activeLikelyMinFinancialScore()) {
             score -= 8D;
         }
         return NumberParser.clamp(score, 0D, 100D);
@@ -2710,13 +2733,8 @@ public class TaiwanStockAnalyzer {
     private double scoreBuyPointComposite(double baseBuyPointScore, double structureScore,
             double trendPersistenceScore, double riskRewardScore, double sectorScore, double newsScore,
             double newsRiskScore) {
-        double score = baseBuyPointScore * 0.54D + structureScore * 0.16D
-                + trendPersistenceScore * 0.10D + riskRewardScore * 0.08D + sectorScore * 0.04D
-                + newsScore * 0.08D;
-        if (newsRiskScore > 55D) {
-            score -= (newsRiskScore - 55D) * 0.18D;
-        }
-        return NumberParser.clamp(score, 0D, 100D);
+        return activeScoringStrategy.scoreBuyPointComposite(baseBuyPointScore, structureScore, trendPersistenceScore,
+                riskRewardScore, sectorScore, newsScore, newsRiskScore);
     }
 
     private StructureProfile buildStructureProfile(double currentPrice, double movingAverage20, double movingAverage60,
@@ -2796,9 +2814,9 @@ public class TaiwanStockAnalyzer {
 
     private RiskRewardProfile buildRiskRewardProfile(double currentPrice, double movingAverage20,
             double movingAverage60, double movingAverage120, double drawdownFromHigh60Pct, double volatility20Pct,
-            double structureScore, double selectionScore) {
+            double atr20, double structureScore, double selectionScore) {
         if (currentPrice <= 0D) {
-            return new RiskRewardProfile(0D, 0D, 0D, 0D, 0D, 0D);
+            return new RiskRewardProfile(0D, 0D, 0D, 0D, 0D, 0D, 0D, 100D, "觀察", false);
         }
 
         double supportPrice = currentPrice * 0.93D;
@@ -2816,8 +2834,16 @@ public class TaiwanStockAnalyzer {
 
         double volatilityStopPct = Math.max(4D, Math.min(12D, volatility20Pct * 2.2D));
         double volatilityStopPrice = currentPrice * (1D - volatilityStopPct / 100D);
-        double stopLossPrice = Math.max(currentPrice * 0.85D, Math.min(supportPrice, volatilityStopPrice));
+        double atrStopPrice = atr20 > 0D ? currentPrice - atr20 * activeScoringStrategy.stopAtrMultiplier() : 0D;
+        double stopCandidatePrice = Math.min(supportPrice, volatilityStopPrice);
+        if (atrStopPrice > 0D) {
+            stopCandidatePrice = Math.min(stopCandidatePrice, atrStopPrice);
+        }
+        double stopLossPrice = Math.max(currentPrice * 0.82D, stopCandidatePrice);
         double stopLossPct = currentPrice <= stopLossPrice ? 0D : (currentPrice - stopLossPrice) * 100D / currentPrice;
+        double trailingStopPrice = atr20 > 0D ? currentPrice - atr20 * activeScoringStrategy.trailingAtrMultiplier()
+                : movingAverage20 > 0D ? movingAverage20 * 0.99D : stopLossPrice;
+        trailingStopPrice = Math.max(stopLossPrice, trailingStopPrice);
 
         double upsidePotentialPct = Math.max(6D, Math.abs(Math.min(drawdownFromHigh60Pct, 0D))
                 + (structureScore >= 80D ? 10D : structureScore >= 65D ? 7D : 4D));
@@ -2852,8 +2878,12 @@ public class TaiwanStockAnalyzer {
             score += 6D;
         }
 
+        boolean reducePositionSize = stopLossPct > 10D || (atr20 > 0D && atr20 * 100D / currentPrice > 6D);
+        SellSignalProfile sellSignal = buildSellSignalProfile(currentPrice, movingAverage20, trailingStopPrice,
+                drawdownFromHigh60Pct, stopLossPct, atr20);
         return new RiskRewardProfile(NumberParser.clamp(score, 0D, 100D), riskRewardRatio, stopLossPrice,
-                stopLossPct, targetPrice, upsidePotentialPct);
+                stopLossPct, trailingStopPrice, targetPrice, upsidePotentialPct, sellSignal.score, sellSignal.label,
+                reducePositionSize);
     }
 
     private double scoreDataConfidence(boolean hasProfileData, boolean hasEpsData, boolean hasCashFlowData,
@@ -2881,11 +2911,112 @@ public class TaiwanStockAnalyzer {
     }
 
     private boolean isSelectionQualified(double liquidityScore, double financialQualityScore) {
-        return liquidityScore >= MIN_LIQUIDITY_SCORE && financialQualityScore >= MIN_SELECTION_FINANCIAL_SCORE;
+        return isSelectionQualified(liquidityScore, financialQualityScore, 0D, 0D);
+    }
+
+    private boolean isSelectionQualified(double liquidityScore, double financialQualityScore, double volumeRatio,
+            double dataConfidence) {
+        return activeScoringStrategy.isSelectionQualified(liquidityScore, financialQualityScore, volumeRatio,
+                dataConfidence);
     }
 
     private boolean isVolumeRangeHealthy(double volumeRatio) {
-        return volumeRatio >= LIKELY_MIN_VOLUME_RATIO && volumeRatio <= LIKELY_MAX_VOLUME_RATIO;
+        return volumeRatio >= scoringConfig.getQualification().healthyVolumeMin
+                && volumeRatio <= scoringConfig.getQualification().healthyVolumeMax;
+    }
+
+    private double activeLikelyThreshold() {
+        return activeScoringStrategy != null ? activeScoringStrategy.likelySelectionThreshold() : LIKELY_THRESHOLD;
+    }
+
+    private double activeBuyPointThreshold() {
+        return activeScoringStrategy != null ? activeScoringStrategy.buyPointThreshold() : BUYPOINT_THRESHOLD;
+    }
+
+    private double activeLikelyMinFinancialScore() {
+        return activeScoringStrategy != null ? activeScoringStrategy.likelyMinFinancialQualityScore()
+                : MIN_LIKELY_FINANCIAL_SCORE;
+    }
+
+    private void applyIndustryRelativeScoring(StockAnalysisResultVO result, IndustryMetricsSnapshot metrics) {
+        if (result == null || metrics == null) {
+            return;
+        }
+
+        double grossMarginPctile = metrics.percentile(result.getIndustry(), "grossMargin", result.getGrossMarginPct(), false);
+        double operatingMarginPctile = metrics.percentile(result.getIndustry(), "operatingMargin",
+                result.getOperatingMarginPct(), false);
+        double roaPctile = metrics.percentile(result.getIndustry(), "roa", result.getReturnOnAssetsPct(), false);
+        double roePctile = metrics.percentile(result.getIndustry(), "roe", result.getReturnOnEquityPct(), false);
+        double pegPctile = metrics.percentile(result.getIndustry(), "peg", result.getPeg(), true);
+        double relativePe = result.getPeerAveragePe() > 0D && result.getTrailingPe() > 0D
+                ? result.getTrailingPe() / result.getPeerAveragePe() : result.getTrailingPe();
+        double relativePePctile = metrics.percentile(result.getIndustry(), "relativePe", relativePe, true);
+        double nonOperatingPctile = metrics.percentile(result.getIndustry(), "nonOperating",
+                result.getNonOperatingRatioPct(), true);
+
+        double valuationPercentile = averagePercentiles(pegPctile, relativePePctile, nonOperatingPctile);
+        double financialPercentile = averagePercentiles(grossMarginPctile, operatingMarginPctile, roaPctile,
+                roePctile, nonOperatingPctile);
+
+        result.setGrossMarginIndustryPercentile(grossMarginPctile);
+        result.setOperatingMarginIndustryPercentile(operatingMarginPctile);
+        result.setRoaIndustryPercentile(roaPctile);
+        result.setRoeIndustryPercentile(roePctile);
+        result.setPegIndustryPercentile(pegPctile);
+        result.setRelativePeIndustryPercentile(relativePePctile);
+        result.setNonOperatingIndustryPercentile(nonOperatingPctile);
+        result.setValuationIndustryPercentile(valuationPercentile);
+        result.setFinancialQualityIndustryPercentile(financialPercentile);
+
+        double valuationScore = NumberParser.clamp(result.getValuationScore() * 0.65D + valuationPercentile * 0.07D, 0D,
+                20D);
+        double financialQualityScore = NumberParser.clamp(
+                result.getFinancialQualityScore() * 0.65D + financialPercentile * 0.07D, 0D, 20D);
+        result.setValuationScore(valuationScore);
+        result.setFinancialQualityScore(financialQualityScore);
+        result.setQualityScore(scoreQualityProfile(result.getRevenueScore(), financialQualityScore, valuationScore,
+                result.getLiquidityScore()));
+        double rawScore = NumberParser.clamp(result.getRevenueScore() + result.getChipsScore() + result.getLiquidityScore()
+                + valuationScore + result.getTechnicalScore() + financialQualityScore - result.getEventRiskPenalty(), 0D,
+                RAW_SCORE_MAX);
+        result.setRawScore(rawScore);
+        result.setScore(NumberParser.clamp(rawScore, 0D, 100D));
+    }
+
+    private double averagePercentiles(double... values) {
+        double total = 0D;
+        int count = 0;
+        for (double value : values) {
+            if (value > 0D) {
+                total += value;
+                count++;
+            }
+        }
+        return count == 0 ? 50D : total / count;
+    }
+
+    private SellSignalProfile buildSellSignalProfile(double currentPrice, double movingAverage20,
+            double trailingStopPrice, double drawdownFromHigh60Pct, double stopLossPct, double atr20) {
+        double score = 8D;
+        if (currentPrice < movingAverage20 && movingAverage20 > 0D) {
+            score += 35D;
+        }
+        if (currentPrice <= trailingStopPrice && trailingStopPrice > 0D) {
+            score += 35D;
+        }
+        if (drawdownFromHigh60Pct < -12D) {
+            score += 15D;
+        }
+        if (stopLossPct > 10D) {
+            score += 10D;
+        }
+        if (atr20 > 0D && atr20 * 100D / currentPrice > 6D) {
+            score += 8D;
+        }
+        score = NumberParser.clamp(score, 0D, 100D);
+        String label = score >= 70D ? "轉弱出場" : score >= 45D ? "保守續抱" : "續抱觀察";
+        return new SellSignalProfile(score, label);
     }
 
     private double averageRevenueYoY(List<MonthlyRevenueVO> revenues, int count) {
@@ -3158,9 +3289,10 @@ public class TaiwanStockAnalyzer {
                 && result.getTrendPersistenceScore() >= HIGH_CONVICTION_TREND_SCORE
                 && result.getStructureScore() >= HIGH_CONVICTION_STRUCTURE_SCORE
                 && result.getRiskRewardScore() >= HIGH_CONVICTION_RISK_REWARD_SCORE
-                && result.getBuyPointScore() >= BUYPOINT_THRESHOLD && result.getEventRiskPenalty() <= 2.5D
+                && result.getBuyPointScore() >= activeBuyPointThreshold() && result.getEventRiskPenalty() <= 2.5D
                 && result.getNewsRiskScore() <= 68D && !isStructureRisky(result)
-                && result.getVolumeRatio() >= LIKELY_MIN_VOLUME_RATIO && result.getVolumeRatio() <= 2.8D;
+                && result.getVolumeRatio() >= scoringConfig.getQualification().healthyVolumeMin
+                && result.getVolumeRatio() <= 2.8D;
     }
 
     private boolean isMomentumAttackCandidate(StockAnalysisResultVO result) {
@@ -3179,7 +3311,7 @@ public class TaiwanStockAnalyzer {
     private boolean isSwingPositionCandidate(StockAnalysisResultVO result) {
         boolean cleanNonOperating = !hasValue(result.getNonOperatingRatioPct()) || result.getNonOperatingRatioPct() <= 25D;
         return result.isSelectionQualified() && result.getQualityScore() >= SWING_QUALITY_SCORE
-                && result.getFinancialQualityScore() >= MIN_LIKELY_FINANCIAL_SCORE
+                && result.getFinancialQualityScore() >= activeLikelyMinFinancialScore()
                 && result.getBuyPointScore() >= 68D && result.getRiskRewardRatio() >= SWING_RISK_REWARD_RATIO
                 && result.getTrailingFourQuarterEps() > 0D && result.getLatestFreeCashFlow() > 0L
                 && result.getEventRiskPenalty() <= 2.5D && result.getNewsRiskScore() <= 70D
@@ -3192,7 +3324,7 @@ public class TaiwanStockAnalyzer {
                 || result.getRevenueGrowthSignalScore() >= 65D;
         boolean timingNotReady = "追高風險".equals(result.getStructureLabel()) || result.getBuyPointScore() < 72D
                 || result.getRiskRewardRatio() < 1.3D || result.getVolumeRatio() > 2.8D
-                || result.getNewsRiskScore() > 65D || result.getFinancialQualityScore() < MIN_LIKELY_FINANCIAL_SCORE;
+                || result.getNewsRiskScore() > 65D || result.getFinancialQualityScore() < activeLikelyMinFinancialScore();
         return result.isSelectionQualified() && result.getSelectionScore() >= WATCHLIST_THRESHOLD && catalystReady
                 && timingNotReady;
     }
@@ -3417,7 +3549,7 @@ public class TaiwanStockAnalyzer {
             notes.add(result.getStructureLabel());
         }
 
-        if (result.getBuyPointScore() >= BUYPOINT_THRESHOLD) {
+        if (result.getBuyPointScore() >= activeBuyPointThreshold()) {
             notes.add("買點條件佳");
         } else if (result.getBuyPointScore() >= 60D) {
             notes.add("可觀察買點");
@@ -3593,13 +3725,13 @@ public class TaiwanStockAnalyzer {
         if (dataConfidence > 0D && dataConfidence < 65D && buyPointScore >= 70D) {
             return "時機不錯，但資料信心不足";
         }
-        if (financialQualityScore < MIN_LIKELY_FINANCIAL_SCORE && buyPointScore < 75D) {
+        if (financialQualityScore < activeLikelyMinFinancialScore() && buyPointScore < activeBuyPointThreshold()) {
             return "基本面可，但時機差";
         }
         if (buyPointScore >= 85D && structureScore >= 75D && riskRewardScore >= 60D) {
             return "A級時機";
         }
-        if (buyPointScore >= 75D) {
+        if (buyPointScore >= activeBuyPointThreshold()) {
             return "可觀察，等確認";
         }
         if (selectionScore >= 75D) {
@@ -3615,7 +3747,8 @@ public class TaiwanStockAnalyzer {
                 + format(result.getSectorScore()) + "，題材 " + emptyIfBlank(result.getPrimaryTheme(), "一般")
                 + " " + format(result.getThemeScore()) + "，趨勢續航 "
                 + resolveTrendPersistenceLabel(result.getTrendPersistenceScore(), result.getTrendPersistenceDays()) + " "
-                + format(result.getTrendPersistenceScore()) + "，翻轉 "
+                + format(result.getTrendPersistenceScore()) + "，大盤狀態 "
+                + emptyIfBlank(result.getMarketRegime(), "區間盤整") + "，翻轉 "
                 + emptyIfBlank(result.getTurnaroundLabel(), "尚未明確") + " " + format(result.getTurnaroundScore()));
         parts.add("結構判讀：" + structureProfile.label + "（" + format(structureProfile.score) + " 分）");
         if (result.getCurrentPrice() > result.getMovingAverage20() && result.getCurrentPrice() > result.getMovingAverage60()) {
@@ -3680,12 +3813,16 @@ public class TaiwanStockAnalyzer {
             parts.add("市場題材參考：" + result.getMarketThemeReferenceReason());
         }
         parts.add("停損參考 " + format(riskRewardProfile.stopLossPrice) + "（" + format(riskRewardProfile.stopLossPct)
-                + "%），目標價 " + format(riskRewardProfile.targetPrice) + "，風報比 "
-                + format(riskRewardProfile.riskRewardRatio));
+                + "%），ATR 移動停利 " + format(riskRewardProfile.trailingStopPrice) + "，目標價 "
+                + format(riskRewardProfile.targetPrice) + "，風報比 " + format(riskRewardProfile.riskRewardRatio)
+                + "，賣出訊號 " + riskRewardProfile.sellSignalLabel + " " + format(riskRewardProfile.sellSignalScore));
+        if (riskRewardProfile.reducePositionSize) {
+            parts.add("波動偏大，建議縮小部位");
+        }
         if (!result.isSelectionQualified()) {
             parts.add("尚未達流動性/財報品質基本門檻");
         }
-        if (result.getFinancialQualityScore() < MIN_LIKELY_FINANCIAL_SCORE) {
+        if (result.getFinancialQualityScore() < activeLikelyMinFinancialScore()) {
             parts.add("財報品質尚未達 Likely 強度");
         }
         if (result.getDataConfidence() > 0D && result.getDataConfidence() < 65D) {
@@ -3752,8 +3889,8 @@ public class TaiwanStockAnalyzer {
                         + format(MIN_SELECTION_FINANCIAL_SCORE));
             }
         }
-        if (financialQualityScore < MIN_LIKELY_FINANCIAL_SCORE) {
-            parts.add("Likely 需財報品質 >= " + format(MIN_LIKELY_FINANCIAL_SCORE));
+        if (financialQualityScore < activeLikelyMinFinancialScore()) {
+            parts.add("Likely 需財報品質 >= " + format(activeLikelyMinFinancialScore()));
         }
         if (!isVolumeRangeHealthy(volumeRatio)) {
             parts.add("Likely 偏好量比介於 " + format(LIKELY_MIN_VOLUME_RATIO) + " 到 "
@@ -3887,6 +4024,11 @@ public class TaiwanStockAnalyzer {
         result.setNewsSourceCount(row.newsSourceCount);
         result.setNewsOfficialSourceCount(row.newsOfficialSourceCount);
         result.setNewsMediaSourceCount(row.newsMediaSourceCount);
+        result.setCompanySummary(row.companySummary);
+        result.setRecentNewsBrief(row.recentNewsBrief);
+        result.setTransformationHint(row.transformationHint);
+        result.setPracticalAdvice(row.practicalAdvice);
+        result.setAdviceConfidence(row.adviceConfidence);
         result.setRelativeStrengthScore(row.relativeStrengthScore);
         result.setIndustryReturnStrength(row.industryReturnStrength);
         result.setIndustryVolumeStrength(row.industryVolumeStrength);
@@ -3968,6 +4110,15 @@ public class TaiwanStockAnalyzer {
             notes.add("新聞熱度偏高");
         }
         return join(notes, "；");
+    }
+
+    private void applyNarrativeSummary(StockAnalysisResultVO result) {
+        NewsCompanySummarizer.Summary summary = newsCompanySummarizer.summarize(result);
+        result.setCompanySummary(summary.companySummary);
+        result.setRecentNewsBrief(summary.recentNewsBrief);
+        result.setTransformationHint(summary.transformationHint);
+        result.setPracticalAdvice(summary.practicalAdvice);
+        result.setAdviceConfidence(summary.adviceConfidence);
     }
 
     private <T> T fetchOptional(String label, TaiwanStockVO stock, FetchSupplier<T> supplier, T fallback) {
@@ -4072,17 +4223,36 @@ public class TaiwanStockAnalyzer {
         private final double riskRewardRatio;
         private final double stopLossPrice;
         private final double stopLossPct;
+        private final double trailingStopPrice;
         private final double targetPrice;
         private final double upsidePotentialPct;
+        private final double sellSignalScore;
+        private final String sellSignalLabel;
+        private final boolean reducePositionSize;
 
         private RiskRewardProfile(double score, double riskRewardRatio, double stopLossPrice, double stopLossPct,
-                double targetPrice, double upsidePotentialPct) {
+                double trailingStopPrice, double targetPrice, double upsidePotentialPct, double sellSignalScore,
+                String sellSignalLabel, boolean reducePositionSize) {
             this.score = score;
             this.riskRewardRatio = riskRewardRatio;
             this.stopLossPrice = stopLossPrice;
             this.stopLossPct = stopLossPct;
+            this.trailingStopPrice = trailingStopPrice;
             this.targetPrice = targetPrice;
             this.upsidePotentialPct = upsidePotentialPct;
+            this.sellSignalScore = sellSignalScore;
+            this.sellSignalLabel = sellSignalLabel;
+            this.reducePositionSize = reducePositionSize;
+        }
+    }
+
+    private static class SellSignalProfile {
+        private final double score;
+        private final String label;
+
+        private SellSignalProfile(double score, String label) {
+            this.score = score;
+            this.label = label;
         }
     }
 

@@ -1,5 +1,6 @@
 param(
-    [string]$Mode = "analysis"
+    [ValidateSet("analysis", "full", "close", "news-only")]
+    [string]$Mode = "full"
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,7 +21,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
 $trackedPaths = @(
     "history_dashboard.html",
     "web/data/latest.json",
-    "web/data/history.json"
+    "web/data/history.json",
+    "web/data/snapshot_status.json",
+    "web/early_breakout"
 )
 
 & git add -- $trackedPaths
@@ -37,6 +40,8 @@ if ($LASTEXITCODE -eq 0) {
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $message = if ($Mode -eq "news-only") {
     "Auto update site after news-only run $timestamp"
+} elseif ($Mode -eq "close") {
+    "Auto update site after close-stage run $timestamp"
 } else {
     "Auto update site after full analysis $timestamp"
 }
