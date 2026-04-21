@@ -22,12 +22,14 @@ public class TechnicalSnapshotVO {
     private final double rsi14;
     private final double stochasticK;
     private final double stochasticD;
+    private final double ma20Slope;  // MA20(today) - MA20(5 days ago), positive = rising
 
     public TechnicalSnapshotVO(double currentPrice, double movingAverage18, double movingAverage20,
             double movingAverage54, double movingAverage60, double movingAverage120, double return18DayPct,
             double return20DayPct, double return54DayPct, double return60DayPct, long currentVolume,
             double averageVolume20, double averageTradeValue20Billion, double averageLots20, double volatility20Pct,
-            double atr20, double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD) {
+            double atr20, double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD,
+            double ma20Slope) {
         this.currentPrice = currentPrice;
         this.movingAverage18 = movingAverage18;
         this.movingAverage20 = movingAverage20;
@@ -48,6 +50,7 @@ public class TechnicalSnapshotVO {
         this.rsi14 = rsi14;
         this.stochasticK = stochasticK;
         this.stochasticD = stochasticD;
+        this.ma20Slope = ma20Slope;
     }
 
     public double getCurrentPrice() {
@@ -128,5 +131,9 @@ public class TechnicalSnapshotVO {
 
     public double getStochasticD() {
         return stochasticD;
+    }
+
+    public double getMa20Slope() {
+        return ma20Slope;
     }
 }

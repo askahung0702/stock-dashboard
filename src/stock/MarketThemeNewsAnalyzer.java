@@ -403,6 +403,30 @@ public class MarketThemeNewsAnalyzer {
             keywords.add("散熱模組");
             keywords.add("熱管理");
             keywords.add("均熱片");
+        } else if ("電動車".equals(theme)) {
+            keywords.add("ev");
+            keywords.add("bev");
+            keywords.add("電動巴士");
+            keywords.add("電動機車");
+            keywords.add("充電樁");
+            keywords.add("teslа");
+        } else if ("儲能".equals(theme)) {
+            keywords.add("電池儲能");
+            keywords.add("ess");
+            keywords.add("儲能系統");
+            keywords.add("磷酸鋰鐵");
+            keywords.add("固態電池");
+        } else if ("機器人".equals(theme)) {
+            keywords.add("人形機器人");
+            keywords.add("協作機器人");
+            keywords.add("工業機器人");
+            keywords.add("機械手臂");
+            keywords.add("humanoid");
+        } else if ("航太".equals(theme)) {
+            keywords.add("無人機");
+            keywords.add("uav");
+            keywords.add("太空");
+            keywords.add("航空零組件");
         }
         return keywords;
     }
@@ -451,7 +475,19 @@ public class MarketThemeNewsAnalyzer {
     }
 
     private boolean isMarketNewsUrl(String url) {
-        return url.startsWith("https://tw.stock.yahoo.com/news/") && url.endsWith(".html");
+        if (url == null || url.length() == 0) {
+            return false;
+        }
+        if (url.startsWith("https://tw.stock.yahoo.com/news/") && url.endsWith(".html")) {
+            return true;
+        }
+        if (url.startsWith("https://finance.yahoo.com/news/") && url.endsWith(".html")) {
+            return true;
+        }
+        if (url.startsWith("https://tw.stock.yahoo.com/") && url.contains("/news/") && !url.contains("?")) {
+            return true;
+        }
+        return false;
     }
 
     private boolean contains(String text, String keyword) {

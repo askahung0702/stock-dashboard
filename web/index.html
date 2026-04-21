@@ -94,6 +94,29 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .eb-chip.support{color:#fde68a;border-color:rgba(234,179,8,.28)}
 .eb-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.7}
 
+/* Market weakness warning bar */
+.wk-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:10px;border:1px solid;font-size:13px;cursor:pointer;transition:opacity .2s}
+.wk-bar.wk-1{background:rgba(234,179,8,.10);border-color:rgba(234,179,8,.35);color:#fde68a}
+.wk-bar.wk-2{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.40);color:#fed7aa}
+.wk-bar.wk-3{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.45);color:#fecaca;animation:wk-pulse 2s ease-in-out infinite}
+@keyframes wk-pulse{0%,100%{opacity:1}50%{opacity:.75}}
+.wk-icon{font-size:18px;flex-shrink:0}
+.wk-main{flex:1}
+.wk-title{font-weight:700;font-size:14px}
+.wk-detail{font-size:11px;opacity:.85;margin-top:2px;line-height:1.6}
+.wk-action{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;flex-shrink:0}
+
+/* Stage diff summary panel */
+.sd-panel{background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(59,130,246,.07));border:1px solid rgba(168,85,247,.22);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.sd-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sd-title{font-size:14px;font-weight:700;color:#e9d5ff}
+.sd-date{font-size:11px;color:var(--muted);margin-left:auto}
+.sd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.sd-stat{background:rgba(15,23,42,.45);border:1px solid rgba(148,163,184,.12);border-radius:8px;padding:9px 12px}
+.sd-lbl{font-size:10px;color:var(--muted);line-height:1.4}
+.sd-val{font-size:18px;font-weight:700;margin-top:2px}
+.sd-pos{color:var(--green)}.sd-neg{color:var(--red)}.sd-neu{color:var(--yellow)}
+
 /* Filter bar */
 .fbar{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .fbar input,.fbar select{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 9px;font-size:13px;font-family:inherit}
@@ -214,6 +237,20 @@ td{padding:7px 9px;vertical-align:middle}
 .sl-item-lbl{font-size:11px;color:var(--muted);margin-bottom:3px}
 .sl-item-val{font-size:15px;font-weight:700}
 .sl-item-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.pos-card{border-color:rgba(59,130,246,.45)}
+.pos-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.pos-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 9px;width:150px;font-family:inherit;font-size:13px}
+.pos-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.pos-clear{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:7px 10px;cursor:pointer;font-family:inherit;font-size:12px}
+.pos-clear:hover{color:var(--text);border-color:var(--blue)}
+.pos-advice{background:var(--surface2);border-radius:8px;padding:10px 12px;line-height:1.65}
+.pos-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pos-action{font-size:15px;font-weight:800}
+.pos-pill{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(148,163,184,.14);font-size:11px;color:var(--muted)}
+.pos-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.pos-metric{border:1px solid var(--border);border-radius:6px;padding:7px 9px;background:rgba(15,23,42,.25)}
+.pos-metric b{display:block;font-size:13px;margin-top:2px}
+.pos-note{font-size:12px;color:var(--muted)}
 
 /* Charts */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
@@ -235,7 +272,9 @@ td{padding:7px 9px;vertical-align:middle}
 
 /* Track */
 .met.track{border-color:var(--blue)}
+.met.track.track-alert{border-color:var(--red);background:rgba(239,68,68,.07)}
 .track-lbl{font-size:11px;color:var(--blue)}
+.met.track.track-alert .track-lbl{color:var(--red)}
 .track-body{font-size:12px;line-height:1.85;margin-top:5px}
 
 ::-webkit-scrollbar{width:5px;height:5px}
@@ -273,6 +312,16 @@ td{padding:7px 9px;vertical-align:middle}
       <div class="mkt-text" id="mkt-text"></div>
     </div>
     <div class="mkt-chips" id="mkt-chips"></div>
+  </div>
+
+  <!-- Market weakness warning bar -->
+  <div class="wk-bar" id="wk-bar" style="display:none" onclick="document.getElementById('ma-panel').scrollIntoView({behavior:'smooth'})">
+    <div class="wk-icon" id="wk-icon">⚠</div>
+    <div class="wk-main">
+      <div class="wk-title" id="wk-title"></div>
+      <div class="wk-detail" id="wk-detail"></div>
+    </div>
+    <div class="wk-action" id="wk-action"></div>
   </div>
 
   <div class="ma-panel" id="ma-panel" style="display:none">
@@ -318,6 +367,15 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="eb-grid" id="eb-grid"></div>
     <div class="eb-conds" id="eb-conds"></div>
     <div class="eb-note" id="eb-note"></div>
+  </div>
+
+  <!-- Stage diff summary panel -->
+  <div class="sd-panel" id="sd-panel" style="display:none">
+    <div class="sd-head">
+      <div class="sd-title">盤後初版 → 夜間完整版 差異摘要</div>
+      <div class="sd-date" id="sd-date"></div>
+    </div>
+    <div class="sd-grid" id="sd-grid"></div>
   </div>
 
   <!-- Filter bar -->
@@ -396,8 +454,10 @@ td{padding:7px 9px;vertical-align:middle}
         <th onclick="srt('price')">股價<span class="sa" id="sa-price"></span></th>
         <th onclick="srt('return20DayPct')">20日%<span class="sa" id="sa-return20DayPct"></span></th>
         <th onclick="srt('volumeRatio')">量比<span class="sa" id="sa-volumeRatio"></span></th>
-        <th onclick="srt('fiveDayInstitutionalNetRatioPct')">法人%<span class="sa" id="sa-fiveDayInstitutionalNetRatioPct"></span></th>
-        <th onclick="srt('brokerNetRatioPct')">主力%<span class="sa" id="sa-brokerNetRatioPct"></span></th>
+        <th onclick="srt('latestInstitutionalNetRatioPct')">單日法人%<span class="sa" id="sa-latestInstitutionalNetRatioPct"></span></th>
+        <th onclick="srt('fiveDayInstitutionalNetRatioPct')">5日法人%<span class="sa" id="sa-fiveDayInstitutionalNetRatioPct"></span></th>
+        <th onclick="srt('brokerNetLots')">單日主力<span class="sa" id="sa-brokerNetLots"></span></th>
+        <th onclick="srt('brokerNetRatioPct')">主力比率<span class="sa" id="sa-brokerNetRatioPct"></span></th>
         <th onclick="srt('shortScore')" title="短線適性分">短分<span class="sa" id="sa-shortScore"></span></th>
         <th onclick="srt('midScore')" title="中線適性分">中分<span class="sa" id="sa-midScore"></span></th>
       </tr></thead>
@@ -538,7 +598,9 @@ function normalizeEntry(entry) {
   return {
     price: Number(entry?.price) || 0,
     score: Number(entry?.score) || 0,
-    date: typeof entry?.date === 'string' ? entry.date : ''
+    date: typeof entry?.date === 'string' ? entry.date : '',
+    stopPrice: Number(entry?.stopPrice) || 0,
+    exitRule: typeof entry?.exitRule === 'string' ? entry.exitRule : ''
   };
 }
 
@@ -758,7 +820,7 @@ function calcMidScore(s) {
   else if (accel > 5)  score += 3;
   else if (accel < -20) score -= 3;
   // 法人淨買超加分
-  if ((s.fiveDayInstitutionalNetRatioPct || 0) > 0.3) score += 5;
+  if (Math.max(s.latestInstitutionalNetRatioPct || 0, s.fiveDayInstitutionalNetRatioPct || 0) > 0.3) score += 5;
   // 連續高分代表持續性
   const cd = Number.isFinite(s.consecutiveDays) ? s.consecutiveDays : 0;
   if (cd >= 3) score += 3;
@@ -790,14 +852,26 @@ async function init() {
     const d = latestResp;
 
     // 預計算短線/中線分
-    S.all = (d.rows || []).map(s => ({
-      ...s,
-      legacyScore: typeof s.legacyScore === 'number' ? s.legacyScore : s.score,
-      score: typeof s.selectionScore === 'number' && s.selectionScore > 0 ? s.selectionScore : s.score,
-      shortScore: calcShortScore(s),
-      midScore:   calcMidScore(s),
-      type:       ''  // will be set after scores computed
-    }));
+    S.all = (d.rows || []).map(s => {
+      const chipsFallback = parseChipsFallback(s);
+      const normalized = {
+        ...s,
+        latestInstitutionalNetLots: resolvedNumber(s.latestInstitutionalNetLots, chipsFallback.latestInstitutionalNetLots),
+        latestInstitutionalNetRatioPct: resolvedNumber(s.latestInstitutionalNetRatioPct, chipsFallback.latestInstitutionalNetRatioPct),
+        fiveDayInstitutionalNetLots: resolvedNumber(s.fiveDayInstitutionalNetLots, chipsFallback.fiveDayInstitutionalNetLots),
+        fiveDayInstitutionalNetRatioPct: resolvedNumber(s.fiveDayInstitutionalNetRatioPct, chipsFallback.fiveDayInstitutionalNetRatioPct),
+        brokerNetLots: resolvedNumber(s.brokerNetLots, chipsFallback.brokerNetLots),
+        brokerNetRatioPct: resolvedNumber(s.brokerNetRatioPct, chipsFallback.brokerNetRatioPct)
+      };
+      return {
+        ...normalized,
+        legacyScore: typeof s.legacyScore === 'number' ? s.legacyScore : s.score,
+        score: typeof s.selectionScore === 'number' && s.selectionScore > 0 ? s.selectionScore : s.score,
+        shortScore: calcShortScore(normalized),
+        midScore:   calcMidScore(normalized),
+        type:       ''  // will be set after scores computed
+      };
+    });
     S.all.forEach(s => { s.type = getType(s); });
     applyEarlyBreakoutMeta(earlyBreakout);
 
@@ -809,9 +883,11 @@ async function init() {
     document.getElementById('s-watch').textContent  = (d.watchlistCount||0).toLocaleString();
 
     renderMarketBanner(d);
+    renderWeaknessBar(d);
     renderMarketAdvisor(d);
     renderThemeHeat(d.themes || []);
     renderEarlyBreakoutPanel();
+    loadAndRenderStageDiffPanel().catch(() => {});
     fillIndustries();
     fillThemes();
     updateTabCounts();
@@ -1107,6 +1183,41 @@ function renderEarlyBreakoutPanel() {
   panel.style.display = '';
 }
 
+// ── Stage Diff Summary Panel ──────────────────────────────────────────────────
+async function loadAndRenderStageDiffPanel() {
+  const urls = isStaticPagesMode()
+    ? ['data/close_full_diff_summary.json']
+    : ['/web/data/close_full_diff_summary.json', 'data/close_full_diff_summary.json'];
+  let summary = null;
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (resp.ok) { summary = await resp.json(); break; }
+    } catch (_) {}
+  }
+  const panel = document.getElementById('sd-panel');
+  if (!summary || !summary.comparedCount) return;
+  document.getElementById('sd-date').textContent = summary.date ? fmtDate(summary.date) : '';
+  const avgSel = Number(summary.avgSelectionDelta || 0);
+  const avgBuy = Number(summary.avgBuyPointDelta || 0);
+  const avgConf = Number(summary.avgConfidenceDelta || 0);
+  const items = [
+    { lbl: '比較股票數', val: summary.comparedCount, cls: 'sd-neu', fmt: v => v },
+    { lbl: '選股分變化', val: summary.changedSelectionCount, cls: 'sd-neu', fmt: v => v + ' 檔' },
+    { lbl: '買點分變化', val: summary.changedBuyPointCount, cls: 'sd-neu', fmt: v => v + ' 檔' },
+    { lbl: '新聞補齊', val: summary.newsReadyImproved, cls: summary.newsReadyImproved > 0 ? 'sd-pos' : 'sd-neu', fmt: v => '+' + v },
+    { lbl: '主力補齊', val: summary.brokerReadyImproved, cls: summary.brokerReadyImproved > 0 ? 'sd-pos' : 'sd-neu', fmt: v => '+' + v },
+    { lbl: '財報補齊', val: summary.financialReadyImproved, cls: summary.financialReadyImproved > 0 ? 'sd-pos' : 'sd-neu', fmt: v => '+' + v },
+    { lbl: '均選股分差', val: avgSel, cls: avgSel > 0 ? 'sd-pos' : avgSel < 0 ? 'sd-neg' : 'sd-neu', fmt: v => (v > 0 ? '+' : '') + v.toFixed(2) },
+    { lbl: '均買點分差', val: avgBuy, cls: avgBuy > 0 ? 'sd-pos' : avgBuy < 0 ? 'sd-neg' : 'sd-neu', fmt: v => (v > 0 ? '+' : '') + v.toFixed(2) },
+    { lbl: '均信心差', val: avgConf, cls: avgConf > 0 ? 'sd-pos' : avgConf < 0 ? 'sd-neg' : 'sd-neu', fmt: v => (v > 0 ? '+' : '') + v.toFixed(2) },
+  ];
+  document.getElementById('sd-grid').innerHTML = items.map(it =>
+    `<div class="sd-stat"><div class="sd-lbl">${it.lbl}</div><div class="sd-val ${it.cls}">${it.fmt(it.val)}</div></div>`
+  ).join('');
+  panel.style.display = '';
+}
+
 // ── Market Banner ─────────────────────────────────────────────────────────────
 function renderMarketBanner(d) {
   const sigMap = { '偏強':'sig-strong', '中性':'sig-neutral', '偏弱':'sig-weak', '警戒':'sig-danger' };
@@ -1126,6 +1237,52 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">危險警報 <b>${d.marketAlert || '中性'}</b></div>` +
     `<div class="mkt-chip">爆量股 <b>${(d.volumeSurgePct||0).toFixed(1)}%</b></div>` +
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
+}
+
+function calcWeaknessLevel(d) {
+  const sig     = d.marketSignal || '';
+  const danger  = Number(d.marketDangerScore) || 0;
+  const wCount  = Number((d.marketWeakness || {}).warningCount) || 0;
+  const revScore= Number((d.marketReversal  || {}).score)       || 0;
+  if (sig === '警戒' && (danger >= 60 || wCount >= 3 || revScore >= 65)) return 3;
+  if (sig === '警戒') return 2;
+  if (sig === '偏弱' && (danger >= 50 || wCount >= 2 || revScore >= 55)) return 2;
+  if (sig === '偏弱') return 1;
+  if (danger >= 45 || wCount >= 2) return 1;
+  return 0;
+}
+
+function renderWeaknessBar(d) {
+  const bar = document.getElementById('wk-bar');
+  if (!bar) return;
+  const level = calcWeaknessLevel(d);
+  if (level === 0) { bar.style.display = 'none'; return; }
+
+  const danger  = Number(d.marketDangerScore) || 0;
+  const wCount  = Number((d.marketWeakness || {}).warningCount) || 0;
+  const revScore= Number((d.marketReversal  || {}).score)       || 0;
+  const alerts  = ((d.marketWeakness || {}).alerts || []).slice(0, 2);
+
+  const configs = {
+    1: { cls:'wk-1', icon:'⚠', title:'大盤開始出現轉弱訊號', action:'降低新進倉位' },
+    2: { cls:'wk-2', icon:'🔶', title:'大盤中等轉弱，注意風險', action:'停止加倉，守停損' },
+    3: { cls:'wk-3', icon:'🚨', title:'大盤強烈轉弱警示！', action:'全面防守，縮倉' }
+  };
+  const cfg = configs[level];
+
+  const parts = [];
+  if (d.marketSignal) parts.push(`大盤 ${d.marketSignal}`);
+  if (danger > 0)     parts.push(`警報分 ${danger.toFixed(1)}`);
+  if (wCount > 0)     parts.push(`轉弱 ${wCount} 項`);
+  if (revScore > 0)   parts.push(`反轉風險 ${revScore.toFixed(1)}`);
+  if (alerts.length)  parts.push(...alerts);
+
+  bar.className = 'wk-bar ' + cfg.cls;
+  bar.style.display = '';
+  document.getElementById('wk-icon').textContent   = cfg.icon;
+  document.getElementById('wk-title').textContent  = cfg.title;
+  document.getElementById('wk-detail').textContent = parts.join('｜');
+  document.getElementById('wk-action').textContent = cfg.action;
 }
 
 function renderMarketAdvisor(d) {
@@ -1269,9 +1426,8 @@ function go() {
   if (ebonly) stocks = stocks.filter(s => s.earlyBreakoutCandidate);
   if (wonly) stocks = stocks.filter(s => S.wl.has(s.code));
 
-  // 預設排序：短線tab用shortScore，中線tab用midScore
+  // 切換起漲/續攻 tab 時會預設改成篩選器分數；使用者點欄位後，必須尊重欄位排序。
   let defaultKey = S.sortKey;
-  if ((t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') && (defaultKey === 'score' || defaultKey === 'buyPointScore')) defaultKey = 'earlyBreakoutScreenScore';
   if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
@@ -1304,7 +1460,7 @@ function tab(t) {
   else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore')) {
     S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
   }
-  else if (t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854') {
+  else if (isEarlyBreakoutTab(t)) {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (S.sortKey === 'earlyBreakoutScreenScore') {
@@ -1314,6 +1470,10 @@ function tab(t) {
     S.sortKey = 'score'; refreshSortArrows();
   }
   go();
+}
+
+function isEarlyBreakoutTab(t) {
+  return t === 'breakout' || t === 'continuation' || t === 'breakout1854' || t === 'continuation1854';
 }
 
 // ── Sort ──────────────────────────────────────────────────────────────────────
@@ -1386,7 +1546,12 @@ function mkRow(s) {
     const e  = S.wlEntries[s.code];
     const pl = (e.price > 0 && s.price > 0) ? ((s.price - e.price) / e.price * 100) : 0;
     const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
-    nameExtra = `<div class="et">進 ${fmtDateShort(e.date)} $${e.price} <span style="color:${pc};font-weight:700">${pl>0?'+':''}${pl.toFixed(1)}%</span></div>`;
+    const stopP = e.stopPrice > 0 ? e.stopPrice : 0;
+    const stopHit = stopP > 0 && s.price > 0 && s.price <= stopP;
+    nameExtra = `<div class="et">進 ${fmtDateShort(e.date)} $${e.price} <span style="color:${pc};font-weight:700">${pl>0?'+':''}${pl.toFixed(1)}%</span>${stopHit ? ' <span style="color:var(--red);font-weight:700">⚠停損</span>' : ''}</div>`;
+  }
+  if (String(s?.analysisVersion || '').endsWith('-cached')) {
+    nameExtra += `<span style="font-size:10px;color:var(--muted);margin-left:4px">📦快取</span>`;
   }
   nameExtra += warningBadgesHtml(s);
 
@@ -1413,7 +1578,8 @@ function mkRow(s) {
     `<td>${s.price > 0 ? '$'+s.price.toLocaleString() : '—'}</td>` +
     `<td class="${rc}">${ret !== 0 ? (ret>0?'+':'') + ret.toFixed(1) + '%' : '—'}</td>` +
     `<td>${s.volumeRatio > 0 ? s.volumeRatio.toFixed(2) : '—'}</td>` +
-    fmtPct(s.fiveDayInstitutionalNetRatioPct) + fmtPct(s.brokerNetRatioPct) +
+    fmtPctCell(s.latestInstitutionalNetRatioPct) + fmtPctCell(s.fiveDayInstitutionalNetRatioPct) +
+    fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) +
     `<td style="color:${ssColor};font-weight:600;background:linear-gradient(90deg,rgba(59,130,246,.12) ${s.shortScore}%,transparent ${s.shortScore}%)">${s.shortScore}</td>` +
     `<td style="color:${msColor};font-weight:600;background:linear-gradient(90deg,rgba(34,197,94,.12) ${s.midScore}%,transparent ${s.midScore}%)">${s.midScore}</td>`;
   return tr;
@@ -1431,9 +1597,33 @@ function fmtDays(d) {
   if (d >= 2) return `<td><span class="db2">${d}天</span></td>`;
   return `<td class="db1">${d}天</td>`;
 }
-function fmtPct(v) {
-  if (!v) return '<td style="color:var(--muted)">—</td>';
+function fmtPctCell(v) {
+  if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
+  if (v === 0) return '<td style="color:var(--muted)">0.00%</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${v.toFixed(2)}%</td>`;
+}
+function fmtLotsCell(v) {
+  if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
+  if (v === 0) return '<td style="color:var(--muted)">0</td>';
+  return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${Math.round(v).toLocaleString()}</td>`;
+}
+function parseChipsFallback(s) {
+  const text = String(s?.chipsReason || '');
+  const instDay = text.match(/單日法人\s*([+\-]?[0-9,]+)\s*張，占比\s*([+\-]?[0-9.]+)%/);
+  const inst5 = text.match(/5 日法人買賣超\s*([+\-]?[0-9,]+)\s*張，占比\s*([+\-]?[0-9.]+)%/);
+  const broker = text.match(/主力\s*([+\-]?[0-9,]+)\s*張，占比\s*([+\-]?[0-9.]+)%/);
+  return {
+    latestInstitutionalNetLots: instDay ? Number(String(instDay[1]).replace(/,/g, '')) : NaN,
+    latestInstitutionalNetRatioPct: instDay ? Number(instDay[2]) : NaN,
+    fiveDayInstitutionalNetLots: inst5 ? Number(String(inst5[1]).replace(/,/g, '')) : NaN,
+    fiveDayInstitutionalNetRatioPct: inst5 ? Number(inst5[2]) : NaN,
+    brokerNetLots: broker ? Number(String(broker[1]).replace(/,/g, '')) : NaN,
+    brokerNetRatioPct: broker ? Number(broker[2]) : NaN
+  };
+}
+function resolvedNumber(value, fallback) {
+  if (Number.isFinite(value) && !(value === 0 && Number.isFinite(fallback) && fallback !== 0)) return value;
+  return fallback;
 }
 function warningBuckets(s) {
   const structureLabel = String(s.structureLabel || '');
@@ -1583,7 +1773,8 @@ function isCatalystGrowth(s) {
   const chipsStrong = (s.chipsScore || 0) >= 24;
   const strategyReady = !!s.selectionQualified && (s.score || 0) >= 65;
   const entryHealthy = (s.buyPointScore || 0) >= 65 && (s.buyPointScore || 0) <= 92;
-  const fundFlowPositive = (s.fiveDayInstitutionalNetRatioPct || 0) > 0 || (s.brokerNetRatioPct || 0) > 0;
+  const fundFlowPositive = (s.latestInstitutionalNetRatioPct || 0) > 0 || (s.fiveDayInstitutionalNetRatioPct || 0) > 0 ||
+    (s.brokerNetLots || 0) > 0 || (s.brokerNetRatioPct || 0) > 0;
   const catalystNews = hasCatalystKeyword(s.newsSummary) || hasCatalystKeyword(s.buyPointReason) || hasCatalystKeyword(s.scoreReason);
   return revenueStrong && chipsStrong && strategyReady && entryHealthy && hasTurnaroundSignal(s) && fundFlowPositive && catalystNews;
 }
@@ -1623,6 +1814,31 @@ function fmtConfidenceBadge(score, ready) {
   const bg = score >= 85 ? 'rgba(34,197,94,.16)' : score >= 70 ? 'rgba(234,179,8,.16)' : 'rgba(239,68,68,.16)';
   return `<span title="${score.toFixed(1)}分" style="display:inline-block;min-width:52px;text-align:center;padding:2px 8px;border-radius:12px;background:${bg};color:${fg};font-weight:700">${score.toFixed(0)}</span>`;
 }
+function snapshotStageLabel(stage) {
+  return stage === 'close' ? '盤後初版' : stage === 'full' ? '夜間完整版' : '未標示';
+}
+function readyText(flag) {
+  return flag ? '就緒' : '待補';
+}
+function readyColor(flag) {
+  return flag ? 'var(--green)' : 'var(--yellow)';
+}
+function cacheStalenessBadge(s) {
+  const ver = String(s?.analysisVersion || '');
+  if (!ver.endsWith('-cached')) return '';
+  const period = String(s?.sourceUpdatedAt || '');
+  // sourceUpdatedAt now stores the actual data period, e.g. "2026/03" or "2026 Q1"
+  const periodStr = period.length > 0 ? period : '未知';
+  // Estimate staleness: parse revenue period "YYYY/MM" to a date
+  let stale = false;
+  const m = period.match(/^(\d{4})\/(\d{2})$/);
+  if (m) {
+    const dataDate = new Date(Number(m[1]), Number(m[2]) - 1, 10);
+    stale = (Date.now() - dataDate.getTime()) > 60 * 86400000;
+  }
+  const color = stale ? 'var(--orange)' : 'var(--muted)';
+  return `<br><span style="color:${color}">📦 低頻快取（財報/營收）：資料期間 ${periodStr}，下次刷新時補齊</span>`;
+}
 
 // ── Watchlist ─────────────────────────────────────────────────────────────────
 function toggleWL(code, btn) {
@@ -1634,7 +1850,11 @@ function toggleWL(code, btn) {
   } else {
     S.wl.add(code);
     const s = S.all.find(x => x.code === code);
-    group.entries[code] = s ? { price: s.price, score: s.score, date: S.meta.date } : normalizeEntry({});
+    group.entries[code] = s ? {
+      price: s.price, score: s.score, date: S.meta.date,
+      stopPrice: s.suggestedStopPrice > 0 ? s.suggestedStopPrice : (s.price > 0 ? +(s.price * 0.93).toFixed(0) : 0),
+      exitRule: s.exitRule || ''
+    } : normalizeEntry({});
     if (btn) btn.classList.add('on');
   }
   S.wlEntries = group.entries;
@@ -1706,7 +1926,10 @@ function renderDB(s, history) {
   const dv   = s.scoreDelta || 0;
   const ret  = s.return20DayPct || 0;
   const cd   = Number.isFinite(s.consecutiveDays) ? s.consecutiveDays : (s.score >= getWatchlistThreshold() ? 1 : 0);
-  const inst = s.fiveDayInstitutionalNetRatioPct || 0;
+  const instDay = Number.isFinite(s.latestInstitutionalNetRatioPct) ? s.latestInstitutionalNetRatioPct : 0;
+  const inst5 = Number.isFinite(s.fiveDayInstitutionalNetRatioPct) ? s.fiveDayInstitutionalNetRatioPct : 0;
+  const brokerLots = Number.isFinite(s.brokerNetLots) ? s.brokerNetLots : 0;
+  const brokerRatio = Number.isFinite(s.brokerNetRatioPct) ? s.brokerNetRatioPct : 0;
   const ss   = s.shortScore, ms = s.midScore;
   const buyScore = s.buyPointScore || 0;
   const confidenceReady = hasConfidenceData(s);
@@ -1819,6 +2042,19 @@ function renderDB(s, history) {
       </div>
     </div>`;
 
+  const savedCost = getPositionCost(s.code);
+  const costCard = `
+    <div class="inv-card pos-card">
+      <div class="inv-title">持股成本建議</div>
+      <div class="pos-form">
+        <label style="font-size:12px;color:var(--muted)">我的成本</label>
+        <input class="pos-input" id="pcost-${s.code}" type="number" min="0" step="0.01" placeholder="輸入成本價" value="${savedCost > 0 ? savedCost : ''}" oninput="onPositionCostInput('${s.code}')">
+        <button class="pos-clear" onclick="clearPositionCost('${s.code}')">清除</button>
+        <span style="font-size:11px;color:var(--muted)">會存在本機瀏覽器，不會上傳</span>
+      </div>
+      <div class="pos-advice" id="pcost-advice-${s.code}">${buildPositionCostAdvice(s, savedCost)}</div>
+    </div>`;
+
   const buyCard = `
     <div class="inv-card">
       <div class="inv-title">買點判讀</div>
@@ -1832,7 +2068,7 @@ function renderDB(s, history) {
           <div class="inv-pbar"><div class="inv-pfill" style="width:${confidenceReady ? Math.min(100,confidence) : 0}%;background:${confidenceColorValue}"></div></div>
         </div>
       </div>
-      <div class="inv-conclusion"><b>${buyLabel}</b>｜市場環境 ${(S.meta.marketSignal||'中性')} ${marketScore.toFixed(1)} 分 / 警報 ${(S.meta.marketAlert||'中性')} ${(S.meta.marketDangerScore||0).toFixed(1)} 分<br>族群 ${sectorScore.toFixed(1)}｜題材 ${primaryTheme} ${themeScore.toFixed(1)}｜續航 ${trendStatus} ${trendScore.toFixed(1)}${trendDays>0 ? `（${trendDays}天）` : ''}｜翻轉 ${turnaroundLabel} ${turnaroundScore.toFixed(1)} / 一次性風險 ${oneOffRiskScore.toFixed(1)}｜新聞 ${newsScore.toFixed(1)} / 風險 ${newsRiskScore.toFixed(1)}｜結構 ${structureLabel} ${structureScore.toFixed(1)}｜風報 ${rrScore.toFixed(1)} / ${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}<br>${s.buyPointReason || '尚無買點說明'}${turnaroundReason ? '<br>翻轉：' + turnaroundReason : ''}<br>${s.eligibilityReason ? '資格：' + s.eligibilityReason + '<br>' : ''}${confidenceReason ? '資料：' + confidenceReason : ''}</div>
+      <div class="inv-conclusion"><b>${buyLabel}</b>｜市場環境 ${(S.meta.marketSignal||'中性')} ${marketScore.toFixed(1)} 分 / 警報 ${(S.meta.marketAlert||'中性')} ${(S.meta.marketDangerScore||0).toFixed(1)} 分<br>族群 ${sectorScore.toFixed(1)}｜題材 ${primaryTheme} ${themeScore.toFixed(1)}｜續航 ${trendStatus} ${trendScore.toFixed(1)}${trendDays>0 ? `（${trendDays}天）` : ''}｜翻轉 ${turnaroundLabel} ${turnaroundScore.toFixed(1)} / 一次性風險 ${oneOffRiskScore.toFixed(1)}｜新聞 ${newsScore.toFixed(1)} / 風險 ${newsRiskScore.toFixed(1)}｜結構 ${structureLabel} ${structureScore.toFixed(1)}｜風報 ${rrScore.toFixed(1)} / ${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}<br>${s.buyPointReason || '尚無買點說明'}${turnaroundReason ? '<br>翻轉：' + turnaroundReason : ''}<br>${s.eligibilityReason ? '資格：' + s.eligibilityReason + '<br>' : ''}${confidenceReason ? '資料：' + confidenceReason : ''}<br>資料狀態：${snapshotStageLabel(s.snapshotStage)}｜技術 <span style="color:${readyColor(!!s.techReady)}">${readyText(!!s.techReady)}</span>｜法人 <span style="color:${readyColor(!!s.institutionalReady)}">${readyText(!!s.institutionalReady)}</span>｜主力 <span style="color:${readyColor(!!s.brokerReady)}">${readyText(!!s.brokerReady)}</span>｜財報 <span style="color:${readyColor(!!s.financialReady)}">${readyText(!!s.financialReady)}</span>｜新聞 <span style="color:${readyColor(!!s.newsReady)}">${readyText(!!s.newsReady)}</span>${cacheStalenessBadge(s)}</div>
     </div>`;
 
   // ── 進場追蹤 ──
@@ -1842,13 +2078,22 @@ function renderDB(s, history) {
     const pl = (e.price > 0 && s.price > 0) ? ((s.price - e.price) / e.price * 100) : 0;
     const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
     const groupName = getActiveWatchGroup().name;
-    trackHtml = `<div class="met track">
-      <div class="track-lbl">⭐ ${groupName} 進場追蹤</div>
+    const stopP = e.stopPrice > 0 ? e.stopPrice : 0;
+    const stopTriggered = stopP > 0 && s.price > 0 && s.price <= stopP;
+    const stopColor = stopTriggered ? 'var(--red)' : stopP > 0 && s.price > 0 && s.price <= stopP * 1.03 ? 'var(--orange)' : 'var(--muted)';
+    const stopLine = stopP > 0
+      ? `停損價：<b style="color:${stopColor}">$${stopP.toLocaleString()}</b>${stopTriggered ? ' <span style="color:var(--red);font-weight:700">⚠ 已觸發停損！</span>' : (s.price > 0 && s.price <= stopP * 1.05 ? ' <span style="color:var(--orange)">接近停損</span>' : '')}`
+      : '';
+    const heldDays = e.date ? Math.round((Date.now() - new Date(e.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')).getTime()) / 86400000) : 0;
+    const exitLine = e.exitRule ? `出場規則：${e.exitRule}` : '';
+    trackHtml = `<div class="met track${stopTriggered ? ' track-alert' : ''}">
+      <div class="track-lbl">⭐ ${groupName} 進場追蹤${stopTriggered ? ' ⚠' : ''}</div>
       <div class="track-body">
-        進場日：${fmtDate(e.date)}<br>
+        進場日：${fmtDate(e.date)}${heldDays > 0 ? `（持倉 ${heldDays} 天）` : ''}<br>
         進場價：<b>$${e.price.toLocaleString()}</b> &nbsp;→&nbsp; 現價：<b>$${s.price.toLocaleString()}</b><br>
         進場分：<b>${e.score.toFixed(0)}</b> &nbsp;→&nbsp; 現分：<b>${s.score.toFixed(0)}</b><br>
-        損益：<span style="color:${pc};font-size:18px;font-weight:700">${pl>0?'+':''}${pl.toFixed(2)}%</span>
+        損益：<span style="color:${pc};font-size:18px;font-weight:700">${pl>0?'+':''}${pl.toFixed(2)}%</span><br>
+        ${stopLine}${exitLine ? '<br>' + exitLine : ''}
       </div>
     </div>`;
   }
@@ -1873,7 +2118,10 @@ function renderDB(s, history) {
       <div class="met"><div class="met-lbl">連續高分</div><div class="met-val">${cd>=3?'<span class="db3">'+cd+'天</span>':cd>=2?'<span class="db2">'+cd+'天</span>':'<span style="color:var(--muted)">'+cd+'天</span>'}</div></div>
       <div class="met"><div class="met-lbl">20日漲跌</div><div class="met-val ${ret>0?'rp':ret<0?'rn':''}">${ret>0?'+':''}${ret.toFixed(2)}%</div></div>
       <div class="met"><div class="met-lbl">量比</div><div class="met-val">${s.volumeRatio>0?s.volumeRatio.toFixed(2):'—'}</div></div>
-      <div class="met"><div class="met-lbl">法人5日%</div><div class="met-val ${inst>0?'rp':inst<0?'rn':'dz'}">${inst>0?'+':''}${inst.toFixed(2)}%</div></div>
+      <div class="met"><div class="met-lbl">單日法人%</div><div class="met-val ${instDay>0?'rp':instDay<0?'rn':'dz'}">${instDay>0?'+':''}${instDay.toFixed(2)}%</div></div>
+      <div class="met"><div class="met-lbl">5日法人%</div><div class="met-val ${inst5>0?'rp':inst5<0?'rn':'dz'}">${inst5>0?'+':''}${inst5.toFixed(2)}%</div></div>
+      <div class="met"><div class="met-lbl">單日主力</div><div class="met-val ${brokerLots>0?'rp':brokerLots<0?'rn':'dz'}">${brokerLots>0?'+':''}${brokerLots.toLocaleString()}</div></div>
+      <div class="met"><div class="met-lbl">主力比率</div><div class="met-val ${brokerRatio>0?'rp':brokerRatio<0?'rn':'dz'}">${brokerRatio>0?'+':''}${brokerRatio.toFixed(2)}%</div></div>
       ${s.rsi14 > 0 ? `<div class="met"><div class="met-lbl">RSI14</div><div class="met-val" style="color:${s.rsi14>=80?'var(--red)':s.rsi14>=50&&s.rsi14<70?'var(--green)':s.rsi14<30?'var(--red)':'var(--yellow)'}">${s.rsi14.toFixed(1)}</div></div>` : ''}
       ${s.stochasticK > 0 ? `<div class="met"><div class="met-lbl">KD (K/D)</div><div class="met-val" style="color:${s.stochasticK>=80?'var(--red)':s.stochasticK>s.stochasticD?'var(--green)':'var(--muted)'}">${s.stochasticK.toFixed(1)}/${s.stochasticD.toFixed(1)}</div></div>` : ''}
       ${s.peg > 0 ? `<div class="met"><div class="met-lbl">PEG</div><div class="met-val" style="color:${s.peg<=1?'var(--green)':s.peg<=2?'var(--yellow)':'var(--red)'}">${s.peg.toFixed(2)}</div></div>` : ''}
@@ -1881,6 +2129,7 @@ function renderDB(s, history) {
       ${trackHtml}
     </div>
     ${buyCard}
+    ${costCard}
     ${warningBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
@@ -1893,6 +2142,125 @@ function renderDB(s, history) {
   drawRadar(s);
   if (history && history.length > 1) drawHistory(history);
   else document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
+}
+
+function positionCostKey(code) {
+  return `_position_cost_${code}`;
+}
+
+function getPositionCost(code) {
+  const value = Number(localStorage.getItem(positionCostKey(code)) || 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function onPositionCostInput(code) {
+  const input = document.getElementById(`pcost-${code}`);
+  const target = document.getElementById(`pcost-advice-${code}`);
+  const stock = S.all.find(x => x.code === code);
+  if (!input || !target || !stock) return;
+  const cost = Number(input.value || 0);
+  if (Number.isFinite(cost) && cost > 0) localStorage.setItem(positionCostKey(code), String(cost));
+  else localStorage.removeItem(positionCostKey(code));
+  target.innerHTML = buildPositionCostAdvice(stock, cost);
+}
+
+function clearPositionCost(code) {
+  localStorage.removeItem(positionCostKey(code));
+  const input = document.getElementById(`pcost-${code}`);
+  if (input) input.value = '';
+  onPositionCostInput(code);
+}
+
+function buildPositionCostAdvice(s, cost) {
+  const price = Number(s.price || 0);
+  const hasCost = Number.isFinite(cost) && cost > 0;
+  if (!price) {
+    return `<div class="pos-note">目前沒有有效現價，暫時無法用成本計算持股建議。</div>`;
+  }
+  if (!hasCost) {
+    return `<div class="pos-note">輸入你的持有成本後，系統會依現價、模型停損、目標價、轉空警示與買點分，給出續抱、加碼、減碼或停損建議。</div>`;
+  }
+
+  const pnlPct = (price - cost) * 100 / cost;
+  const stop = Number(s.suggestedTrailingStopPrice || 0) > 0
+    ? Number(s.suggestedTrailingStopPrice)
+    : Number(s.suggestedStopPrice || 0) > 0 ? Number(s.suggestedStopPrice) : price * 0.93;
+  const target = Number(s.suggestedTargetPrice || 0) > 0 ? Number(s.suggestedTargetPrice) : price * 1.15;
+  const stopGapPct = stop > 0 ? (price - stop) * 100 / price : 0;
+  const targetGapPct = target > 0 ? (target - price) * 100 / price : 0;
+  const buy = Number(s.buyPointScore || 0);
+  const sell = Number(s.sellSignalScore || 0);
+  const rr = Number(s.riskRewardRatio || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const ret20 = Number(s.return20DayPct || 0);
+  const label = s.sellSignalLabel || '續抱觀察';
+  const warnings = warningBuckets(s);
+  const bearishCount = warnings.bearish.length;
+  const overheatedCount = warnings.overheated.length;
+  const nearStop = stop > 0 && price <= stop * 1.03;
+  const stopBroken = stop > 0 && price <= stop;
+  const weakStructure = /轉弱|出場|跌破|結構未完成|暫不出手/.test(`${s.structureLabel || ''} ${s.postCloseAction || ''} ${s.buyPointLabel || ''}`);
+
+  let action = '續抱觀察';
+  let color = 'var(--yellow)';
+  let reason = '目前未觸發明確停損，但也還不到積極加碼條件，先依模型停損與量價確認來管理。';
+
+  if (stopBroken || sell >= 70 || bearishCount >= 2) {
+    action = '停損 / 退出';
+    color = 'var(--red)';
+    reason = '現價已跌破模型停損，或轉空訊號過多。這種狀態不適合凹單，應優先保護本金。';
+  } else if (nearStop || (pnlPct <= -8 && buy < 75) || sell >= 55 || bearishCount >= 1) {
+    action = '減碼防守';
+    color = 'var(--orange)';
+    reason = '已接近停損或出現轉弱警示，建議先降部位，等重新站回關鍵均線或買點分修復再評估。';
+  } else if ((pnlPct >= 18 && (overheatedCount > 0 || rsi >= 72 || ret20 >= 25)) || pnlPct >= 30) {
+    action = '分批停利';
+    color = 'var(--green)';
+    reason = '目前已有明顯獲利，且短線可能偏熱。可先出一部分，剩餘部位改用移動停利守住。';
+  } else if (buy >= 85 && sell < 35 && rr >= 1.2 && !weakStructure && pnlPct > -4) {
+    action = '續抱，可等回檔加碼';
+    color = 'var(--green)';
+    reason = '買點、風報比與賣壓狀態仍可接受。若回測不破模型停損或 MA20 附近有承接，可考慮小幅加碼。';
+  } else if (buy >= 75 && sell < 50 && pnlPct >= -6) {
+    action = '續抱觀察';
+    color = 'var(--blue)';
+    reason = '買點仍在可觀察區，但還不是無腦加碼。續抱可以，新增部位要等量價確認。';
+  } else if (pnlPct > 0) {
+    action = '保守續抱';
+    color = 'var(--yellow)';
+    reason = '仍有獲利，但模型時機不算漂亮。建議把停損上移，避免獲利回吐。';
+  } else {
+    action = '暫不加碼';
+    color = 'var(--orange)';
+    reason = '目前處於虧損或時機分不足，先不要攤平；等結構修復、法人/主力回流或買點分重新轉強。';
+  }
+
+  const pnlColor = pnlPct > 0 ? 'var(--green)' : pnlPct < 0 ? 'var(--red)' : 'var(--muted)';
+  const stopColor = stopBroken ? 'var(--red)' : nearStop ? 'var(--orange)' : 'var(--muted)';
+  const targetText = targetGapPct >= 0 ? `+${targetGapPct.toFixed(1)}%` : `${targetGapPct.toFixed(1)}%`;
+  const stopText = stopGapPct >= 0 ? `-${stopGapPct.toFixed(1)}%` : `已跌破 ${Math.abs(stopGapPct).toFixed(1)}%`;
+
+  return `
+    <div class="pos-head">
+      <span class="pos-action" style="color:${color}">${action}</span>
+      <span class="pos-pill">賣訊：${label} ${sell.toFixed(0)}</span>
+      <span class="pos-pill">買點：${buy.toFixed(0)}</span>
+      <span class="pos-pill">風報：${rr > 0 ? rr.toFixed(2) + 'R' : '—'}</span>
+    </div>
+    <div class="pos-metrics">
+      <div class="pos-metric">現價<b>$${formatMoney(price)}</b></div>
+      <div class="pos-metric">成本損益<b style="color:${pnlColor}">${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}%</b></div>
+      <div class="pos-metric">模型停損<b style="color:${stopColor}">$${formatMoney(stop)} <span style="font-size:11px">(${stopText})</span></b></div>
+      <div class="pos-metric">模型目標<b>$${formatMoney(target)} <span style="font-size:11px;color:var(--muted)">(${targetText})</span></b></div>
+    </div>
+    <div class="pos-note">${reason}<br>輔助判斷：${s.postCloseCategory || '—'} / ${s.postCloseAction || '—'}；${bearishCount ? `轉空警示 ${bearishCount} 項` : '未見明確轉空警示'}；${overheatedCount ? `過熱 ${overheatedCount} 項` : '未見明顯過熱'}。</div>
+  `;
+}
+
+function formatMoney(value) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number) || number <= 0) return '—';
+  return number >= 100 ? number.toFixed(1).replace(/\.0$/, '') : number.toFixed(2).replace(/\.00$/, '');
 }
 
 function buildConclusion(s, ss, ms) {
@@ -2021,4 +2389,3 @@ init();
 </script>
 </body>
 </html>
-

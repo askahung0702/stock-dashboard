@@ -5,10 +5,14 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 
+import stock.StockHistoryDatabase.Snapshot;
+import stock.StockHistoryDatabase.SnapshotRow;
 import stock.vo.StockAnalysisResultVO;
 
 public class StockAnalysis {
@@ -20,7 +24,10 @@ public class StockAnalysis {
         RunOptions runOptions = parseArgs(args);
         int maxStocks = runOptions.maxStocks;
         boolean closeStage = STAGE_CLOSE.equals(runOptions.stage);
+        boolean stageOnly = Boolean.getBoolean("stock.analysis.stageOnly");
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
+        analyzer.setRunStage(runOptions.stage);
+        analyzer.markRunStatus("starting", 0, "stage boot");
         String allFileName = analyzer.buildDatedFileName("stock_candidates");
         String likelyFileName = analyzer.buildDatedFileName("stock_candidates_likely");
         String likelyVolumeFileName = analyzer.buildDatedFileName("stock_candidates_likely_volume_surge");
@@ -36,6 +43,17 @@ public class StockAnalysis {
         String latestHistoryDashboardFileName = "history_dashboard.html";
 
         List<StockAnalysisResultVO> results = analyzer.analyze(maxStocks);
+        analyzer.writeStageSnapshots(results);
+        writeStageMarketDataSafely(analyzer, results);
+        analyzer.markRunStatus("stage_snapshot_saved", results.size(), "raw and analysis saved");
+        if (stageOnly) {
+            analyzer.markRunStatus("stage_only_completed", results.size(),
+                    closeStage ? "close stage saved for export" : "full stage saved for export");
+            System.out.println("");
+            System.out.println("Analyzed stocks: " + results.size());
+            System.out.println("Mode: " + runOptions.stage + " stage-only run");
+            return;
+        }
         List<StockAnalysisResultVO> likelyCandidates = analyzer.getLikelyCandidates(results);
         List<StockAnalysisResultVO> watchlistCandidates = analyzer.getWatchlistCandidates(results);
         List<StockAnalysisResultVO> likelyVolumeCandidates = analyzer.getLikelyVolumeSurgeCandidates(results);
@@ -73,6 +91,10 @@ public class StockAnalysis {
                 likelyVolumeCandidates, nonLikelyVolumeCandidates, latestHistoryDashboardFileName);
         writeStaticSiteDataSafely();
         writeSnapshotStatusSafely(runOptions.stage, maxStocks > 0);
+        if (!closeStage && maxStocks <= 0) {
+            writeStageDiffSafely(analyzer.currentDateStamp());
+        }
+        analyzer.markRunStatus("completed", results.size(), closeStage ? "close stage complete" : "full stage complete");
 
         System.out.println("");
         System.out.println("Analyzed stocks: " + results.size());
@@ -179,6 +201,178 @@ public class StockAnalysis {
         } catch (Exception ex) {
             System.out.println("Cannot write backtest summary: " + ex.getMessage());
         }
+    }
+
+    private static void writeStageMarketDataSafely(TaiwanStockAnalyzer analyzer, List<StockAnalysisResultVO> results) {
+        try {
+            StockApiRenderer renderer = new StockApiRenderer();
+            JSONObject marketPayload = renderer.renderLatestMarketJson(analyzer.currentDateStamp(), results);
+            new StockHistoryDatabase().upsertDailyMarketData(analyzer.currentDateStamp(), analyzerStage(results),
+                    "market_overview", marketPayload);
+            System.out.println("Daily market data saved: " + analyzer.currentDateStamp() + " (" + analyzerStage(results)
+                    + ")");
+        } catch (Exception ex) {
+            System.out.println("Cannot write daily market data: " + ex.getMessage());
+        }
+    }
+
+    private static String analyzerStage(List<StockAnalysisResultVO> results) {
+        if (results == null || results.isEmpty() || results.get(0) == null
+                || results.get(0).getSnapshotStage() == null || results.get(0).getSnapshotStage().trim().length() == 0) {
+            return STAGE_FULL;
+        }
+        return results.get(0).getSnapshotStage().trim().toLowerCase();
+    }
+
+    private static void writeStageDiffSafely(String date) {
+        try {
+            StockHistoryDatabase database = new StockHistoryDatabase();
+            Snapshot closeSnapshot = database.loadDailyStockAnalysis(date, STAGE_CLOSE);
+            Snapshot fullSnapshot = database.loadDailyStockAnalysis(date, STAGE_FULL);
+            if (closeSnapshot.rows.isEmpty() || fullSnapshot.rows.isEmpty()) {
+                return;
+            }
+            Map<String, SnapshotRow> closeRowsByCode = new HashMap<String, SnapshotRow>();
+            for (SnapshotRow row : closeSnapshot.rows) {
+                closeRowsByCode.put(row.code, row);
+            }
+            File outputFile = new File("history", "close_full_diff_" + date + ".csv");
+            int comparedCount = 0;
+            int changedSelectionCount = 0;
+            int changedBuyPointCount = 0;
+            int newsReadyImproved = 0;
+            int brokerReadyImproved = 0;
+            int financialReadyImproved = 0;
+            double selectionDeltaSum = 0D;
+            double buyPointDeltaSum = 0D;
+            double confidenceDeltaSum = 0D;
+            Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8");
+            try {
+                writer.write(
+                        "date,code,name,close_selection_score,full_selection_score,selection_delta,close_buy_point,full_buy_point,buy_point_delta,close_data_confidence,full_data_confidence,confidence_delta,close_news_ready,full_news_ready,close_financial_ready,full_financial_ready,close_broker_ready,full_broker_ready,close_institutional_ready,full_institutional_ready,close_analysis_version,full_analysis_version\n");
+                for (SnapshotRow fullRow : fullSnapshot.rows) {
+                    SnapshotRow closeRow = closeRowsByCode.get(fullRow.code);
+                    if (closeRow == null) {
+                        continue;
+                    }
+                    double selectionDelta = fullRow.selectionScore - closeRow.selectionScore;
+                    double buyPointDelta = fullRow.buyPointScore - closeRow.buyPointScore;
+                    double confidenceDelta = fullRow.dataConfidence - closeRow.dataConfidence;
+                    comparedCount++;
+                    selectionDeltaSum += selectionDelta;
+                    buyPointDeltaSum += buyPointDelta;
+                    confidenceDeltaSum += confidenceDelta;
+                    if (Math.abs(selectionDelta) >= 0.1D) {
+                        changedSelectionCount++;
+                    }
+                    if (Math.abs(buyPointDelta) >= 0.1D) {
+                        changedBuyPointCount++;
+                    }
+                    if (!closeRow.newsReady && fullRow.newsReady) {
+                        newsReadyImproved++;
+                    }
+                    if (!closeRow.brokerReady && fullRow.brokerReady) {
+                        brokerReadyImproved++;
+                    }
+                    if (!closeRow.financialReady && fullRow.financialReady) {
+                        financialReadyImproved++;
+                    }
+                    writer.write(csv(date));
+                    writer.write(',');
+                    writer.write(csv(fullRow.code));
+                    writer.write(',');
+                    writer.write(csv(fullRow.name));
+                    writer.write(',');
+                    writer.write(Double.toString(closeRow.selectionScore));
+                    writer.write(',');
+                    writer.write(Double.toString(fullRow.selectionScore));
+                    writer.write(',');
+                    writer.write(Double.toString(selectionDelta));
+                    writer.write(',');
+                    writer.write(Double.toString(closeRow.buyPointScore));
+                    writer.write(',');
+                    writer.write(Double.toString(fullRow.buyPointScore));
+                    writer.write(',');
+                    writer.write(Double.toString(buyPointDelta));
+                    writer.write(',');
+                    writer.write(Double.toString(closeRow.dataConfidence));
+                    writer.write(',');
+                    writer.write(Double.toString(fullRow.dataConfidence));
+                    writer.write(',');
+                    writer.write(Double.toString(confidenceDelta));
+                    writer.write(',');
+                    writer.write(Boolean.toString(closeRow.newsReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(fullRow.newsReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(closeRow.financialReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(fullRow.financialReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(closeRow.brokerReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(fullRow.brokerReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(closeRow.institutionalReady));
+                    writer.write(',');
+                    writer.write(Boolean.toString(fullRow.institutionalReady));
+                    writer.write(',');
+                    writer.write(csv(closeRow.analysisVersion));
+                    writer.write(',');
+                    writer.write(csv(fullRow.analysisVersion));
+                    writer.write('\n');
+                }
+            } finally {
+                writer.close();
+            }
+            writeStageDiffSummarySafely(date, comparedCount, changedSelectionCount, changedBuyPointCount,
+                    newsReadyImproved, brokerReadyImproved, financialReadyImproved, selectionDeltaSum, buyPointDeltaSum,
+                    confidenceDeltaSum);
+            System.out.println("Stage diff report: " + outputFile.getAbsolutePath());
+        } catch (Exception ex) {
+            System.out.println("Cannot write close/full diff report: " + ex.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void writeStageDiffSummarySafely(String date, int comparedCount, int changedSelectionCount,
+            int changedBuyPointCount, int newsReadyImproved, int brokerReadyImproved, int financialReadyImproved,
+            double selectionDeltaSum, double buyPointDeltaSum, double confidenceDeltaSum) {
+        File summaryFile = new File("web\\data", "close_full_diff_summary.json");
+        try {
+            File parent = summaryFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            JSONObject result = new JSONObject();
+            result.put("date", date);
+            result.put("comparedCount", Long.valueOf(comparedCount));
+            result.put("changedSelectionCount", Long.valueOf(changedSelectionCount));
+            result.put("changedBuyPointCount", Long.valueOf(changedBuyPointCount));
+            result.put("newsReadyImproved", Long.valueOf(newsReadyImproved));
+            result.put("brokerReadyImproved", Long.valueOf(brokerReadyImproved));
+            result.put("financialReadyImproved", Long.valueOf(financialReadyImproved));
+            result.put("avgSelectionDelta", Double.valueOf(comparedCount > 0 ? selectionDeltaSum / comparedCount : 0D));
+            result.put("avgBuyPointDelta", Double.valueOf(comparedCount > 0 ? buyPointDeltaSum / comparedCount : 0D));
+            result.put("avgConfidenceDelta", Double.valueOf(comparedCount > 0 ? confidenceDeltaSum / comparedCount : 0D));
+            Writer writer = new OutputStreamWriter(new FileOutputStream(summaryFile), "UTF-8");
+            try {
+                writer.write(result.toJSONString());
+            } finally {
+                writer.close();
+            }
+            System.out.println("Stage diff summary: " + summaryFile.getAbsolutePath());
+        } catch (Exception ex) {
+            System.out.println("Cannot write close/full diff summary: " + ex.getMessage());
+        }
+    }
+
+    private static String csv(String value) {
+        String text = value == null ? "" : value;
+        if (text.indexOf(',') >= 0 || text.indexOf('"') >= 0 || text.indexOf('\n') >= 0 || text.indexOf('\r') >= 0) {
+            return "\"" + text.replace("\"", "\"\"") + "\"";
+        }
+        return text;
     }
 
     private static void writeVolumeSurgeCsvSafely(TaiwanStockAnalyzer analyzer, List<StockAnalysisResultVO> results,

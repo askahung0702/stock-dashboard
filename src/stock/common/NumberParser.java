@@ -32,6 +32,21 @@ public class NumberParser {
         return Double.parseDouble(normalized);
     }
 
+    public static double parseDoubleOrNaN(String value) {
+        if (value == null) {
+            return Double.NaN;
+        }
+        String normalized = value.trim().replace(",", "").replace("%", "");
+        if (normalized.length() == 0 || "-".equals(normalized) || "--".equals(normalized)) {
+            return Double.NaN;
+        }
+        try {
+            return Double.parseDouble(normalized);
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        }
+    }
+
     public static double ratioPercent(long numerator, long denominator) {
         if (denominator == 0L) {
             return 0D;

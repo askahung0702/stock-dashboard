@@ -8,7 +8,10 @@ public class StockNewsOnlyAnalysis {
 
     public static void main(String[] args) throws Exception {
         int maxStocks = args.length > 0 ? Integer.parseInt(args[0]) : -1;
+        boolean stageOnly = Boolean.getBoolean("stock.news.stageOnly");
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
+        analyzer.setRunStage("news-event");
+        analyzer.markRunStatus("running", 0, "news-event stage boot");
         String newsOnlyFileName = analyzer.buildDatedFileName("stock_news_only");
         String themeReferenceFileName = analyzer.buildDatedFileName("stock_news_theme_reference");
         String themeMarketReferenceFileName = analyzer.buildDatedFileName("stock_news_market_reference");
@@ -16,6 +19,17 @@ public class StockNewsOnlyAnalysis {
         String latestHistoryDashboardFileName = "history_dashboard.html";
 
         List<StockAnalysisResultVO> results = analyzer.analyzeNewsOnly(maxStocks);
+        analyzer.writeStageSnapshots(results);
+        analyzer.markRunStatus(stageOnly ? "stage_only_completed" : "completed", results.size(),
+                "news-event rows saved");
+        if (stageOnly) {
+            System.out.println("");
+            System.out.println("News-event staged results: " + results.size());
+            System.out.println("Reference snapshot date: "
+                    + (analyzer.getLastNewsOnlyReferenceDate().length() == 0 ? "N/A"
+                            : analyzer.getLastNewsOnlyReferenceDate()));
+            return;
+        }
         List<StockAnalysisResultVO> likelyCandidates = analyzer.getLikelyCandidates(results);
         List<StockAnalysisResultVO> watchlistCandidates = analyzer.getWatchlistCandidates(results);
         List<StockAnalysisResultVO> likelyVolumeCandidates = analyzer.getLikelyVolumeSurgeCandidates(results);

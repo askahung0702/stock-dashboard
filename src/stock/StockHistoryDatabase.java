@@ -28,7 +28,7 @@ import stock.vo.StockAnalysisResultVO;
 
 public class StockHistoryDatabase {
 
-    private static final long DATABASE_VERSION = 8L;
+    private static final long DATABASE_VERSION = 9L;
     private static final double LIKELY_THRESHOLD = 72D;
     private static final double MIN_LIQUIDITY_SCORE = 4D;
     private static final double MIN_SELECTION_FINANCIAL_SCORE = 8D;
@@ -48,6 +48,11 @@ public class StockHistoryDatabase {
     public String upsertSnapshot(String date, List<StockAnalysisResultVO> results) throws Exception {
         File historyDirectory = ensureHistoryDirectory();
         Snapshot snapshot = buildSnapshot(date, results);
+        return upsertSnapshot(snapshot);
+    }
+
+    public String upsertSnapshot(Snapshot snapshot) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
         SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
         if (sqliteStore != null) {
             seedSqliteIfNeeded(historyDirectory, sqliteStore);
@@ -74,6 +79,54 @@ public class StockHistoryDatabase {
         return loadSnapshotsFromJson(historyDirectory);
     }
 
+    public void upsertDailyStockRaw(String date, String stage, List<StockAnalysisResultVO> results) throws Exception {
+        upsertStageSnapshot(date, stage, results, true);
+    }
+
+    public void upsertDailyStockAnalysis(String date, String stage, List<StockAnalysisResultVO> results) throws Exception {
+        upsertStageSnapshot(date, stage, results, false);
+    }
+
+    public Snapshot loadDailyStockRaw(String date, String stage) throws Exception {
+        return loadStageSnapshot(date, stage, true);
+    }
+
+    public Snapshot loadDailyStockAnalysis(String date, String stage) throws Exception {
+        return loadStageSnapshot(date, stage, false);
+    }
+
+    public void upsertDailyRunStatus(String date, String stage, String status, int rowCount, String note)
+            throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertDailyRunStatus(safeText(date), safeText(stage), safeText(status), rowCount, safeText(note));
+    }
+
+    public void upsertDailyMarketData(String date, String stage, String dataKey, JSONObject dataObject) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertDailyMarketData(safeText(date), safeText(stage), safeText(dataKey),
+                dataObject == null ? new JSONObject() : dataObject);
+    }
+
+    public JSONObject loadDailyMarketData(String date, String stage, String dataKey) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return new JSONObject();
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        return sqliteStore.loadDailyMarketData(safeText(date), safeText(stage), safeText(dataKey));
+    }
+
     public String getDatabasePath() {
         File historyDirectory = ensureHistoryDirectory();
         SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
@@ -81,6 +134,27 @@ public class StockHistoryDatabase {
             return sqliteStore.getDatabaseFile().getAbsolutePath();
         }
         return getLegacyDatabaseFile(historyDirectory).getAbsolutePath();
+    }
+
+    private void upsertStageSnapshot(String date, String stage, List<StockAnalysisResultVO> results, boolean rawTable)
+            throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertStageSnapshot(buildSnapshot(date, results), safeText(stage), rawTable);
+    }
+
+    private Snapshot loadStageSnapshot(String date, String stage, boolean rawTable) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return new Snapshot();
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        return sqliteStore.loadStageSnapshot(safeText(date), safeText(stage), rawTable);
     }
 
     private Snapshot buildSnapshot(String date, List<StockAnalysisResultVO> results) {
@@ -367,11 +441,17 @@ public class StockHistoryDatabase {
         row.pegIndustryPercentile = numberValue(rowObject.get("pegIndustryPercentile"));
         row.relativePeIndustryPercentile = numberValue(rowObject.get("relativePeIndustryPercentile"));
         row.nonOperatingIndustryPercentile = numberValue(rowObject.get("nonOperatingIndustryPercentile"));
+        row.latestInstitutionalNetLots = Math.round(numberValue(rowObject.get("latestInstitutionalNetLots")));
+        row.latestInstitutionalNetRatioPct = numberValue(rowObject.get("latestInstitutionalNetRatioPct"));
+        row.fiveDayInstitutionalNetLots = Math.round(numberValue(rowObject.get("fiveDayInstitutionalNetLots")));
         row.fiveDayInstitutionalNetRatioPct = numberValue(rowObject.get("fiveDayInstitutionalNetRatioPct"));
+        row.latestForeignNetLots = Math.round(numberValue(rowObject.get("latestForeignNetLots")));
+        row.brokerNetLots = Math.round(numberValue(rowObject.get("brokerNetLots")));
         row.brokerNetRatioPct = numberValue(rowObject.get("brokerNetRatioPct"));
         row.rsi14 = numberValue(rowObject.get("rsi14"));
         row.stochasticK = numberValue(rowObject.get("stochasticK"));
         row.stochasticD = numberValue(rowObject.get("stochasticD"));
+        row.ma20Slope = numberValue(rowObject.get("ma20Slope"));
         row.movingAverage18 = numberValue(rowObject.get("movingAverage18"));
         row.movingAverage20 = numberValue(rowObject.get("movingAverage20"));
         row.movingAverage54 = numberValue(rowObject.get("movingAverage54"));
@@ -425,6 +505,15 @@ public class StockHistoryDatabase {
         row.postCloseCategory = safeText(rowObject.get("postCloseCategory"));
         row.postCloseAction = safeText(rowObject.get("postCloseAction"));
         row.postCloseReason = safeText(rowObject.get("postCloseReason"));
+        row.snapshotStage = safeText(rowObject.get("snapshotStage"));
+        row.techReady = booleanValue(rowObject.get("techReady"));
+        row.marketReady = booleanValue(rowObject.get("marketReady"));
+        row.institutionalReady = booleanValue(rowObject.get("institutionalReady"));
+        row.brokerReady = booleanValue(rowObject.get("brokerReady"));
+        row.financialReady = booleanValue(rowObject.get("financialReady"));
+        row.newsReady = booleanValue(rowObject.get("newsReady"));
+        row.analysisVersion = safeText(rowObject.get("analysisVersion"));
+        row.sourceUpdatedAt = safeText(rowObject.get("sourceUpdatedAt"));
         if (row.rawScore <= 0D) {
             row.rawScore = row.score;
         }
@@ -532,11 +621,17 @@ public class StockHistoryDatabase {
         row.pegIndustryPercentile = safeNumber(result.getPegIndustryPercentile());
         row.relativePeIndustryPercentile = safeNumber(result.getRelativePeIndustryPercentile());
         row.nonOperatingIndustryPercentile = safeNumber(result.getNonOperatingIndustryPercentile());
+        row.latestInstitutionalNetLots = result.getLatestInstitutionalNetLots();
+        row.latestInstitutionalNetRatioPct = safeNumber(result.getLatestInstitutionalNetRatioPct());
+        row.fiveDayInstitutionalNetLots = result.getFiveDayInstitutionalNetLots();
         row.fiveDayInstitutionalNetRatioPct = safeNumber(result.getFiveDayInstitutionalNetRatioPct());
+        row.latestForeignNetLots = result.getLatestForeignNetLots();
+        row.brokerNetLots = result.getBrokerNetLots();
         row.brokerNetRatioPct = safeNumber(result.getBrokerNetRatioPct());
         row.rsi14 = safeNumber(result.getRsi14());
         row.stochasticK = safeNumber(result.getStochasticK());
         row.stochasticD = safeNumber(result.getStochasticD());
+        row.ma20Slope = safeNumber(result.getMa20Slope());
         row.epsAccelerationPct = safeNumber(result.getEpsAccelerationPct());
         row.peg = safeNumber(result.getPeg());
         row.scoreReason = safeText(result.getScoreReason());
@@ -586,6 +681,15 @@ public class StockHistoryDatabase {
         row.postCloseCategory = safeText(result.getPostCloseCategory());
         row.postCloseAction = safeText(result.getPostCloseAction());
         row.postCloseReason = safeText(result.getPostCloseReason());
+        row.snapshotStage = safeText(result.getSnapshotStage());
+        row.techReady = result.isTechReady();
+        row.marketReady = result.isMarketReady();
+        row.institutionalReady = result.isInstitutionalReady();
+        row.brokerReady = result.isBrokerReady();
+        row.financialReady = result.isFinancialReady();
+        row.newsReady = result.isNewsReady();
+        row.analysisVersion = safeText(result.getAnalysisVersion());
+        row.sourceUpdatedAt = safeText(result.getSourceUpdatedAt());
         row.likely = isLikelyCandidate(row);
         return row;
     }
@@ -673,12 +777,19 @@ public class StockHistoryDatabase {
         rowObject.put("relativePeIndustryPercentile", Double.valueOf(safeNumber(row.relativePeIndustryPercentile)));
         rowObject.put("nonOperatingIndustryPercentile",
                 Double.valueOf(safeNumber(row.nonOperatingIndustryPercentile)));
+        rowObject.put("latestInstitutionalNetLots", Long.valueOf(row.latestInstitutionalNetLots));
+        rowObject.put("latestInstitutionalNetRatioPct",
+                Double.valueOf(safeNumber(row.latestInstitutionalNetRatioPct)));
+        rowObject.put("fiveDayInstitutionalNetLots", Long.valueOf(row.fiveDayInstitutionalNetLots));
         rowObject.put("fiveDayInstitutionalNetRatioPct",
                 Double.valueOf(safeNumber(row.fiveDayInstitutionalNetRatioPct)));
+        rowObject.put("latestForeignNetLots", Long.valueOf(row.latestForeignNetLots));
+        rowObject.put("brokerNetLots", Long.valueOf(row.brokerNetLots));
         rowObject.put("brokerNetRatioPct", Double.valueOf(safeNumber(row.brokerNetRatioPct)));
         rowObject.put("rsi14", Double.valueOf(safeNumber(row.rsi14)));
         rowObject.put("stochasticK", Double.valueOf(safeNumber(row.stochasticK)));
         rowObject.put("stochasticD", Double.valueOf(safeNumber(row.stochasticD)));
+        rowObject.put("ma20Slope", Double.valueOf(safeNumber(row.ma20Slope)));
         rowObject.put("epsAccelerationPct", Double.valueOf(safeNumber(row.epsAccelerationPct)));
         rowObject.put("peg", Double.valueOf(safeNumber(row.peg)));
         rowObject.put("scoreReason", safeText(row.scoreReason));
@@ -728,6 +839,15 @@ public class StockHistoryDatabase {
         rowObject.put("postCloseCategory", safeText(row.postCloseCategory));
         rowObject.put("postCloseAction", safeText(row.postCloseAction));
         rowObject.put("postCloseReason", safeText(row.postCloseReason));
+        rowObject.put("snapshotStage", safeText(row.snapshotStage));
+        rowObject.put("techReady", Boolean.valueOf(row.techReady));
+        rowObject.put("marketReady", Boolean.valueOf(row.marketReady));
+        rowObject.put("institutionalReady", Boolean.valueOf(row.institutionalReady));
+        rowObject.put("brokerReady", Boolean.valueOf(row.brokerReady));
+        rowObject.put("financialReady", Boolean.valueOf(row.financialReady));
+        rowObject.put("newsReady", Boolean.valueOf(row.newsReady));
+        rowObject.put("analysisVersion", safeText(row.analysisVersion));
+        rowObject.put("sourceUpdatedAt", safeText(row.sourceUpdatedAt));
         rowObject.put("likely", Boolean.valueOf(row.likely));
         return rowObject;
     }
@@ -871,9 +991,32 @@ public class StockHistoryDatabase {
                 row.valuationScore = NumberParser.parseDouble(valueAt(fields, indexes, "valuation_score"));
                 row.technicalScore = NumberParser.parseDouble(valueAt(fields, indexes, "technical_score"));
                 row.financialQualityScore = NumberParser.parseDouble(valueAt(fields, indexes, "financial_quality_score"));
+                row.latestInstitutionalNetLots = NumberParser.parseLong(valueAt(fields, indexes,
+                        "latest_institutional_net_lots"));
+                row.latestInstitutionalNetRatioPct = NumberParser.parseDouble(valueAt(fields, indexes,
+                        "latest_institutional_net_ratio_pct"));
+                row.fiveDayInstitutionalNetLots = NumberParser.parseLong(valueAt(fields, indexes,
+                        "five_day_institutional_net_lots"));
                 row.fiveDayInstitutionalNetRatioPct = NumberParser
                         .parseDouble(valueAt(fields, indexes, "five_day_institutional_net_ratio_pct"));
+                row.latestForeignNetLots = NumberParser.parseLong(valueAt(fields, indexes, "latest_foreign_net_lots"));
+                row.brokerNetLots = NumberParser.parseLong(valueAt(fields, indexes, "broker_net_lots"));
                 row.brokerNetRatioPct = NumberParser.parseDouble(valueAt(fields, indexes, "broker_net_ratio_pct"));
+                row.snapshotStage = valueAt(fields, indexes, "snapshot_stage");
+                row.techReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "tech_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "tech_ready"));
+                row.marketReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "market_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "market_ready"));
+                row.institutionalReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "institutional_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "institutional_ready"));
+                row.brokerReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "broker_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "broker_ready"));
+                row.financialReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "financial_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "financial_ready"));
+                row.newsReady = "Y".equalsIgnoreCase(valueAt(fields, indexes, "news_ready"))
+                        || "true".equalsIgnoreCase(valueAt(fields, indexes, "news_ready"));
+                row.analysisVersion = valueAt(fields, indexes, "analysis_version");
+                row.sourceUpdatedAt = valueAt(fields, indexes, "source_updated_at");
                 row.scoreReason = valueAt(fields, indexes, "score_reason");
                 row.revenueReason = valueAt(fields, indexes, "revenue_reason");
                 row.chipsReason = valueAt(fields, indexes, "chips_reason");
@@ -1189,11 +1332,17 @@ public class StockHistoryDatabase {
         public double pegIndustryPercentile;
         public double relativePeIndustryPercentile;
         public double nonOperatingIndustryPercentile;
+        public long latestInstitutionalNetLots;
+        public double latestInstitutionalNetRatioPct;
+        public long fiveDayInstitutionalNetLots;
         public double fiveDayInstitutionalNetRatioPct;
+        public long latestForeignNetLots;
+        public long brokerNetLots;
         public double brokerNetRatioPct;
         public double rsi14;
         public double stochasticK;
         public double stochasticD;
+        public double ma20Slope;
         public double epsAccelerationPct;
         public double peg;
         public String scoreReason = "";
@@ -1243,6 +1392,15 @@ public class StockHistoryDatabase {
         public String postCloseCategory = "";
         public String postCloseAction = "";
         public String postCloseReason = "";
+        public String snapshotStage = "";
+        public boolean techReady;
+        public boolean marketReady;
+        public boolean institutionalReady;
+        public boolean brokerReady;
+        public boolean financialReady;
+        public boolean newsReady;
+        public String analysisVersion = "";
+        public String sourceUpdatedAt = "";
         public boolean likely;
     }
 
@@ -1271,6 +1429,14 @@ public class StockHistoryDatabase {
                 statement.executeUpdate("create table if not exists snapshots (snapshot_date text primary key, row_count integer not null, updated_at text not null)");
                 statement.executeUpdate("create table if not exists snapshot_rows (snapshot_date text not null, code text not null, sort_order integer not null, name text, market text, industry text, score real, selection_score real, price real, volume_ratio real, likely integer not null, row_json text not null, primary key (snapshot_date, code))");
                 statement.executeUpdate("create index if not exists idx_snapshot_rows_code_date on snapshot_rows(code, snapshot_date)");
+                statement.executeUpdate("create table if not exists daily_stock_raw (trade_date text not null, stage text not null, code text not null, sort_order integer not null, name text, market text, industry text, score real, selection_score real, price real, volume_ratio real, likely integer not null, row_json text not null, updated_at text not null, primary key (trade_date, stage, code))");
+                statement.executeUpdate("create index if not exists idx_daily_stock_raw_stage_date on daily_stock_raw(stage, trade_date)");
+                statement.executeUpdate("create index if not exists idx_daily_stock_raw_code_date on daily_stock_raw(code, trade_date)");
+                statement.executeUpdate("create table if not exists daily_stock_analysis (trade_date text not null, stage text not null, code text not null, sort_order integer not null, name text, market text, industry text, score real, selection_score real, price real, volume_ratio real, likely integer not null, row_json text not null, updated_at text not null, primary key (trade_date, stage, code))");
+                statement.executeUpdate("create index if not exists idx_daily_stock_analysis_stage_date on daily_stock_analysis(stage, trade_date)");
+                statement.executeUpdate("create index if not exists idx_daily_stock_analysis_code_date on daily_stock_analysis(code, trade_date)");
+                statement.executeUpdate("create table if not exists daily_market_data (trade_date text not null, stage text not null, data_key text not null, data_json text not null, updated_at text not null, primary key (trade_date, stage, data_key))");
+                statement.executeUpdate("create table if not exists daily_run_status (trade_date text not null, stage text not null, status text not null, row_count integer not null, note text, updated_at text not null, primary key (trade_date, stage))");
             } finally {
                 statement.close();
             }
@@ -1443,6 +1609,181 @@ public class StockHistoryDatabase {
                 connection.close();
             }
             return snapshotsByDate;
+        }
+
+        private void upsertStageSnapshot(Snapshot snapshot, String stage, boolean rawTable) throws Exception {
+            if (snapshot == null || snapshot.date.length() == 0 || stage.length() == 0) {
+                return;
+            }
+            String tableName = rawTable ? "daily_stock_raw" : "daily_stock_analysis";
+            Connection connection = openConnection();
+            try {
+                PreparedStatement deleteRows = connection.prepareStatement(
+                        "delete from " + tableName + " where trade_date = ? and stage = ?");
+                PreparedStatement insertRow = connection.prepareStatement(
+                        "insert into " + tableName + "(trade_date, stage, code, sort_order, name, market, industry, score, selection_score, price, volume_ratio, likely, row_json, updated_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                try {
+                    deleteRows.setString(1, snapshot.date);
+                    deleteRows.setString(2, stage);
+                    deleteRows.executeUpdate();
+
+                    for (int i = 0; i < snapshot.rows.size(); i++) {
+                        SnapshotRow row = snapshot.rows.get(i);
+                        insertRow.setString(1, snapshot.date);
+                        insertRow.setString(2, stage);
+                        insertRow.setString(3, safeText(row.code));
+                        insertRow.setInt(4, i);
+                        insertRow.setString(5, safeText(row.name));
+                        insertRow.setString(6, safeText(row.market));
+                        insertRow.setString(7, safeText(row.industry));
+                        insertRow.setDouble(8, safeNumber(row.score));
+                        insertRow.setDouble(9, safeNumber(row.selectionScore));
+                        insertRow.setDouble(10, safeNumber(row.price));
+                        insertRow.setDouble(11, safeNumber(row.volumeRatio));
+                        insertRow.setInt(12, row.likely ? 1 : 0);
+                        insertRow.setString(13, toRowJson(row).toJSONString());
+                        insertRow.setString(14, snapshot.date);
+                        insertRow.executeUpdate();
+                    }
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    deleteRows.close();
+                    insertRow.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        private Snapshot loadStageSnapshot(String date, String stage, boolean rawTable) throws Exception {
+            Snapshot snapshot = new Snapshot();
+            snapshot.date = safeText(date);
+            if (snapshot.date.length() == 0 || safeText(stage).length() == 0) {
+                return snapshot;
+            }
+            String tableName = rawTable ? "daily_stock_raw" : "daily_stock_analysis";
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "select row_json from " + tableName + " where trade_date = ? and stage = ? order by sort_order, code");
+                try {
+                    statement.setString(1, snapshot.date);
+                    statement.setString(2, stage);
+                    ResultSet resultSet = statement.executeQuery();
+                    try {
+                        while (resultSet.next()) {
+                            String rowJson = safeText(resultSet.getString("row_json"));
+                            Snapshot parsed = parseSnapshotRowJson(snapshot.date, rowJson);
+                            if (!parsed.rows.isEmpty()) {
+                                snapshot.rows.add(parsed.rows.get(0));
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    statement.close();
+                    connection.commit();
+                }
+            } finally {
+                connection.close();
+            }
+            return snapshot;
+        }
+
+        private void upsertDailyRunStatus(String date, String stage, String status, int rowCount, String note)
+                throws Exception {
+            if (date.length() == 0 || stage.length() == 0) {
+                return;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "insert into daily_run_status(trade_date, stage, status, row_count, note, updated_at) values(?,?,?,?,?,?) on conflict(trade_date, stage) do update set status = excluded.status, row_count = excluded.row_count, note = excluded.note, updated_at = excluded.updated_at");
+                try {
+                    statement.setString(1, date);
+                    statement.setString(2, stage);
+                    statement.setString(3, status);
+                    statement.setInt(4, rowCount);
+                    statement.setString(5, note);
+                    statement.setString(6, date);
+                    statement.executeUpdate();
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        private void upsertDailyMarketData(String date, String stage, String dataKey, JSONObject dataObject)
+                throws Exception {
+            if (date.length() == 0 || stage.length() == 0 || dataKey.length() == 0) {
+                return;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "insert into daily_market_data(trade_date, stage, data_key, data_json, updated_at) values(?,?,?,?,?) on conflict(trade_date, stage, data_key) do update set data_json = excluded.data_json, updated_at = excluded.updated_at");
+                try {
+                    statement.setString(1, date);
+                    statement.setString(2, stage);
+                    statement.setString(3, dataKey);
+                    statement.setString(4, dataObject.toJSONString());
+                    statement.setString(5, date);
+                    statement.executeUpdate();
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        private JSONObject loadDailyMarketData(String date, String stage, String dataKey) throws Exception {
+            JSONObject result = new JSONObject();
+            if (date.length() == 0 || stage.length() == 0 || dataKey.length() == 0) {
+                return result;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "select data_json from daily_market_data where trade_date = ? and stage = ? and data_key = ? limit 1");
+                try {
+                    statement.setString(1, date);
+                    statement.setString(2, stage);
+                    statement.setString(3, dataKey);
+                    ResultSet resultSet = statement.executeQuery();
+                    try {
+                        if (resultSet.next()) {
+                            String json = safeText(resultSet.getString("data_json"));
+                            Object parsed = new JSONParser().parse(json);
+                            if (parsed instanceof JSONObject) {
+                                return (JSONObject) parsed;
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    statement.close();
+                    connection.commit();
+                }
+            } finally {
+                connection.close();
+            }
+            return result;
         }
     }
 }

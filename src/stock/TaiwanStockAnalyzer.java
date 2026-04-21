@@ -71,9 +71,12 @@ public class TaiwanStockAnalyzer {
     private static final int MIN_BACKTEST_SAMPLE_COUNT = 80;
     private static final long PER_STOCK_PAUSE_MS = parseLongProperty("stock.analyzer.perStockPauseMs", 600L);
     private static final long THROTTLE_COOLDOWN_MS = parseLongProperty("stock.analyzer.throttleCooldownMs", 30000L);
+    private static final boolean CLOSE_DEFER_NEWS = parseBooleanProperty("stock.close.deferNews", true);
+    private static final boolean CLOSE_DEFER_EVENT_RISK = parseBooleanProperty("stock.close.deferEventRisk", true);
     private static final ZoneId TAIPEI_ZONE = ZoneId.of("Asia/Taipei");
     private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
     private static final String DAILY_SNAPSHOT_DIRECTORY_NAME = "daily_snapshots";
+    private static final String ANALYSIS_VERSION = "stage-cache-v1";
     private static final String[] POSITIVE_NEWS_KEYWORDS = { "營收", "訂單", "擴產", "漲價", "法說", "合作", "量產", "受惠",
             "成長", "上修", "創高", "布局", "AI", "矽光子", "低軌", "衛星", "CoWoS", "散熱", "機器人" };
     private static final String[] NEGATIVE_NEWS_KEYWORDS = { "下修", "虧損", "減資", "處分", "停工", "裁員", "違約", "訴訟",
@@ -91,19 +94,26 @@ public class TaiwanStockAnalyzer {
     private final ThemeBasketRepository themeBasketRepository = new ThemeBasketRepository();
     private final NewsThemeReferenceAnalyzer newsThemeReferenceAnalyzer = new NewsThemeReferenceAnalyzer();
     private final MarketThemeNewsAnalyzer marketThemeNewsAnalyzer = new MarketThemeNewsAnalyzer();
+    private final MarketThemeRadar marketThemeRadar = new MarketThemeRadar();
     private final NewsCompanySummarizer newsCompanySummarizer = new NewsCompanySummarizer();
+    private final LowFrequencyDataCache lowFrequencyDataCache = LowFrequencyDataCache.loadDefault();
     private final ScoringConfig scoringConfig = ScoringConfig.loadDefault();
     private MarketThemeNewsAnalyzer.ReferenceBundle lastMarketThemeReferenceBundle = MarketThemeNewsAnalyzer.ReferenceBundle.empty();
     private String lastNewsOnlyReferenceDate = "";
     private MarketRegime activeMarketRegime = MarketRegime.RANGE_BOUND;
     private ScoringStrategy activeScoringStrategy = new ConfiguredScoringStrategy(scoringConfig.getQualification(),
             scoringConfig.getProfile(activeMarketRegime));
+    private String runStage = "full";
+    private Map<String, StockHistoryDatabase.SnapshotRow> sameDayCloseRawRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
 
     public List<StockAnalysisResultVO> analyze(int maxStocks) throws Exception {
         List<TaiwanStockVO> allStocks = marketProvider.loadAllStocks();
         if (maxStocks > 0 && maxStocks < allStocks.size()) {
             allStocks = new ArrayList<TaiwanStockVO>(allStocks.subList(0, maxStocks));
         }
+        sameDayCloseRawRowsByCode = loadSameDayCloseRawRows();
+        markStageRunStatus("running", 0, sameDayCloseRawRowsByCode.isEmpty() ? "close raw unavailable"
+                : "reusing close raw " + sameDayCloseRawRowsByCode.size());
 
         List<StockAnalysisResultVO> results = new ArrayList<StockAnalysisResultVO>();
         int index = 0;
@@ -140,6 +150,7 @@ public class TaiwanStockAnalyzer {
                 return Double.compare(right.getScore(), left.getScore());
             }
         });
+        markStageRunStatus("analyzed", results.size(), "analysis finished");
 
         return results;
     }
@@ -149,6 +160,7 @@ public class TaiwanStockAnalyzer {
         if (maxStocks > 0 && maxStocks < allStocks.size()) {
             allStocks = new ArrayList<TaiwanStockVO>(allStocks.subList(0, maxStocks));
         }
+        refreshMarketThemeRadarSafely(allStocks);
 
         LatestSnapshotContext snapshotContext = loadLatestSnapshotContext();
         lastNewsOnlyReferenceDate = snapshotContext.date;
@@ -173,6 +185,7 @@ public class TaiwanStockAnalyzer {
                     hydrateNewsOnlyResult(result, snapshotRow);
                 }
                 applyNewsSignalMetadata(result, newsSignal);
+                applyThemeBasketMetadata(result, newsSignal);
                 EventSignalProfile eventSignalProfile = inferEventSignalProfile(newsSignal, new EventRiskVO(0D, ""));
                 double newsScore = scoreNewsSignal(newsSignal);
                 double newsRiskScore = scoreNewsRisk(newsSignal, 0D);
@@ -225,7 +238,7 @@ public class TaiwanStockAnalyzer {
                 new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8")));
         writer.write('\uFEFF');
         writer.println(
-                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,company_summary,recent_news_brief,transformation_hint,practical_advice,advice_confidence,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
+                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,company_summary,recent_news_brief,transformation_hint,practical_advice,advice_confidence,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,snapshot_stage,tech_ready,market_ready,institutional_ready,broker_ready,financial_ready,news_ready,analysis_version,source_updated_at,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
 
         for (StockAnalysisResultVO result : results) {
             writer.println(csv(result.getStock().getCode()) + "," + csv(result.getStock().getName()) + ","
@@ -284,6 +297,13 @@ public class TaiwanStockAnalyzer {
                     + "," + result.getFiveDayInstitutionalNetLots() + ","
                     + format(result.getFiveDayInstitutionalNetRatioPct()) + "," + result.getLatestForeignNetLots()
                     + "," + result.getBrokerNetLots() + "," + format(result.getBrokerNetRatioPct()) + ","
+                    + csv(result.getSnapshotStage()) + ","
+                    + csv(result.isTechReady() ? "Y" : "N") + "," + csv(result.isMarketReady() ? "Y" : "N") + ","
+                    + csv(result.isInstitutionalReady() ? "Y" : "N") + ","
+                    + csv(result.isBrokerReady() ? "Y" : "N") + ","
+                    + csv(result.isFinancialReady() ? "Y" : "N") + ","
+                    + csv(result.isNewsReady() ? "Y" : "N") + ","
+                    + csv(result.getAnalysisVersion()) + "," + csv(result.getSourceUpdatedAt()) + ","
                     + format(result.getTrailingFourQuarterEps()) + "," + format(result.getTrailingPe()) + ","
                     + format(result.getPeerAveragePe()) + "," + format(result.getLatestQuarterEps()) + ","
                     + format(result.getLatestQuarterEpsYoYPct()) + "," + result.getPositiveEpsQuarters() + ","
@@ -1207,7 +1227,89 @@ public class TaiwanStockAnalyzer {
                 return Double.compare(right.getSelectionScore(), left.getSelectionScore());
             }
         });
+        lowFrequencyDataCache.save();
         return results;
+    }
+
+    public void setRunStage(String runStage) {
+        if (runStage == null || runStage.trim().length() == 0) {
+            this.runStage = "full";
+            return;
+        }
+        this.runStage = runStage.trim().toLowerCase();
+    }
+
+    public void writeStageSnapshots(List<StockAnalysisResultVO> results) throws Exception {
+        String currentDate = currentDateStamp();
+        historyDatabase.upsertDailyStockRaw(currentDate, runStage, results);
+        historyDatabase.upsertDailyStockAnalysis(currentDate, runStage, results);
+    }
+
+    public void markRunStatus(String status, int rowCount, String note) {
+        markStageRunStatus(status, rowCount, note);
+    }
+
+    private Map<String, StockHistoryDatabase.SnapshotRow> loadSameDayCloseRawRows() {
+        Map<String, StockHistoryDatabase.SnapshotRow> rowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
+        if (!"full".equals(runStage)) {
+            return rowsByCode;
+        }
+        try {
+            StockHistoryDatabase.Snapshot snapshot = historyDatabase.loadDailyStockRaw(currentDateStamp(), "close");
+            if (snapshot == null || snapshot.rows == null) {
+                return rowsByCode;
+            }
+            for (StockHistoryDatabase.SnapshotRow row : snapshot.rows) {
+                if (row != null && row.code != null && row.code.length() > 0) {
+                    rowsByCode.put(row.code, row);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Cannot load same-day close raw cache: " + ex.getMessage());
+        }
+        return rowsByCode;
+    }
+
+    private void markStageRunStatus(String status, int rowCount, String note) {
+        try {
+            historyDatabase.upsertDailyRunStatus(currentDateStamp(), runStage, status, rowCount, note);
+        } catch (Exception ex) {
+            System.out.println("Cannot update run status: " + ex.getMessage());
+        }
+    }
+
+    private void refreshMarketThemeRadarSafely(List<TaiwanStockVO> allStocks) {
+        if (!Boolean.parseBoolean(System.getProperty("stock.marketThemeRadar.enabled", "true"))) {
+            return;
+        }
+        try {
+            MarketThemeRadar.Report report = marketThemeRadar.refresh(allStocks, currentDateStamp());
+            themeBasketRepository.reload();
+            historyDatabase.upsertDailyMarketData(currentDateStamp(), runStage, "marketThemeRadar", report.toJson());
+            System.out.println("Market theme radar: " + report.articles.size() + " articles, "
+                    + report.themes.size() + " auto themes.");
+        } catch (Exception ex) {
+            System.out.println("Market theme radar skipped: " + ex.getMessage());
+        }
+    }
+
+    private void applyThemeBasketMetadata(StockAnalysisResultVO result, NewsSignalVO newsSignal) {
+        if (result == null || result.getStock() == null) {
+            return;
+        }
+        ThemeBasketRepository.ThemeMatch themeMatch = themeBasketRepository.match(result.getStock(),
+                emptyIfBlank(result.getIndustry(), ""), newsSignal);
+        if (themeMatch == null) {
+            return;
+        }
+        if (themeMatch.primaryTheme.length() > 0 && !"一般".equals(themeMatch.primaryTheme)
+                && themeMatch.themeScore >= result.getThemeScore()) {
+            result.setPrimaryTheme(themeMatch.primaryTheme);
+            result.setThemeScore(themeMatch.themeScore);
+        }
+        if (themeMatch.themeTags.length() > 0) {
+            result.setThemeTags(themeMatch.themeTags);
+        }
     }
 
     private List<StockAnalysisResultVO> filterLikelyVolumeSurge(List<StockAnalysisResultVO> results) {
@@ -1300,54 +1402,86 @@ public class TaiwanStockAnalyzer {
     }
 
     private StockAnalysisResultVO analyzeOneStock(TaiwanStockVO stock) throws Exception {
-        List<MonthlyRevenueVO> revenues = yahooService.fetchMonthlyRevenues(stock);
-        List<InstitutionalTradingDailyVO> institutionalDaily = yahooService.fetchInstitutionalTrading(stock);
-        TechnicalSnapshotVO technical = yahooService.fetchTechnicalSnapshot(stock);
-        BrokerTradingSummaryVO brokerSummary = fetchOptional("broker trading", stock, new FetchSupplier<BrokerTradingSummaryVO>() {
-            public BrokerTradingSummaryVO get() throws Exception {
-                return yahooService.fetchBrokerTradingSummary(stock);
-            }
-        }, new BrokerTradingSummaryVO("", 0L, 0L, 0L, 0D));
-        ProfileSnapshotVO profile = fetchOptional("profile", stock, new FetchSupplier<ProfileSnapshotVO>() {
-            public ProfileSnapshotVO get() throws Exception {
-                return yahooService.fetchProfileSnapshot(stock);
-            }
-        }, emptyProfileSnapshot());
-        List<EpsRecordVO> epsRecords = fetchOptional("eps", stock, new FetchSupplier<List<EpsRecordVO>>() {
-            public List<EpsRecordVO> get() throws Exception {
-                return yahooService.fetchEpsRecords(stock);
-            }
-        }, new ArrayList<EpsRecordVO>());
-        List<CashFlowRecordVO> cashFlowRecords = fetchOptional("cash flow", stock,
-                new FetchSupplier<List<CashFlowRecordVO>>() {
+        LowFrequencyDataCache.Entry cacheEntry = lowFrequencyDataCache.get(stock.getCode());
+        StockHistoryDatabase.SnapshotRow stagedRawRow = sameDayCloseRawRowsByCode.get(stock.getCode());
+        boolean reuseCloseRaw = "full".equals(runStage) && stagedRawRow != null;
+        boolean closeStage = "close".equals(runStage);
+        boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
+        boolean deferEventRisk = closeStage && CLOSE_DEFER_EVENT_RISK;
+        boolean hasRevenueCache = hasRevenueCache(cacheEntry);
+        boolean hasFinancialCache = hasFinancialCache(cacheEntry);
+        boolean hasProfileCache = hasProfileCache(cacheEntry);
+        boolean refreshRevenue = shouldRefreshRevenue(cacheEntry);
+        boolean refreshFinancial = shouldRefreshFinancial(cacheEntry);
+        boolean refreshProfile = shouldRefreshProfile(cacheEntry, refreshFinancial);
+
+        List<MonthlyRevenueVO> revenues = (refreshRevenue || !hasRevenueCache)
+                ? fetchOptional("monthly revenue", stock, new FetchSupplier<List<MonthlyRevenueVO>>() {
+                    public List<MonthlyRevenueVO> get() throws Exception {
+                        return yahooService.fetchMonthlyRevenues(stock);
+                    }
+                }, new ArrayList<MonthlyRevenueVO>())
+                : new ArrayList<MonthlyRevenueVO>();
+        List<InstitutionalTradingDailyVO> institutionalDaily = reuseCloseRaw ? new ArrayList<InstitutionalTradingDailyVO>()
+                : yahooService.fetchInstitutionalTrading(stock);
+        TechnicalSnapshotVO technical = reuseCloseRaw ? null : yahooService.fetchTechnicalSnapshot(stock);
+        BrokerTradingSummaryVO brokerSummary = reuseCloseRaw
+                ? new BrokerTradingSummaryVO(currentDateStamp(), 0L, 0L, stagedRawRow.brokerNetLots,
+                        stagedRawRow.brokerNetRatioPct)
+                : fetchOptional("broker trading", stock, new FetchSupplier<BrokerTradingSummaryVO>() {
+                    public BrokerTradingSummaryVO get() throws Exception {
+                        return yahooService.fetchBrokerTradingSummary(stock);
+                    }
+                }, new BrokerTradingSummaryVO("", 0L, 0L, 0L, 0D));
+        ProfileSnapshotVO profile = (refreshProfile || !hasProfileCache)
+                ? fetchOptional("profile", stock, new FetchSupplier<ProfileSnapshotVO>() {
+                    public ProfileSnapshotVO get() throws Exception {
+                        return yahooService.fetchProfileSnapshot(stock);
+                    }
+                }, emptyProfileSnapshot())
+                : profileFromCache(cacheEntry);
+        List<EpsRecordVO> epsRecords = (refreshFinancial || !hasFinancialCache)
+                ? fetchOptional("eps", stock, new FetchSupplier<List<EpsRecordVO>>() {
+                    public List<EpsRecordVO> get() throws Exception {
+                        return yahooService.fetchEpsRecords(stock);
+                    }
+                }, new ArrayList<EpsRecordVO>())
+                : new ArrayList<EpsRecordVO>();
+        List<CashFlowRecordVO> cashFlowRecords = (refreshFinancial || !hasFinancialCache)
+                ? fetchOptional("cash flow", stock, new FetchSupplier<List<CashFlowRecordVO>>() {
                     public List<CashFlowRecordVO> get() throws Exception {
                         return yahooService.fetchCashFlowRecords(stock);
                     }
-                }, new ArrayList<CashFlowRecordVO>());
-        List<IncomeStatementRecordVO> incomeRecords = fetchOptional("income statement", stock,
-                new FetchSupplier<List<IncomeStatementRecordVO>>() {
+                }, new ArrayList<CashFlowRecordVO>())
+                : new ArrayList<CashFlowRecordVO>();
+        List<IncomeStatementRecordVO> incomeRecords = (refreshFinancial || !hasFinancialCache)
+                ? fetchOptional("income statement", stock, new FetchSupplier<List<IncomeStatementRecordVO>>() {
                     public List<IncomeStatementRecordVO> get() throws Exception {
                         return yahooService.fetchIncomeStatementRecords(stock);
                     }
-                }, new ArrayList<IncomeStatementRecordVO>());
-        List<BalanceSheetRecordVO> balanceRecords = fetchOptional("balance sheet", stock,
-                new FetchSupplier<List<BalanceSheetRecordVO>>() {
+                }, new ArrayList<IncomeStatementRecordVO>())
+                : new ArrayList<IncomeStatementRecordVO>();
+        List<BalanceSheetRecordVO> balanceRecords = (refreshFinancial || !hasFinancialCache)
+                ? fetchOptional("balance sheet", stock, new FetchSupplier<List<BalanceSheetRecordVO>>() {
                     public List<BalanceSheetRecordVO> get() throws Exception {
                         return yahooService.fetchBalanceSheetRecords(stock);
                     }
-                }, new ArrayList<BalanceSheetRecordVO>());
-        EventRiskVO eventRisk = fetchOptional("event risk", stock, new FetchSupplier<EventRiskVO>() {
-            public EventRiskVO get() throws Exception {
-                return yahooService.fetchEventRisk(stock, profile);
-            }
-        }, new EventRiskVO(0D, "事件風險資料暫時不足"));
-        NewsSignalVO newsSignal = fetchOptional("news", stock, new FetchSupplier<NewsSignalVO>() {
-            public NewsSignalVO get() throws Exception {
-                return yahooService.fetchNewsSignal(stock);
-            }
-        }, new NewsSignalVO());
+                }, new ArrayList<BalanceSheetRecordVO>())
+                : new ArrayList<BalanceSheetRecordVO>();
+        EventRiskVO eventRisk = deferEventRisk ? new EventRiskVO(0D, "盤後初版先略過事件風險，夜間完整版補齊")
+                : fetchOptional("event risk", stock, new FetchSupplier<EventRiskVO>() {
+                    public EventRiskVO get() throws Exception {
+                        return yahooService.fetchEventRisk(stock, profile);
+                    }
+                }, new EventRiskVO(0D, "事件風險資料暫時不足"));
+        NewsSignalVO newsSignal = deferNews ? new NewsSignalVO()
+                : fetchOptional("news", stock, new FetchSupplier<NewsSignalVO>() {
+                    public NewsSignalVO get() throws Exception {
+                        return yahooService.fetchNewsSignal(stock);
+                    }
+                }, new NewsSignalVO());
 
-        if (revenues.isEmpty() || institutionalDaily.isEmpty()) {
+        if ((revenues.isEmpty() && !hasRevenueCache) || (!reuseCloseRaw && institutionalDaily.isEmpty())) {
             throw new Exception("missing core Yahoo data");
         }
 
@@ -1358,93 +1492,163 @@ public class TaiwanStockAnalyzer {
         result.setBrokerSummary(brokerSummary);
 
         fillMetrics(result, epsRecords, cashFlowRecords, technical, profile, incomeRecords, balanceRecords, eventRisk,
-                newsSignal);
+                newsSignal, cacheEntry, stagedRawRow);
+        updateLowFrequencyCache(stock, cacheEntry, result, profile, revenues, epsRecords, incomeRecords, balanceRecords,
+                cashFlowRecords);
         return result;
     }
 
     private void fillMetrics(StockAnalysisResultVO result, List<EpsRecordVO> epsRecords,
             List<CashFlowRecordVO> cashFlowRecords, TechnicalSnapshotVO technical, ProfileSnapshotVO profile,
             List<IncomeStatementRecordVO> incomeRecords, List<BalanceSheetRecordVO> balanceRecords, EventRiskVO eventRisk,
-            NewsSignalVO newsSignal) {
+            NewsSignalVO newsSignal, LowFrequencyDataCache.Entry cacheEntry,
+            StockHistoryDatabase.SnapshotRow stagedRawRow) {
         List<MonthlyRevenueVO> revenues = result.getRevenues();
         List<InstitutionalTradingDailyVO> institutional = result.getInstitutionalDaily();
         BrokerTradingSummaryVO broker = result.getBrokerSummary();
+        boolean reusedSameDayCloseRaw = stagedRawRow != null;
 
         int revenueWindow = Math.min(3, revenues.size());
         int institutionWindow = Math.min(5, institutional.size());
         int epsWindow = Math.min(4, epsRecords.size());
         int cashFlowWindow = Math.min(4, cashFlowRecords.size());
-        boolean hasEpsData = !epsRecords.isEmpty();
-        boolean hasCashFlowData = !cashFlowRecords.isEmpty();
-        boolean hasIncomeData = !incomeRecords.isEmpty();
-        boolean hasBalanceData = !balanceRecords.isEmpty();
+        boolean hasRevenueData = !revenues.isEmpty() || hasRevenueCache(cacheEntry);
+        boolean hasEpsData = !epsRecords.isEmpty() || hasFinancialCache(cacheEntry);
+        boolean hasCashFlowData = !cashFlowRecords.isEmpty() || hasFinancialCache(cacheEntry);
+        boolean hasIncomeData = !incomeRecords.isEmpty() || hasFinancialCache(cacheEntry);
+        boolean hasBalanceData = !balanceRecords.isEmpty() || hasFinancialCache(cacheEntry);
         boolean hasBrokerData = broker.getDataDate() != null && broker.getDataDate().length() > 0;
+        if (!hasBrokerData && reusedSameDayCloseRaw) {
+            hasBrokerData = stagedRawRow.brokerReady || stagedRawRow.brokerNetLots != 0L
+                    || stagedRawRow.brokerNetRatioPct != 0D;
+        }
         boolean hasProfileData = profile.getCurrentPrice() > 0D || profile.getIndustry().length() > 0
                 || profile.getPeerAveragePe() > 0D || profile.getGrossMarginPct() > 0D
-                || profile.getOperatingMarginPct() > 0D;
+                || profile.getOperatingMarginPct() > 0D || hasProfileCache(cacheEntry);
+        boolean usedLowFrequencyCache = (revenues.isEmpty() && hasRevenueCache(cacheEntry))
+                || (epsRecords.isEmpty() && hasFinancialCache(cacheEntry))
+                || (cashFlowRecords.isEmpty() && hasFinancialCache(cacheEntry))
+                || (incomeRecords.isEmpty() && hasFinancialCache(cacheEntry))
+                || (balanceRecords.isEmpty() && hasFinancialCache(cacheEntry))
+                || ((profile.getIndustry().length() == 0 && profile.getPeerAveragePe() <= 0D
+                        && profile.getGrossMarginPct() == 0D && profile.getOperatingMarginPct() == 0D)
+                        && hasProfileCache(cacheEntry));
 
-        double latestRevenueYoY = revenues.get(0).getYearOverYearPct();
-        double averageThreeMonthRevenueYoY = averageRevenueYoY(revenues, revenueWindow);
-        double accumulatedRevenueYoY = revenues.get(0).getAccumulatedYearOverYearPct();
-        int positiveRevenueMonths = countPositiveRevenueMonths(revenues, revenueWindow);
+        double latestRevenueYoY = !revenues.isEmpty() ? revenues.get(0).getYearOverYearPct()
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.latestRevenueYoY);
+        double averageThreeMonthRevenueYoY = !revenues.isEmpty() ? averageRevenueYoY(revenues, revenueWindow)
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.averageThreeMonthRevenueYoY);
+        double accumulatedRevenueYoY = !revenues.isEmpty() ? revenues.get(0).getAccumulatedYearOverYearPct()
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.accumulatedRevenueYoY);
+        int positiveRevenueMonths = !revenues.isEmpty() ? countPositiveRevenueMonths(revenues, revenueWindow)
+                : cacheEntry == null ? 0 : cacheEntry.positiveRevenueMonths;
 
-        long latestInstitutionalNetLots = institutional.get(0).getTotalNetLots();
-        long latestVolume = institutional.get(0).getVolume();
-        double latestInstitutionalNetRatioPct = NumberParser.ratioPercent(latestInstitutionalNetLots, latestVolume);
-        long fiveDayInstitutionalNetLots = sumInstitutionalNet(institutional, institutionWindow);
-        long fiveDayVolume = sumVolume(institutional, institutionWindow);
-        double fiveDayInstitutionalNetRatioPct = NumberParser.ratioPercent(fiveDayInstitutionalNetLots, fiveDayVolume);
-        long latestForeignNetLots = institutional.get(0).getForeignNetLots();
-        long brokerNetLots = broker.getNetLots();
-        double brokerNetRatioPct = broker.getNetVolumeRatioPct();
+        long latestInstitutionalNetLots = !institutional.isEmpty() ? institutional.get(0).getTotalNetLots()
+                : reusedSameDayCloseRaw ? stagedRawRow.latestInstitutionalNetLots : 0L;
+        double latestInstitutionalNetRatioPct = !institutional.isEmpty()
+                ? NumberParser.ratioPercent(latestInstitutionalNetLots, institutional.get(0).getVolume())
+                : reusedSameDayCloseRaw ? stagedRawRow.latestInstitutionalNetRatioPct : 0D;
+        long fiveDayInstitutionalNetLots = !institutional.isEmpty() ? sumInstitutionalNet(institutional, institutionWindow)
+                : reusedSameDayCloseRaw ? stagedRawRow.fiveDayInstitutionalNetLots : 0L;
+        double fiveDayInstitutionalNetRatioPct = !institutional.isEmpty()
+                ? NumberParser.ratioPercent(fiveDayInstitutionalNetLots, sumVolume(institutional, institutionWindow))
+                : reusedSameDayCloseRaw ? stagedRawRow.fiveDayInstitutionalNetRatioPct : 0D;
+        long latestForeignNetLots = !institutional.isEmpty() ? institutional.get(0).getForeignNetLots()
+                : reusedSameDayCloseRaw ? stagedRawRow.latestForeignNetLots : 0L;
+        long brokerNetLots = reusedSameDayCloseRaw ? stagedRawRow.brokerNetLots : broker.getNetLots();
+        double brokerNetRatioPct = reusedSameDayCloseRaw ? stagedRawRow.brokerNetRatioPct : broker.getNetVolumeRatioPct();
+        if (brokerNetLots < 0L && brokerNetRatioPct > 0D) {
+            brokerNetRatioPct = -Math.abs(brokerNetRatioPct);
+        } else if (brokerNetLots > 0L && brokerNetRatioPct < 0D) {
+            brokerNetRatioPct = Math.abs(brokerNetRatioPct);
+        }
 
-        double currentPrice = profile.getCurrentPrice() > 0D ? profile.getCurrentPrice() : technical.getCurrentPrice();
-        double movingAverage18 = technical.getMovingAverage18();
-        double movingAverage20 = technical.getMovingAverage20();
-        double movingAverage54 = technical.getMovingAverage54();
-        double movingAverage60 = technical.getMovingAverage60();
-        double movingAverage120 = technical.getMovingAverage120();
-        double return18DayPct = technical.getReturn18DayPct();
-        double return20DayPct = technical.getReturn20DayPct();
-        double return54DayPct = technical.getReturn54DayPct();
-        double return60DayPct = technical.getReturn60DayPct();
-        double volumeRatio = technical.getAverageVolume20() <= 0D ? 0D
-                : technical.getCurrentVolume() / technical.getAverageVolume20();
-        double averageLots20 = technical.getAverageLots20();
-        double averageTradeValue20Billion = technical.getAverageTradeValue20Billion();
-        double volatility20Pct = technical.getVolatility20Pct();
-        double atr20 = technical.getAtr20();
-        double drawdownFromHigh60Pct = technical.getDrawdownFromHigh60Pct();
+        double currentPrice = reusedSameDayCloseRaw ? stagedRawRow.price
+                : profile.getCurrentPrice() > 0D ? profile.getCurrentPrice()
+                        : technical != null ? technical.getCurrentPrice() : 0D;
+        double movingAverage18 = technical != null ? technical.getMovingAverage18()
+                : reusedSameDayCloseRaw ? stagedRawRow.movingAverage18 : 0D;
+        double movingAverage20 = technical != null ? technical.getMovingAverage20()
+                : reusedSameDayCloseRaw ? stagedRawRow.movingAverage20 : 0D;
+        double movingAverage54 = technical != null ? technical.getMovingAverage54()
+                : reusedSameDayCloseRaw ? stagedRawRow.movingAverage54 : 0D;
+        double movingAverage60 = technical != null ? technical.getMovingAverage60()
+                : reusedSameDayCloseRaw ? stagedRawRow.movingAverage60 : 0D;
+        double movingAverage120 = technical != null ? technical.getMovingAverage120()
+                : reusedSameDayCloseRaw ? stagedRawRow.movingAverage120 : 0D;
+        double return18DayPct = technical != null ? technical.getReturn18DayPct()
+                : reusedSameDayCloseRaw ? stagedRawRow.return18DayPct : 0D;
+        double return20DayPct = technical != null ? technical.getReturn20DayPct()
+                : reusedSameDayCloseRaw ? stagedRawRow.return20DayPct : 0D;
+        double return54DayPct = technical != null ? technical.getReturn54DayPct()
+                : reusedSameDayCloseRaw ? stagedRawRow.return54DayPct : 0D;
+        double return60DayPct = technical != null ? technical.getReturn60DayPct()
+                : reusedSameDayCloseRaw ? stagedRawRow.return60DayPct : 0D;
+        double volumeRatio = technical != null
+                ? (technical.getAverageVolume20() <= 0D ? 0D : technical.getCurrentVolume() / technical.getAverageVolume20())
+                : reusedSameDayCloseRaw ? stagedRawRow.volumeRatio : 0D;
+        double averageLots20 = technical != null ? technical.getAverageLots20()
+                : reusedSameDayCloseRaw ? stagedRawRow.averageLots20 : 0D;
+        double averageTradeValue20Billion = technical != null ? technical.getAverageTradeValue20Billion()
+                : reusedSameDayCloseRaw ? stagedRawRow.averageTradeValue20Billion : 0D;
+        double volatility20Pct = technical != null ? technical.getVolatility20Pct()
+                : reusedSameDayCloseRaw ? stagedRawRow.volatility20Pct : 0D;
+        double atr20 = technical != null ? technical.getAtr20() : reusedSameDayCloseRaw ? stagedRawRow.atr20 : 0D;
+        double drawdownFromHigh60Pct = technical != null ? technical.getDrawdownFromHigh60Pct()
+                : reusedSameDayCloseRaw ? stagedRawRow.drawdownFromHigh60Pct : 0D;
+        double ma20Slope = technical != null ? technical.getMa20Slope()
+                : reusedSameDayCloseRaw ? stagedRawRow.ma20Slope : 0D;
 
-        double trailingFourQuarterEps = sumTrailingEps(epsRecords, epsWindow);
+        double trailingFourQuarterEps = !epsRecords.isEmpty() ? sumTrailingEps(epsRecords, epsWindow)
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.trailingFourQuarterEps);
         double trailingPe = trailingFourQuarterEps > 0D ? currentPrice / trailingFourQuarterEps : 0D;
-        double latestQuarterEps = hasEpsData ? epsRecords.get(0).getEps() : 0D;
-        double previousQuarterEps = epsRecords.size() >= 2 ? epsRecords.get(1).getEps() : 0D;
-        double latestQuarterEpsYoYPct = hasEpsData ? epsRecords.get(0).getYearOverYearPct() : 0D;
-        int positiveEpsQuarters = countPositiveEpsQuarters(epsRecords, epsWindow);
+        double latestQuarterEps = !epsRecords.isEmpty() ? epsRecords.get(0).getEps()
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.latestQuarterEps);
+        double previousQuarterEps = epsRecords.size() >= 2 ? epsRecords.get(1).getEps()
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.previousQuarterEps);
+        double latestQuarterEpsYoYPct = !epsRecords.isEmpty() ? epsRecords.get(0).getYearOverYearPct()
+                : cacheNumber(cacheEntry == null ? 0D : cacheEntry.latestQuarterEpsYoYPct);
+        int positiveEpsQuarters = !epsRecords.isEmpty() ? countPositiveEpsQuarters(epsRecords, epsWindow)
+                : cacheEntry == null ? 0 : cacheEntry.positiveEpsQuarters;
 
-        long latestOperatingCashFlow = hasCashFlowData ? cashFlowRecords.get(0).getOperatingCashFlow() : 0L;
-        long latestFreeCashFlow = hasCashFlowData ? cashFlowRecords.get(0).getFreeCashFlow() : 0L;
+        long latestOperatingCashFlow = !cashFlowRecords.isEmpty() ? cashFlowRecords.get(0).getOperatingCashFlow()
+                : cacheEntry == null ? 0L : cacheEntry.latestOperatingCashFlow;
+        long latestFreeCashFlow = !cashFlowRecords.isEmpty() ? cashFlowRecords.get(0).getFreeCashFlow()
+                : cacheEntry == null ? 0L : cacheEntry.latestFreeCashFlow;
         long previousOperatingCashFlow = cashFlowRecords.size() >= 2 ? cashFlowRecords.get(1).getOperatingCashFlow()
-                : 0L;
-        long previousFreeCashFlow = cashFlowRecords.size() >= 2 ? cashFlowRecords.get(1).getFreeCashFlow() : 0L;
-        int positiveOperatingCashFlowQuarters = countPositiveOperatingCashFlowQuarters(cashFlowRecords, cashFlowWindow);
-        int positiveFreeCashFlowQuarters = countPositiveFreeCashFlowQuarters(cashFlowRecords, cashFlowWindow);
+                : cacheEntry == null ? 0L : cacheEntry.previousOperatingCashFlow;
+        long previousFreeCashFlow = cashFlowRecords.size() >= 2 ? cashFlowRecords.get(1).getFreeCashFlow()
+                : cacheEntry == null ? 0L : cacheEntry.previousFreeCashFlow;
+        int positiveOperatingCashFlowQuarters = !cashFlowRecords.isEmpty()
+                ? countPositiveOperatingCashFlowQuarters(cashFlowRecords, cashFlowWindow)
+                : cacheEntry == null ? 0 : cacheEntry.positiveOperatingCashFlowQuarters;
+        int positiveFreeCashFlowQuarters = !cashFlowRecords.isEmpty()
+                ? countPositiveFreeCashFlowQuarters(cashFlowRecords, cashFlowWindow)
+                : cacheEntry == null ? 0 : cacheEntry.positiveFreeCashFlowQuarters;
 
-        long latestOperatingIncome = hasIncomeData ? incomeRecords.get(0).getOperatingIncome() : 0L;
-        long latestNetIncome = hasIncomeData ? incomeRecords.get(0).getNetIncome() : 0L;
+        long latestOperatingIncome = !incomeRecords.isEmpty() ? incomeRecords.get(0).getOperatingIncome()
+                : cacheEntry == null ? 0L : cacheEntry.latestOperatingIncome;
+        long latestNetIncome = !incomeRecords.isEmpty() ? incomeRecords.get(0).getNetIncome()
+                : cacheEntry == null ? 0L : cacheEntry.latestNetIncome;
         long previousOperatingIncome = incomeRecords.size() >= 2 ? incomeRecords.get(1).getOperatingIncome() : 0L;
-        long previousNetIncome = incomeRecords.size() >= 2 ? incomeRecords.get(1).getNetIncome() : 0L;
-        double nonOperatingRatioPct = !hasIncomeData || latestNetIncome == 0L ? Double.NaN
+        if (incomeRecords.size() < 2 && cacheEntry != null) {
+            previousOperatingIncome = cacheEntry.previousOperatingIncome;
+        }
+        long previousNetIncome = incomeRecords.size() >= 2 ? incomeRecords.get(1).getNetIncome()
+                : cacheEntry == null ? 0L : cacheEntry.previousNetIncome;
+        double nonOperatingRatioPct = !hasIncomeData || latestNetIncome == 0L ? cacheNumber(Double.NaN,
+                cacheEntry == null ? Double.NaN : cacheEntry.nonOperatingRatioPct)
                 : Math.abs((latestNetIncome - latestOperatingIncome) * 100D / latestNetIncome);
 
-        long latestTotalAssets = hasBalanceData ? balanceRecords.get(0).getTotalAssets() : 0L;
-        long latestTotalLiabilities = hasBalanceData ? balanceRecords.get(0).getTotalLiabilities() : 0L;
-        long latestCurrentAssets = hasBalanceData ? balanceRecords.get(0).getCurrentAssets() : 0L;
-        long latestCurrentLiabilities = hasBalanceData ? balanceRecords.get(0).getCurrentLiabilities() : 0L;
-        double debtRatioPct = !hasBalanceData || latestTotalAssets <= 0L ? Double.NaN
+        long latestTotalAssets = !balanceRecords.isEmpty() ? balanceRecords.get(0).getTotalAssets() : 0L;
+        long latestTotalLiabilities = !balanceRecords.isEmpty() ? balanceRecords.get(0).getTotalLiabilities() : 0L;
+        long latestCurrentAssets = !balanceRecords.isEmpty() ? balanceRecords.get(0).getCurrentAssets() : 0L;
+        long latestCurrentLiabilities = !balanceRecords.isEmpty() ? balanceRecords.get(0).getCurrentLiabilities() : 0L;
+        double debtRatioPct = !hasBalanceData || latestTotalAssets <= 0L ? cacheNumber(Double.NaN,
+                cacheEntry == null ? Double.NaN : cacheEntry.debtRatioPct)
                 : NumberParser.ratioPercent(latestTotalLiabilities, latestTotalAssets);
-        double currentRatio = !hasBalanceData || latestCurrentLiabilities == 0L ? Double.NaN
+        double currentRatio = !hasBalanceData || latestCurrentLiabilities == 0L ? cacheNumber(Double.NaN,
+                cacheEntry == null ? Double.NaN : cacheEntry.currentRatio)
                 : latestCurrentAssets * 1D / latestCurrentLiabilities;
 
         String industry = profile.getIndustry();
@@ -1454,9 +1658,11 @@ public class TaiwanStockAnalyzer {
         double returnOnAssetsPct = profile.getReturnOnAssetsPct();
         double returnOnEquityPct = profile.getReturnOnEquityPct();
 
-        double rsi14 = technical.getRsi14();
-        double stochasticK = technical.getStochasticK();
-        double stochasticD = technical.getStochasticD();
+        double rsi14 = technical != null ? technical.getRsi14() : reusedSameDayCloseRaw ? stagedRawRow.rsi14 : 0D;
+        double stochasticK = technical != null ? technical.getStochasticK()
+                : reusedSameDayCloseRaw ? stagedRawRow.stochasticK : 0D;
+        double stochasticD = technical != null ? technical.getStochasticD()
+                : reusedSameDayCloseRaw ? stagedRawRow.stochasticD : 0D;
         ThemeBasketRepository.ThemeMatch themeMatch = themeBasketRepository.match(result.getStock(), industry,
                 newsSignal);
         EventSignalProfile eventSignalProfile = inferEventSignalProfile(newsSignal, eventRisk);
@@ -1495,15 +1701,17 @@ public class TaiwanStockAnalyzer {
                 epsAccelerationPct, peg);
         double technicalScore = scoreTechnical(currentPrice, movingAverage20, movingAverage60, movingAverage120,
                 return20DayPct, return60DayPct, volumeRatio, volatility20Pct, drawdownFromHigh60Pct, rsi14,
-                stochasticK, stochasticD);
+                stochasticK, stochasticD, ma20Slope);
         double financialQualityScore = scoreFinancialQuality(trailingFourQuarterEps, latestQuarterEps,
                 latestQuarterEpsYoYPct, positiveEpsQuarters, latestOperatingCashFlow, latestFreeCashFlow,
                 positiveOperatingCashFlowQuarters, positiveFreeCashFlowQuarters, grossMarginPct, operatingMarginPct,
                 returnOnAssetsPct, returnOnEquityPct, debtRatioPct, currentRatio, nonOperatingRatioPct,
                 epsAccelerationPct);
+        double tripleConfirmBonus = calcTripleConfirmBonus(latestQuarterEpsYoYPct,
+                latestInstitutionalNetRatioPct, technicalScore, ma20Slope, drawdownFromHigh60Pct, volumeRatio);
         double rawScore = NumberParser.clamp(
                 revenueScore + chipsScore + liquidityScore + valuationScore + technicalScore + financialQualityScore
-                        - eventRisk.getPenalty(),
+                        - eventRisk.getPenalty() + tripleConfirmBonus,
                 0D, RAW_SCORE_MAX);
         double score = NumberParser.clamp(rawScore, 0D, 100D);
         double qualityScore = scoreQualityProfile(revenueScore, financialQualityScore, valuationScore, liquidityScore);
@@ -1579,6 +1787,7 @@ public class TaiwanStockAnalyzer {
         result.setRsi14(rsi14);
         result.setStochasticK(stochasticK);
         result.setStochasticD(stochasticD);
+        result.setMa20Slope(ma20Slope);
         result.setEpsAccelerationPct(epsAccelerationPct);
         result.setPeg(peg);
         result.setRevenueScore(revenueScore);
@@ -1633,6 +1842,29 @@ public class TaiwanStockAnalyzer {
         result.setDataConfidenceReason(dataConfidenceReason);
         result.setTurnaroundLabel(turnaroundProfile.label);
         result.setTurnaroundReason(turnaroundProfile.reason);
+        result.setSnapshotStage(runStage);
+        result.setTechReady(technical != null || reusedSameDayCloseRaw);
+        result.setMarketReady(true);
+        result.setInstitutionalReady(!institutional.isEmpty() || reusedSameDayCloseRaw);
+        result.setBrokerReady(hasBrokerData);
+        result.setFinancialReady(hasRevenueData && hasProfileData && hasEpsData && hasCashFlowData && hasIncomeData
+                && hasBalanceData);
+        result.setNewsReady(newsSignal != null
+                && (newsSignal.getHasNewsPage() || newsSignal.getSourceCount() > 0
+                        || newsSignal.getSummaryText().length() > 0));
+        String analysisVersion = usedLowFrequencyCache ? ANALYSIS_VERSION + "-cached" : ANALYSIS_VERSION + "-fresh";
+        if (reusedSameDayCloseRaw) {
+            analysisVersion += "-reused-close";
+        }
+        result.setAnalysisVersion(analysisVersion);
+        String sourceUpdatedAt = usedLowFrequencyCache && cacheEntry != null
+                && emptyIfBlank(cacheEntry.sourceUpdatedAt, "").length() > 0 ? cacheEntry.sourceUpdatedAt
+                        : currentDateStamp();
+        if (reusedSameDayCloseRaw && stagedRawRow != null
+                && emptyIfBlank(stagedRawRow.sourceUpdatedAt, "").length() > 0) {
+            sourceUpdatedAt = stagedRawRow.sourceUpdatedAt;
+        }
+        result.setSourceUpdatedAt(sourceUpdatedAt);
         result.setScore(score);
         applyPostCloseDecisionProfile(result);
         result.setAnalysisNote(buildAnalysisNote(result));
@@ -2187,7 +2419,8 @@ public class TaiwanStockAnalyzer {
 
     private double scoreTechnical(double currentPrice, double movingAverage20, double movingAverage60,
             double movingAverage120, double return20DayPct, double return60DayPct, double volumeRatio,
-            double volatility20Pct, double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD) {
+            double volatility20Pct, double drawdownFromHigh60Pct, double rsi14, double stochasticK, double stochasticD,
+            double ma20Slope) {
         double score = 0D;
 
         // 均線多頭排列（最高 9 分）
@@ -2207,6 +2440,15 @@ public class TaiwanStockAnalyzer {
             score += 1D;
         }
 
+        // MA20 斜率（最高 2 分）：均線本身在上升才是真正多頭
+        if (ma20Slope > 0.3D) {
+            score += 2D;
+        } else if (ma20Slope > 0D) {
+            score += 1D;
+        } else if (ma20Slope < -0.5D) {
+            score -= 1D;  // 均線下彎，扣分
+        }
+
         // 20日/60日漲幅（最高 3 分）
         if (return20DayPct > 8D) {
             score += 2D;
@@ -2222,9 +2464,13 @@ public class TaiwanStockAnalyzer {
             score += 1D;
         }
 
-        // 距60日高點（最高 1 分）
-        if (drawdownFromHigh60Pct >= -8D) {
-            score += 1D;
+        // 距60日高點 + 爆量突破確認（最高 3 分）
+        if (drawdownFromHigh60Pct >= -1.5D && volumeRatio >= 1.5D) {
+            score += 3D;  // 接近/突破60日高點且有量
+        } else if (drawdownFromHigh60Pct >= -3D && volumeRatio >= 1.3D) {
+            score += 2D;  // 相對高位有量
+        } else if (drawdownFromHigh60Pct >= -8D) {
+            score += 1D;  // 靠近高位但量能普通
         }
 
         // RSI14（最高 3 分）：超買過熱扣分，黃金區間加分
@@ -2255,6 +2501,26 @@ public class TaiwanStockAnalyzer {
         }
 
         return NumberParser.clamp(score, 0D, 20D);
+    }
+
+    private double calcTripleConfirmBonus(double latestQuarterEpsYoYPct, double latestInstitutionalNetRatioPct,
+            double technicalScore, double ma20Slope, double drawdownFromHigh60Pct, double volumeRatio) {
+        boolean epsStrong = hasValue(latestQuarterEpsYoYPct) && latestQuarterEpsYoYPct >= 20D;
+        boolean instBuying = hasValue(latestInstitutionalNetRatioPct) && latestInstitutionalNetRatioPct >= 0.3D;
+        boolean techStrong = technicalScore >= 14D;
+        boolean maRising = ma20Slope > 0D;
+        boolean nearHighWithVolume = drawdownFromHigh60Pct >= -3D && volumeRatio >= 1.3D;
+        int signals = (epsStrong ? 1 : 0) + (instBuying ? 1 : 0) + (techStrong ? 1 : 0);
+        if (signals == 3 && (maRising || nearHighWithVolume)) {
+            return 5D;  // 三重確認 + 趨勢加成
+        }
+        if (signals == 3) {
+            return 3D;  // 三重確認
+        }
+        if (signals == 2 && maRising && nearHighWithVolume) {
+            return 2D;  // 兩重確認但技術形態強
+        }
+        return 0D;
     }
 
     private double scoreFinancialQuality(double trailingFourQuarterEps, double latestQuarterEps,
@@ -3249,6 +3515,10 @@ public class TaiwanStockAnalyzer {
         if (hasValue(result.getNonOperatingRatioPct()) && result.getNonOperatingRatioPct() >= 50D) {
             reasons.add("非營業依賴過高");
         }
+        if (hasValue(result.getDebtRatioPct()) && result.getDebtRatioPct() > 75D
+                && result.getLatestOperatingCashFlow() < 0L) {
+            reasons.add("高負債且現金流為負");
+        }
         if (result.getVolumeRatio() >= 3.2D) {
             reasons.add("量比過熱");
         }
@@ -3997,11 +4267,17 @@ public class TaiwanStockAnalyzer {
         result.setValuationScore(row.valuationScore);
         result.setTechnicalScore(row.technicalScore);
         result.setFinancialQualityScore(row.financialQualityScore);
+        result.setLatestInstitutionalNetLots(row.latestInstitutionalNetLots);
+        result.setLatestInstitutionalNetRatioPct(row.latestInstitutionalNetRatioPct);
+        result.setFiveDayInstitutionalNetLots(row.fiveDayInstitutionalNetLots);
         result.setFiveDayInstitutionalNetRatioPct(row.fiveDayInstitutionalNetRatioPct);
+        result.setLatestForeignNetLots(row.latestForeignNetLots);
+        result.setBrokerNetLots(row.brokerNetLots);
         result.setBrokerNetRatioPct(row.brokerNetRatioPct);
         result.setRsi14(row.rsi14);
         result.setStochasticK(row.stochasticK);
         result.setStochasticD(row.stochasticD);
+        result.setMa20Slope(row.ma20Slope);
         result.setEpsAccelerationPct(row.epsAccelerationPct);
         result.setPeg(row.peg);
         result.setScoreReason(row.scoreReason);
@@ -4058,6 +4334,15 @@ public class TaiwanStockAnalyzer {
         result.setPostCloseCategory(row.postCloseCategory);
         result.setPostCloseAction(row.postCloseAction);
         result.setPostCloseReason(row.postCloseReason);
+        result.setSnapshotStage(row.snapshotStage);
+        result.setTechReady(row.techReady);
+        result.setMarketReady(row.marketReady);
+        result.setInstitutionalReady(row.institutionalReady);
+        result.setBrokerReady(row.brokerReady);
+        result.setFinancialReady(row.financialReady);
+        result.setNewsReady(row.newsReady);
+        result.setAnalysisVersion(row.analysisVersion);
+        result.setSourceUpdatedAt(row.sourceUpdatedAt);
     }
 
     private double computeNewsOnlyPriority(StockAnalysisResultVO result) {
@@ -4130,6 +4415,273 @@ public class TaiwanStockAnalyzer {
         }
     }
 
+    private boolean hasRevenueCache(LowFrequencyDataCache.Entry entry) {
+        return entry != null && entry.latestRevenuePeriod != null && entry.latestRevenuePeriod.length() > 0;
+    }
+
+    private boolean hasFinancialCache(LowFrequencyDataCache.Entry entry) {
+        return entry != null && entry.latestFinancialPeriod != null && entry.latestFinancialPeriod.length() > 0;
+    }
+
+    private boolean hasProfileCache(LowFrequencyDataCache.Entry entry) {
+        return entry != null && ((entry.industry != null && entry.industry.length() > 0) || entry.peerAveragePe > 0D
+                || entry.grossMarginPct > 0D || entry.operatingMarginPct > 0D || entry.returnOnAssetsPct != 0D
+                || entry.returnOnEquityPct != 0D || entry.bookValue > 0D);
+    }
+
+    private boolean shouldRefreshRevenue(LowFrequencyDataCache.Entry entry) {
+        if (!hasRevenueCache(entry)) {
+            return true;
+        }
+        if (cacheAgeExceeds(entry, 60)) {
+            return true;
+        }
+        LocalDate today = LocalDate.now(TAIPEI_ZONE);
+        int day = today.getDayOfMonth();
+        // 月營收在次月 10 日前公告，5-9 日尚未有新資料；同天已收過就不重複
+        if (day < 10 || day > 15) {
+            return false;
+        }
+        return !isRefreshedToday(entry);
+    }
+
+    private boolean shouldRefreshFinancial(LowFrequencyDataCache.Entry entry) {
+        if (!hasFinancialCache(entry)) {
+            return true;
+        }
+        if (cacheAgeExceeds(entry, 120)) {
+            return true;
+        }
+        LocalDate today = LocalDate.now(TAIPEI_ZONE);
+        int month = today.getMonthValue();
+        int day = today.getDayOfMonth();
+        // 財報公告窗口；4 月全月涵蓋（Q4 大型股中下旬才出）；同天已收過就不重複
+        boolean inWindow = (month == 3 && day >= 20) || month == 4 || (month == 5 && day <= 20)
+                || (month == 8 && day <= 20) || (month == 11 && day <= 20);
+        if (!inWindow) {
+            return false;
+        }
+        return !isRefreshedToday(entry);
+    }
+
+    private boolean isRefreshedToday(LowFrequencyDataCache.Entry entry) {
+        if (entry == null) {
+            return false;
+        }
+        String refreshed = emptyIfBlank(entry.cacheRefreshedAt, "");
+        if (refreshed.length() < 8) {
+            return false;
+        }
+        try {
+            LocalDate fetchDate = LocalDate.parse(refreshed.substring(0, 8),
+                    java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+            return fetchDate.equals(LocalDate.now(TAIPEI_ZONE));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean cacheAgeExceeds(LowFrequencyDataCache.Entry entry, int maxDays) {
+        if (entry == null) {
+            return true;
+        }
+        String refreshed = emptyIfBlank(entry.cacheRefreshedAt, "");
+        if (refreshed.length() < 8) {
+            return true;
+        }
+        try {
+            LocalDate fetchDate = LocalDate.parse(refreshed.substring(0, 8),
+                    java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+            return java.time.temporal.ChronoUnit.DAYS.between(fetchDate, LocalDate.now(TAIPEI_ZONE)) > maxDays;
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    private boolean shouldRefreshProfile(LowFrequencyDataCache.Entry entry, boolean refreshFinancial) {
+        if (!hasProfileCache(entry)) {
+            return true;
+        }
+        if (refreshFinancial) {
+            return true;
+        }
+        return LocalDate.now(TAIPEI_ZONE).getDayOfWeek().getValue() == 1;
+    }
+
+    private ProfileSnapshotVO profileFromCache(LowFrequencyDataCache.Entry entry) {
+        if (entry == null) {
+            return emptyProfileSnapshot();
+        }
+        return new ProfileSnapshotVO(0D, emptyIfBlank(entry.industry, ""), emptyIfBlank(entry.marketType, ""),
+                entry.capital, entry.sharesOutstanding, entry.marketCapMillions, entry.displayedPe,
+                entry.peerAveragePe, entry.latestVolumeLots, entry.latestTurnoverBillion, entry.grossMarginPct,
+                entry.operatingMarginPct, entry.returnOnAssetsPct, entry.returnOnEquityPct, entry.bookValue,
+                emptyIfBlank(entry.shareholderMeetingDate, ""), emptyIfBlank(entry.cashDividendPayoutDate, ""),
+                emptyIfBlank(entry.exDividendDate, ""));
+    }
+
+    private double cacheNumber(double value) {
+        return hasValue(value) ? value : 0D;
+    }
+
+    private double cacheNumber(double fallback, double cachedValue) {
+        return hasValue(cachedValue) ? cachedValue : fallback;
+    }
+
+    private void updateLowFrequencyCache(TaiwanStockVO stock, LowFrequencyDataCache.Entry cacheEntry,
+            StockAnalysisResultVO result, ProfileSnapshotVO profile, List<MonthlyRevenueVO> revenues,
+            List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
+            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords) {
+        LowFrequencyDataCache.Entry entry = cacheEntry == null ? new LowFrequencyDataCache.Entry() : cacheEntry;
+        entry.code = stock.getCode();
+        boolean refreshedLowFrequency = (revenues != null && !revenues.isEmpty())
+                || (epsRecords != null && !epsRecords.isEmpty())
+                || (incomeRecords != null && !incomeRecords.isEmpty())
+                || (balanceRecords != null && !balanceRecords.isEmpty())
+                || (cashFlowRecords != null && !cashFlowRecords.isEmpty())
+                || (profileHasData(profile) && !hasProfileCache(cacheEntry));
+        if (refreshedLowFrequency) {
+            entry.cacheRefreshedAt = currentDateStamp();
+        } else if (emptyIfBlank(entry.cacheRefreshedAt, "").length() == 0) {
+            entry.cacheRefreshedAt = currentDateStamp();
+        }
+        if (revenues != null && !revenues.isEmpty()) {
+            entry.latestRevenuePeriod = emptyIfBlank(revenues.get(0).getPeriod(), entry.latestRevenuePeriod);
+        }
+        String financialPeriod = resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords, cashFlowRecords);
+        if (financialPeriod.length() > 0) {
+            entry.latestFinancialPeriod = financialPeriod;
+        }
+        // sourceUpdatedAt = actual data period for display (revenue period preferred, else financial period)
+        if (entry.latestRevenuePeriod.length() > 0) {
+            entry.sourceUpdatedAt = entry.latestRevenuePeriod;
+        } else if (entry.latestFinancialPeriod.length() > 0) {
+            entry.sourceUpdatedAt = entry.latestFinancialPeriod;
+        } else if (emptyIfBlank(entry.sourceUpdatedAt, "").length() == 0) {
+            entry.sourceUpdatedAt = currentDateStamp();
+        }
+        if (profile != null) {
+            if (profile.getIndustry().length() > 0) {
+                entry.industry = profile.getIndustry();
+            }
+            if (profile.getMarketType().length() > 0) {
+                entry.marketType = profile.getMarketType();
+            }
+            if (profile.getShareholderMeetingDate().length() > 0) {
+                entry.shareholderMeetingDate = profile.getShareholderMeetingDate();
+            }
+            if (profile.getCashDividendPayoutDate().length() > 0) {
+                entry.cashDividendPayoutDate = profile.getCashDividendPayoutDate();
+            }
+            if (profile.getExDividendDate().length() > 0) {
+                entry.exDividendDate = profile.getExDividendDate();
+            }
+            if (profile.getCapital() > 0L) {
+                entry.capital = profile.getCapital();
+            }
+            if (profile.getSharesOutstanding() > 0L) {
+                entry.sharesOutstanding = profile.getSharesOutstanding();
+            }
+            if (profile.getLatestVolumeLots() > 0L) {
+                entry.latestVolumeLots = profile.getLatestVolumeLots();
+            }
+            if (profile.getMarketCapMillions() > 0D) {
+                entry.marketCapMillions = profile.getMarketCapMillions();
+            }
+            if (profile.getDisplayedPe() > 0D) {
+                entry.displayedPe = profile.getDisplayedPe();
+            }
+            if (profile.getPeerAveragePe() > 0D) {
+                entry.peerAveragePe = profile.getPeerAveragePe();
+            }
+            if (profile.getLatestTurnoverBillion() > 0D) {
+                entry.latestTurnoverBillion = profile.getLatestTurnoverBillion();
+            }
+            entry.grossMarginPct = profile.getGrossMarginPct();
+            entry.operatingMarginPct = profile.getOperatingMarginPct();
+            entry.returnOnAssetsPct = profile.getReturnOnAssetsPct();
+            entry.returnOnEquityPct = profile.getReturnOnEquityPct();
+            entry.bookValue = profile.getBookValue();
+        }
+        entry.latestRevenueYoY = result.getLatestRevenueYoY();
+        entry.averageThreeMonthRevenueYoY = result.getAverageThreeMonthRevenueYoY();
+        entry.accumulatedRevenueYoY = result.getAccumulatedRevenueYoY();
+        entry.positiveRevenueMonths = result.getPositiveRevenueMonths();
+        entry.trailingFourQuarterEps = result.getTrailingFourQuarterEps();
+        entry.latestQuarterEps = result.getLatestQuarterEps();
+        entry.previousQuarterEps = inferPreviousQuarterEps(epsRecords, entry.previousQuarterEps);
+        entry.latestQuarterEpsYoYPct = result.getLatestQuarterEpsYoYPct();
+        entry.positiveEpsQuarters = result.getPositiveEpsQuarters();
+        entry.latestOperatingCashFlow = result.getLatestOperatingCashFlow();
+        entry.previousOperatingCashFlow = inferPreviousOperatingCashFlow(cashFlowRecords, entry.previousOperatingCashFlow);
+        entry.latestFreeCashFlow = result.getLatestFreeCashFlow();
+        entry.previousFreeCashFlow = inferPreviousFreeCashFlow(cashFlowRecords, entry.previousFreeCashFlow);
+        entry.positiveOperatingCashFlowQuarters = result.getPositiveOperatingCashFlowQuarters();
+        entry.positiveFreeCashFlowQuarters = result.getPositiveFreeCashFlowQuarters();
+        entry.latestOperatingIncome = inferLatestOperatingIncome(incomeRecords, entry.latestOperatingIncome);
+        entry.previousOperatingIncome = inferPreviousOperatingIncome(incomeRecords, entry.previousOperatingIncome);
+        entry.latestNetIncome = inferLatestNetIncome(incomeRecords, entry.latestNetIncome);
+        entry.previousNetIncome = inferPreviousNetIncome(incomeRecords, entry.previousNetIncome);
+        entry.debtRatioPct = result.getDebtRatioPct();
+        entry.currentRatio = result.getCurrentRatio();
+        entry.nonOperatingRatioPct = result.getNonOperatingRatioPct();
+        lowFrequencyDataCache.upsert(entry);
+    }
+
+    private String resolveFinancialPeriod(List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
+            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords) {
+        if (epsRecords != null && !epsRecords.isEmpty()) {
+            return emptyIfBlank(epsRecords.get(0).getPeriod(), "");
+        }
+        if (incomeRecords != null && !incomeRecords.isEmpty()) {
+            return emptyIfBlank(incomeRecords.get(0).getPeriod(), "");
+        }
+        if (balanceRecords != null && !balanceRecords.isEmpty()) {
+            return emptyIfBlank(balanceRecords.get(0).getPeriod(), "");
+        }
+        if (cashFlowRecords != null && !cashFlowRecords.isEmpty()) {
+            return emptyIfBlank(cashFlowRecords.get(0).getPeriod(), "");
+        }
+        return "";
+    }
+
+    private double inferPreviousQuarterEps(List<EpsRecordVO> epsRecords, double fallback) {
+        return epsRecords != null && epsRecords.size() >= 2 ? epsRecords.get(1).getEps() : fallback;
+    }
+
+    private long inferPreviousOperatingCashFlow(List<CashFlowRecordVO> cashFlowRecords, long fallback) {
+        return cashFlowRecords != null && cashFlowRecords.size() >= 2 ? cashFlowRecords.get(1).getOperatingCashFlow()
+                : fallback;
+    }
+
+    private long inferPreviousFreeCashFlow(List<CashFlowRecordVO> cashFlowRecords, long fallback) {
+        return cashFlowRecords != null && cashFlowRecords.size() >= 2 ? cashFlowRecords.get(1).getFreeCashFlow()
+                : fallback;
+    }
+
+    private long inferLatestOperatingIncome(List<IncomeStatementRecordVO> incomeRecords, long fallback) {
+        return incomeRecords != null && !incomeRecords.isEmpty() ? incomeRecords.get(0).getOperatingIncome() : fallback;
+    }
+
+    private long inferPreviousOperatingIncome(List<IncomeStatementRecordVO> incomeRecords, long fallback) {
+        return incomeRecords != null && incomeRecords.size() >= 2 ? incomeRecords.get(1).getOperatingIncome() : fallback;
+    }
+
+    private long inferLatestNetIncome(List<IncomeStatementRecordVO> incomeRecords, long fallback) {
+        return incomeRecords != null && !incomeRecords.isEmpty() ? incomeRecords.get(0).getNetIncome() : fallback;
+    }
+
+    private long inferPreviousNetIncome(List<IncomeStatementRecordVO> incomeRecords, long fallback) {
+        return incomeRecords != null && incomeRecords.size() >= 2 ? incomeRecords.get(1).getNetIncome() : fallback;
+    }
+
+    private boolean profileHasData(ProfileSnapshotVO profile) {
+        return profile != null && (profile.getCurrentPrice() > 0D || profile.getIndustry().length() > 0
+                || profile.getPeerAveragePe() > 0D || profile.getGrossMarginPct() != 0D
+                || profile.getOperatingMarginPct() != 0D || profile.getReturnOnAssetsPct() != 0D
+                || profile.getReturnOnEquityPct() != 0D || profile.getBookValue() > 0D);
+    }
+
     private ProfileSnapshotVO emptyProfileSnapshot() {
         return new ProfileSnapshotVO(0D, "", "", 0L, 0L, 0D, 0D, 0D, 0L, 0D, 0D, 0D, 0D, 0D, 0D, "", "", "");
     }
@@ -4183,6 +4735,15 @@ public class TaiwanStockAnalyzer {
         try {
             String value = System.getProperty(key);
             return value == null ? defaultValue : Long.parseLong(value.trim());
+        } catch (Exception ex) {
+            return defaultValue;
+        }
+    }
+
+    private static boolean parseBooleanProperty(String key, boolean defaultValue) {
+        try {
+            String value = System.getProperty(key);
+            return value == null ? defaultValue : Boolean.parseBoolean(value.trim());
         } catch (Exception ex) {
             return defaultValue;
         }

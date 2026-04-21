@@ -119,9 +119,9 @@ public class YahooTaiwanStockService {
 
         List<EpsRecordVO> records = new ArrayList<EpsRecordVO>();
         while (matcher.find()) {
-            records.add(new EpsRecordVO(matcher.group(1), NumberParser.parseDouble(matcher.group(2)),
-                    NumberParser.parseDouble(matcher.group(3)), NumberParser.parseDouble(matcher.group(4)),
-                    NumberParser.parseDouble(matcher.group(5))));
+            records.add(new EpsRecordVO(matcher.group(1), NumberParser.parseDoubleOrNaN(matcher.group(2)),
+                    NumberParser.parseDoubleOrNaN(matcher.group(3)), NumberParser.parseDoubleOrNaN(matcher.group(4)),
+                    NumberParser.parseDoubleOrNaN(matcher.group(5))));
         }
         return records;
     }
@@ -332,11 +332,14 @@ public class YahooTaiwanStockService {
         double drawdownFromHigh60Pct = percentChange(maxLast(highs.isEmpty() ? closes : highs, 60), currentPrice);
         double rsi14 = computeRsi14(closes);
         double[] kd = computeStochasticKD(closes, highs.isEmpty() ? closes : highs, lows.isEmpty() ? closes : lows);
+        double ma20Slope = closes.size() > 25
+                ? movingAverage20 - averageLast(closes.subList(0, closes.size() - 5), 20)
+                : 0D;
 
         return new TechnicalSnapshotVO(currentPrice, movingAverage18, movingAverage20, movingAverage54,
                 movingAverage60, movingAverage120, return18DayPct, return20DayPct, return54DayPct,
                 return60DayPct, currentVolume, averageVolume20, averageTradeValue20Billion, averageLots20,
-                volatility20Pct, atr20, drawdownFromHigh60Pct, rsi14, kd[0], kd[1]);
+                volatility20Pct, atr20, drawdownFromHigh60Pct, rsi14, kd[0], kd[1], ma20Slope);
     }
 
     private double parseCurrentPriceFromQuoteText(String text) {
@@ -452,9 +455,13 @@ public class YahooTaiwanStockService {
         String lowered = headline.toLowerCase();
         if (lowered.contains("ai") || headline.contains("矽光子") || headline.contains("衛星")
                 || headline.contains("半導體") || headline.contains("伺服器") || headline.contains("封裝")
-                || headline.contains("機器人") || headline.contains("cpo") || headline.contains("光通訊")
+                || headline.contains("機器人") || lowered.contains("cpo") || headline.contains("光通訊")
                 || headline.contains("光模組") || headline.contains("低軌") || headline.contains("散熱")
-                || headline.contains("電池") || headline.contains("重電")) {
+                || headline.contains("電池") || headline.contains("重電") || headline.contains("電動車")
+                || headline.contains("儲能") || headline.contains("綠能") || headline.contains("航太")
+                || headline.contains("量子") || headline.contains("資料中心") || headline.contains("液冷")
+                || headline.contains("chiplet") || lowered.contains("hbm") || headline.contains("CoWoS")
+                || headline.contains("法說") || headline.contains("營收") || headline.contains("獲利")) {
             return headline;
         }
         return "";
@@ -495,6 +502,10 @@ public class YahooTaiwanStockService {
         if (hint.contains("小時前")) {
             long hours = extractLeadingNumber(hint);
             return clamp(96D - hours * 4D, 64D, 96D);
+        }
+        if (hint.contains("天前")) {
+            long days = extractLeadingNumber(hint);
+            return clamp(92D - days * 9D, 18D, 92D);
         }
         if (hint.matches("\\d{4}/\\d{2}/\\d{2}")) {
             try {

@@ -59,6 +59,7 @@ public class StockAnalysisResultVO {
     private double rsi14;
     private double stochasticK;
     private double stochasticD;
+    private double ma20Slope;
     private double epsAccelerationPct;
     private double peg;
     private double revenueScore;
@@ -121,6 +122,15 @@ public class StockAnalysisResultVO {
     private String practicalAdvice;
     private double adviceConfidence;
     private String marketRegime;
+    private String snapshotStage;
+    private boolean techReady;
+    private boolean marketReady;
+    private boolean institutionalReady;
+    private boolean brokerReady;
+    private boolean financialReady;
+    private boolean newsReady;
+    private String analysisVersion;
+    private String sourceUpdatedAt;
     private String primaryTheme;
     private String themeTags;
     private String newsSummary;
@@ -600,6 +610,14 @@ public class StockAnalysisResultVO {
 
     public void setStochasticD(double stochasticD) {
         this.stochasticD = stochasticD;
+    }
+
+    public double getMa20Slope() {
+        return ma20Slope;
+    }
+
+    public void setMa20Slope(double ma20Slope) {
+        this.ma20Slope = ma20Slope;
     }
 
     public double getEpsAccelerationPct() {
@@ -1096,6 +1114,78 @@ public class StockAnalysisResultVO {
 
     public void setMarketRegime(String marketRegime) {
         this.marketRegime = marketRegime;
+    }
+
+    public String getSnapshotStage() {
+        return snapshotStage;
+    }
+
+    public void setSnapshotStage(String snapshotStage) {
+        this.snapshotStage = snapshotStage;
+    }
+
+    public boolean isTechReady() {
+        return techReady;
+    }
+
+    public void setTechReady(boolean techReady) {
+        this.techReady = techReady;
+    }
+
+    public boolean isMarketReady() {
+        return marketReady;
+    }
+
+    public void setMarketReady(boolean marketReady) {
+        this.marketReady = marketReady;
+    }
+
+    public boolean isInstitutionalReady() {
+        return institutionalReady;
+    }
+
+    public void setInstitutionalReady(boolean institutionalReady) {
+        this.institutionalReady = institutionalReady;
+    }
+
+    public boolean isBrokerReady() {
+        return brokerReady;
+    }
+
+    public void setBrokerReady(boolean brokerReady) {
+        this.brokerReady = brokerReady;
+    }
+
+    public boolean isFinancialReady() {
+        return financialReady;
+    }
+
+    public void setFinancialReady(boolean financialReady) {
+        this.financialReady = financialReady;
+    }
+
+    public boolean isNewsReady() {
+        return newsReady;
+    }
+
+    public void setNewsReady(boolean newsReady) {
+        this.newsReady = newsReady;
+    }
+
+    public String getAnalysisVersion() {
+        return analysisVersion;
+    }
+
+    public void setAnalysisVersion(String analysisVersion) {
+        this.analysisVersion = analysisVersion;
+    }
+
+    public String getSourceUpdatedAt() {
+        return sourceUpdatedAt;
+    }
+
+    public void setSourceUpdatedAt(String sourceUpdatedAt) {
+        this.sourceUpdatedAt = sourceUpdatedAt;
     }
 
     public String getPrimaryTheme() {

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import stock.StockHistoryDatabase.Snapshot;
 import stock.StockHistoryDatabase.SnapshotRow;
@@ -187,6 +188,15 @@ public class StockApiRenderer {
         result.put("themes",            themes);
         result.put("rows",              rows);
         return result.toJSONString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public JSONObject renderLatestMarketJson() throws Exception {
+        Object parsed = new JSONParser().parse(renderLatestJson());
+        if (!(parsed instanceof JSONObject)) {
+            return new JSONObject();
+        }
+        return extractMarketPayload((JSONObject) parsed);
     }
 
     @SuppressWarnings("unchecked")
@@ -370,6 +380,15 @@ public class StockApiRenderer {
     }
 
     @SuppressWarnings("unchecked")
+    public JSONObject renderLatestMarketJson(String latestDate, List<StockAnalysisResultVO> results) throws Exception {
+        Object parsed = new JSONParser().parse(renderLatestJson(latestDate, results));
+        if (!(parsed instanceof JSONObject)) {
+            return new JSONObject();
+        }
+        return extractMarketPayload((JSONObject) parsed);
+    }
+
+    @SuppressWarnings("unchecked")
     public String renderStockHistoryJson(String code) throws Exception {
         StockHistoryDatabase db = new StockHistoryDatabase();
         Map<String, Snapshot> snapshots = db.loadSnapshots();
@@ -397,6 +416,28 @@ public class StockApiRenderer {
         result.put("industry", industry);
         result.put("history",  history);
         return result.toJSONString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject extractMarketPayload(JSONObject root) {
+        JSONObject payload = new JSONObject();
+        payload.put("date", root.getOrDefault("date", ""));
+        payload.put("prevDate", root.getOrDefault("prevDate", ""));
+        payload.put("marketScore", root.getOrDefault("marketScore", Double.valueOf(0D)));
+        payload.put("marketSignal", root.getOrDefault("marketSignal", ""));
+        payload.put("marketSignalText", root.getOrDefault("marketSignalText", ""));
+        payload.put("marketDangerScore", root.getOrDefault("marketDangerScore", Double.valueOf(0D)));
+        payload.put("marketAlert", root.getOrDefault("marketAlert", ""));
+        payload.put("marketAlertText", root.getOrDefault("marketAlertText", ""));
+        payload.put("marketRegime", root.getOrDefault("marketRegime", ""));
+        payload.put("marketRegimeLabel", root.getOrDefault("marketRegimeLabel", ""));
+        payload.put("marketBreadth", root.getOrDefault("marketBreadth", new JSONObject()));
+        payload.put("marketIndex", root.getOrDefault("marketIndex", new JSONObject()));
+        payload.put("marketAdvisor", root.getOrDefault("marketAdvisor", new JSONObject()));
+        payload.put("marketReversal", root.getOrDefault("marketReversal", new JSONObject()));
+        payload.put("marketWeakness", root.getOrDefault("marketWeakness", new JSONObject()));
+        payload.put("themes", root.getOrDefault("themes", new JSONArray()));
+        return payload;
     }
 
     // ── 連續高分天數 ──────────────────────────────────────────────────────────
@@ -548,8 +589,22 @@ public class StockApiRenderer {
         obj.put("pegIndustryPercentile",           Double.valueOf(row.pegIndustryPercentile));
         obj.put("relativePeIndustryPercentile",    Double.valueOf(row.relativePeIndustryPercentile));
         obj.put("nonOperatingIndustryPercentile",  Double.valueOf(row.nonOperatingIndustryPercentile));
+        obj.put("latestInstitutionalNetLots",      Long.valueOf(row.latestInstitutionalNetLots));
+        obj.put("latestInstitutionalNetRatioPct",  Double.valueOf(row.latestInstitutionalNetRatioPct));
+        obj.put("fiveDayInstitutionalNetLots",     Long.valueOf(row.fiveDayInstitutionalNetLots));
         obj.put("fiveDayInstitutionalNetRatioPct", Double.valueOf(row.fiveDayInstitutionalNetRatioPct));
+        obj.put("latestForeignNetLots",            Long.valueOf(row.latestForeignNetLots));
+        obj.put("brokerNetLots",                   Long.valueOf(row.brokerNetLots));
         obj.put("brokerNetRatioPct",               Double.valueOf(row.brokerNetRatioPct));
+        obj.put("snapshotStage",                   row.snapshotStage);
+        obj.put("techReady",                       Boolean.valueOf(row.techReady));
+        obj.put("marketReady",                     Boolean.valueOf(row.marketReady));
+        obj.put("institutionalReady",              Boolean.valueOf(row.institutionalReady));
+        obj.put("brokerReady",                     Boolean.valueOf(row.brokerReady));
+        obj.put("financialReady",                  Boolean.valueOf(row.financialReady));
+        obj.put("newsReady",                       Boolean.valueOf(row.newsReady));
+        obj.put("analysisVersion",                 row.analysisVersion);
+        obj.put("sourceUpdatedAt",                 row.sourceUpdatedAt);
         obj.put("rsi14",                           Double.valueOf(row.rsi14));
         obj.put("stochasticK",                     Double.valueOf(row.stochasticK));
         obj.put("stochasticD",                     Double.valueOf(row.stochasticD));

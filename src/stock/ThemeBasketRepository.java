@@ -22,6 +22,7 @@ import stock.vo.TaiwanStockVO;
 public class ThemeBasketRepository {
 
     private static final String DEFAULT_CONFIG_PATH = "config/theme_baskets.csv";
+    private static final String AUTO_CONFIG_PATH = "config/theme_baskets_auto.csv";
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private static final Map<String, List<String>> THEME_CONTEXT_HINTS = buildThemeContextHints();
 
@@ -87,9 +88,14 @@ public class ThemeBasketRepository {
 
     private List<ThemeBasket> loadBaskets() {
         List<ThemeBasket> baskets = new ArrayList<ThemeBasket>();
-        File file = new File(DEFAULT_CONFIG_PATH);
-        if (!file.exists()) {
-            return baskets;
+        loadBasketsFromFile(new File(DEFAULT_CONFIG_PATH), baskets);
+        loadBasketsFromFile(new File(AUTO_CONFIG_PATH), baskets);
+        return baskets;
+    }
+
+    private void loadBasketsFromFile(File file, List<ThemeBasket> baskets) {
+        if (file == null || !file.exists()) {
+            return;
         }
 
         BufferedReader reader = null;
@@ -116,7 +122,7 @@ public class ThemeBasketRepository {
                 }
             }
         } catch (Exception ex) {
-            return new ArrayList<ThemeBasket>();
+            return;
         } finally {
             try {
                 if (reader != null) {
@@ -125,7 +131,6 @@ public class ThemeBasketRepository {
             } catch (Exception ignored) {
             }
         }
-        return baskets;
     }
 
     private List<String> splitCsv(String text) {
