@@ -2178,7 +2178,7 @@ function buildPositionCostAdvice(s, cost) {
     return `<div class="pos-note">目前沒有有效現價，暫時無法用成本計算持股建議。</div>`;
   }
   if (!hasCost) {
-    return `<div class="pos-note">輸入你的持有成本後，系統會依現價、模型停損、目標價、轉空警示與買點分，給出續抱、加碼、減碼或停損建議。</div>`;
+    return `<div class="pos-note">輸入你的持有成本後，系統會依現價、防守價、目標價、轉空警示與進場時機分，給出續抱、加碼、減碼或停損建議。</div>`;
   }
 
   const pnlPct = (price - cost) * 100 / cost;
@@ -2190,7 +2190,7 @@ function buildPositionCostAdvice(s, cost) {
   const targetGapPct = target > 0 ? (target - price) * 100 / price : 0;
   const buy = Number(s.buyPointScore || 0);
   const sell = Number(s.sellSignalScore || 0);
-  const rr = Number(s.riskRewardRatio || 0);
+  const rr = stopGapPct > 0 ? targetGapPct / stopGapPct : 0;
   const rsi = Number(s.rsi14 || 0);
   const ret20 = Number(s.return20DayPct || 0);
   const label = s.sellSignalLabel || '續抱觀察';
@@ -2220,38 +2220,49 @@ function buildPositionCostAdvice(s, cost) {
   } else if (buy >= 85 && sell < 35 && rr >= 1.2 && !weakStructure && pnlPct > -4) {
     action = '續抱，可等回檔加碼';
     color = 'var(--green)';
-    reason = '買點、風報比與賣壓狀態仍可接受。若回測不破模型停損或 MA20 附近有承接，可考慮小幅加碼。';
+    reason = '進場時機、風報比與賣壓狀態仍可接受。若回測不破防守價或 MA20 附近有承接，可考慮小幅加碼。';
   } else if (buy >= 75 && sell < 50 && pnlPct >= -6) {
     action = '續抱觀察';
     color = 'var(--blue)';
-    reason = '買點仍在可觀察區，但還不是無腦加碼。續抱可以，新增部位要等量價確認。';
+    reason = '進場時機仍在可觀察區，但還不是無腦加碼。續抱可以，新增部位要等量價確認。';
   } else if (pnlPct > 0) {
     action = '保守續抱';
     color = 'var(--yellow)';
     reason = '仍有獲利，但模型時機不算漂亮。建議把停損上移，避免獲利回吐。';
+  } else if (pnlPct > -2) {
+    action = '續抱觀察，不加碼';
+    color = 'var(--yellow)';
+    reason = '目前接近成本，還沒有明確轉空，但進場時機與風報沒有明顯優勢。原持股可依防守價管理，新資金先等量價或結構轉強。';
   } else {
     action = '暫不加碼';
     color = 'var(--orange)';
-    reason = '目前處於虧損或時機分不足，先不要攤平；等結構修復、法人/主力回流或買點分重新轉強。';
+    reason = '目前處於虧損或時機分不足，先不要攤平；等結構修復、法人/主力回流或進場時機重新轉強。';
   }
 
   const pnlColor = pnlPct > 0 ? 'var(--green)' : pnlPct < 0 ? 'var(--red)' : 'var(--muted)';
   const stopColor = stopBroken ? 'var(--red)' : nearStop ? 'var(--orange)' : 'var(--muted)';
   const targetText = targetGapPct >= 0 ? `+${targetGapPct.toFixed(1)}%` : `${targetGapPct.toFixed(1)}%`;
   const stopText = stopGapPct >= 0 ? `-${stopGapPct.toFixed(1)}%` : `已跌破 ${Math.abs(stopGapPct).toFixed(1)}%`;
+  const entryRef = Number(s.movingAverage20 || 0) > 0
+    ? Number(s.movingAverage20)
+    : Number(s.suggestedStopPrice || 0) > 0 ? Number(s.suggestedStopPrice) : 0;
+  const entryRefText = entryRef > 0
+    ? `$${formatMoney(entryRef)} 附近`
+    : '等量價確認';
 
   return `
     <div class="pos-head">
       <span class="pos-action" style="color:${color}">${action}</span>
       <span class="pos-pill">賣訊：${label} ${sell.toFixed(0)}</span>
-      <span class="pos-pill">買點：${buy.toFixed(0)}</span>
+      <span class="pos-pill">時機分：${buy.toFixed(0)}/100</span>
       <span class="pos-pill">風報：${rr > 0 ? rr.toFixed(2) + 'R' : '—'}</span>
     </div>
     <div class="pos-metrics">
       <div class="pos-metric">現價<b>$${formatMoney(price)}</b></div>
       <div class="pos-metric">成本損益<b style="color:${pnlColor}">${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}%</b></div>
-      <div class="pos-metric">模型停損<b style="color:${stopColor}">$${formatMoney(stop)} <span style="font-size:11px">(${stopText})</span></b></div>
+      <div class="pos-metric">防守價<b style="color:${stopColor}">$${formatMoney(stop)} <span style="font-size:11px">(${stopText})</span></b></div>
       <div class="pos-metric">模型目標<b>$${formatMoney(target)} <span style="font-size:11px;color:var(--muted)">(${targetText})</span></b></div>
+      <div class="pos-metric">承接參考<b>${entryRefText}</b></div>
     </div>
     <div class="pos-note">${reason}<br>輔助判斷：${s.postCloseCategory || '—'} / ${s.postCloseAction || '—'}；${bearishCount ? `轉空警示 ${bearishCount} 項` : '未見明確轉空警示'}；${overheatedCount ? `過熱 ${overheatedCount} 項` : '未見明顯過熱'}。</div>
   `;
