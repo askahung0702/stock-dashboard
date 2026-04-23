@@ -14,6 +14,7 @@ public class StockStageExporter {
 
     private static final String STAGE_CLOSE = "close";
     private static final String STAGE_FULL = "full";
+    private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
     private static final String STAGE_NEWS_EVENT = "news-event";
 
     public static void main(String[] args) throws Exception {
@@ -22,18 +23,13 @@ public class StockStageExporter {
         StockHistoryDatabase database = new StockHistoryDatabase();
 
         StockHistoryDatabase.Snapshot full = database.loadDailyStockAnalysis(date, STAGE_FULL);
+        StockHistoryDatabase.Snapshot intradayClose = database.loadDailyStockAnalysis(date, STAGE_INTRADAY_CLOSE);
         StockHistoryDatabase.Snapshot close = database.loadDailyStockAnalysis(date, STAGE_CLOSE);
         StockHistoryDatabase.Snapshot newsEvent = database.loadDailyStockAnalysis(date, STAGE_NEWS_EVENT);
 
-        StockHistoryDatabase.Snapshot exportSnapshot;
-        String exportStage;
-        if (full != null && !full.rows.isEmpty()) {
-            exportSnapshot = full;
-            exportStage = STAGE_FULL;
-        } else if (close != null && !close.rows.isEmpty()) {
-            exportSnapshot = mergeCloseAndNewsEvent(close, newsEvent);
-            exportStage = newsEvent != null && !newsEvent.rows.isEmpty() ? "close+news-event" : STAGE_CLOSE;
-        } else {
+        ExportSelection selection = selectSnapshot(System.getenv("STOCK_EXPORT_REQUEST_MODE"), full, intradayClose, close,
+                newsEvent);
+        if (selection == null || selection.snapshot == null || selection.snapshot.rows.isEmpty()) {
             System.out.println("No staged close/full data found for " + date + ". Export latest DB snapshot only.");
             new StockStaticApiExporter().writeDefaultOutputs(new File("web\\data", "latest.json").getPath(),
                     new File("web\\data", "history.json").getPath());
@@ -41,6 +37,8 @@ public class StockStageExporter {
             return;
         }
 
+        StockHistoryDatabase.Snapshot exportSnapshot = selection.snapshot;
+        String exportStage = selection.stage;
         exportSnapshot.date = date;
         database.upsertSnapshot(exportSnapshot);
         new StockStaticApiExporter().writeDefaultOutputs(new File("web\\data", "latest.json").getPath(),
@@ -49,6 +47,50 @@ public class StockStageExporter {
         database.upsertDailyRunStatus(date, "export", "completed", exportSnapshot.rows.size(),
                 "exported from " + exportStage);
         System.out.println("Stage export completed: " + exportStage + " rows=" + exportSnapshot.rows.size());
+    }
+
+    private static ExportSelection selectSnapshot(String requestMode, StockHistoryDatabase.Snapshot full,
+            StockHistoryDatabase.Snapshot intradayClose, StockHistoryDatabase.Snapshot close,
+            StockHistoryDatabase.Snapshot newsEvent) {
+        String mode = requestMode == null ? "" : requestMode.trim().toLowerCase();
+        boolean hasFull = full != null && full.rows != null && !full.rows.isEmpty();
+        boolean hasIntradayClose = intradayClose != null && intradayClose.rows != null && !intradayClose.rows.isEmpty();
+        boolean hasClose = close != null && close.rows != null && !close.rows.isEmpty();
+        boolean hasNews = newsEvent != null && newsEvent.rows != null && !newsEvent.rows.isEmpty();
+
+        if ("intraday-close".equals(mode) || "intraday".equals(mode)) {
+            return hasIntradayClose ? new ExportSelection(intradayClose, STAGE_INTRADAY_CLOSE)
+                    : hasClose ? new ExportSelection(close, STAGE_CLOSE)
+                            : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
+        }
+        if ("close".equals(mode)) {
+            return hasClose ? new ExportSelection(close, STAGE_CLOSE) : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
+        }
+        if ("news-event".equals(mode) || "news-only".equals(mode)) {
+            return hasClose ? new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
+                    hasNews ? "close+news-event" : STAGE_CLOSE)
+                    : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
+        }
+        if ("full".equals(mode)) {
+            return hasFull ? new ExportSelection(full, STAGE_FULL)
+                    : hasClose ? new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
+                            hasNews ? "close+news-event" : STAGE_CLOSE)
+                            : null;
+        }
+
+        // Manual export keeps the most complete snapshot, but stage-triggered exports above
+        // must not let an older same-date full run mask a fresh close/news-event run.
+        if (hasFull) {
+            return new ExportSelection(full, STAGE_FULL);
+        }
+        if (hasClose) {
+            return new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
+                    hasNews ? "close+news-event" : STAGE_CLOSE);
+        }
+        if (hasIntradayClose) {
+            return new ExportSelection(intradayClose, STAGE_INTRADAY_CLOSE);
+        }
+        return null;
     }
 
     private static StockHistoryDatabase.Snapshot mergeCloseAndNewsEvent(StockHistoryDatabase.Snapshot close,
@@ -190,6 +232,9 @@ public class StockStageExporter {
         if (STAGE_FULL.equals(stage)) {
             return "夜間完整版";
         }
+        if (STAGE_INTRADAY_CLOSE.equals(stage)) {
+            return "收盤行情初版";
+        }
         if ("close+news-event".equals(stage)) {
             return "盤後初版 + 新聞事件";
         }
@@ -197,5 +242,15 @@ public class StockStageExporter {
             return "盤後初版";
         }
         return stage;
+    }
+
+    private static class ExportSelection {
+        private final StockHistoryDatabase.Snapshot snapshot;
+        private final String stage;
+
+        private ExportSelection(StockHistoryDatabase.Snapshot snapshot, String stage) {
+            this.snapshot = snapshot;
+            this.stage = stage;
+        }
     }
 }

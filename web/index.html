@@ -529,6 +529,16 @@ function fmt1(value) {
   return Number.isFinite(num) ? num.toFixed(1) : '0.0';
 }
 
+function fmtLots(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? `${num > 0 ? '+' : ''}${Math.round(num).toLocaleString()}口` : '—';
+}
+
+function fmtAbsLots(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? `${Math.abs(Math.round(num)).toLocaleString()}口` : '—';
+}
+
 function earlyBreakoutCsvCandidates() {
   const staticCandidates = [
     'early_breakout/early_breakout_latest.csv',
@@ -1224,6 +1234,8 @@ function renderMarketBanner(d) {
   const banner = document.getElementById('mkt-banner');
   const cls = sigMap[d.marketSignal] || 'sig-neutral';
   const confidenceReady = !!d.confidenceReady;
+  const futures = d.marketFutures || {};
+  const futuresSignal = futures.signal || {};
   const marketText = d.marketSignalText || '';
   banner.className = 'mkt-banner ' + cls;
   document.getElementById('mkt-signal').textContent = '市場環境：' + (d.marketSignal || '—') + ` (${(d.marketScore||0).toFixed(1)}分)`;
@@ -1236,6 +1248,9 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">好買點 <b>${(d.buyPointPct||0).toFixed(1)}%</b></div>` +
     `<div class="mkt-chip">危險警報 <b>${d.marketAlert || '中性'}</b></div>` +
     `<div class="mkt-chip">爆量股 <b>${(d.volumeSurgePct||0).toFixed(1)}%</b></div>` +
+    `<div class="mkt-chip">台指期 <b>${futures.priceAvailable ? fmt1(futures.currentPrice) : '未更新'}</b></div>` +
+    `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtAbsLots(futures.foreignOpenInterestShortLots || 0) : '未更新'}</b></div>` +
+    `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? `${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}` : '資料不足'}</b></div>` +
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
 }
 
@@ -1295,6 +1310,8 @@ function renderMarketAdvisor(d) {
 
   const breadth = d.marketBreadth || {};
   const index = d.marketIndex || {};
+  const futures = d.marketFutures || {};
+  const futuresSignal = futures.signal || {};
   const reversal = d.marketReversal || {};
   const weakness = d.marketWeakness || {};
   panel.style.display = '';
@@ -1326,12 +1343,20 @@ function renderMarketAdvisor(d) {
     `<span class="ma-metric">新低擴張 <b>${weakness.newLowExpansion ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">波動擴張 <b>${weakness.volatilityExpansion ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">指數趨勢 <b>${escapeHtml(index.trendLabel || '資料不足')}</b></span>` +
-    `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>`;
+    `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>` +
+    `<span class="ma-metric">台指期 <b>${futures.priceAvailable ? `${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)` : '未更新'}</b></span>` +
+    `<span class="ma-metric">台指期時間 <b>${futures.priceAvailable ? escapeHtml(futures.marketTime || '已更新') : '—'}</b></span>` +
+    `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable ? escapeHtml(futures.dataDate || '已更新') : '未更新'}</b></span>` +
+    `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtAbsLots(futures.foreignOpenInterestShortLots || 0) : '—'}</b></span>` +
+    `<span class="ma-metric">外資期貨淨額 <b>${futures.positionAvailable ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
+    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? `${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分` : '資料不足'}</b></span>`;
 
   const alerts = advisor.alerts || [];
   const mergedAlerts = [];
   if (reversal.available && reversal.reason) mergedAlerts.push(reversal.reason);
   if (weakness.available && weakness.alerts && weakness.alerts.length) mergedAlerts.push(...weakness.alerts);
+  if (futuresSignal.available && futuresSignal.action) mergedAlerts.push(`期貨風控：${futuresSignal.action}`);
+  if (futuresSignal.available && futuresSignal.reasons && futuresSignal.reasons.length) mergedAlerts.push(...futuresSignal.reasons.slice(0, 2));
   mergedAlerts.push(...alerts);
   document.getElementById('ma-alerts').innerHTML = mergedAlerts
     .map(a => `<div class="ma-alert">${escapeHtml(a)}</div>`)

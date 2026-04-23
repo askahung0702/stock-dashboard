@@ -26,29 +26,60 @@ set "RUN_MODE=full"
 set "RUN_STAGE=full"
 set "HAS_LIMITED_ARGS="
 set "JAVA_STAGE_OPTS="
+set "SHOULD_PAUSE=1"
 
+if /I "%~1"=="intraday-close" goto mode_intraday_close
+if /I "%~1"=="intraday" goto mode_intraday_close
 if /I "%~1"=="close" goto mode_close
 if /I "%~1"=="full" goto mode_full
 if /I "%~1"=="news-event" goto mode_news_event
 if /I "%~1"=="news-only" goto mode_news_event
+if /I "%~1"=="market-futures" goto mode_market_futures
+if /I "%~1"=="futures-price" goto mode_market_futures
+if /I "%~1"=="futures-position" goto mode_futures_position
+if /I "%~1"=="taifex-position" goto mode_futures_position
 if /I "%~1"=="export" goto mode_export
 if /I "%~1"=="export-now" goto mode_export_now
-if not "%~1"=="" set "HAS_LIMITED_ARGS=1"
+if not "%~1"=="" (
+    set "HAS_LIMITED_ARGS=1"
+    set "SHOULD_PAUSE=0"
+)
+goto mode_done
+
+:mode_intraday_close
+set "RUN_MODE=intraday-close"
+set "RUN_STAGE=intraday-close"
+set "SHOULD_PAUSE=0"
 goto mode_done
 
 :mode_close
 set "RUN_MODE=close"
 set "RUN_STAGE=close"
+set "SHOULD_PAUSE=0"
 goto mode_done
 
 :mode_full
 set "RUN_MODE=full"
 set "RUN_STAGE=full"
+set "SHOULD_PAUSE=0"
 goto mode_done
 
 :mode_news_event
 set "RUN_MODE=news-event"
 set "RUN_STAGE=news-event"
+set "SHOULD_PAUSE=0"
+goto mode_done
+
+:mode_market_futures
+set "RUN_MODE=market-futures"
+set "RUN_STAGE=market-futures"
+set "SHOULD_PAUSE=0"
+goto mode_done
+
+:mode_futures_position
+set "RUN_MODE=futures-position"
+set "RUN_STAGE=futures-position"
+set "SHOULD_PAUSE=0"
 goto mode_done
 
 :mode_export
@@ -58,14 +89,21 @@ exit /b %ERRORLEVEL%
 :mode_export_now
 set "RUN_MODE=export-now"
 set "RUN_STAGE=export"
+set "SHOULD_PAUSE=0"
 goto mode_done
 
 :mode_done
 
+if /I "%RUN_MODE%"=="intraday-close" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="close" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="full" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="news-event" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+if /I "%RUN_MODE%"=="market-futures" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+if /I "%RUN_MODE%"=="futures-position" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 
+if /I "%RUN_MODE%"=="intraday-close" (
+    set "JAVA_STAGE_OPTS=-Dstock.analysis.stageOnly=true -Dstock.analyzer.perStockPauseMs=150 -Dstock.intraday.deferChips=true -Dstock.close.deferNews=true -Dstock.close.deferEventRisk=true"
+)
 if /I "%RUN_MODE%"=="close" (
     set "JAVA_STAGE_OPTS=-Dstock.analysis.stageOnly=true -Dstock.analyzer.perStockPauseMs=150 -Dstock.close.deferNews=true -Dstock.close.deferEventRisk=true"
 )
@@ -93,6 +131,8 @@ set "LOCK_ACQUIRED=1"
 > "%LOCK_DIR%\started_at.txt" echo %DATE% %TIME%
 
 if /I "%RUN_MODE%"=="news-event" goto run_news_event
+if /I "%RUN_MODE%"=="market-futures" goto run_market_data
+if /I "%RUN_MODE%"=="futures-position" goto run_market_data
 if /I "%RUN_MODE%"=="export-now" goto run_export_now
 goto run_analysis
 
@@ -109,6 +149,22 @@ if errorlevel 1 (
 echo.
 echo Running stock.StockAnalysis %*
 "%JAVA_CMD%" %JAVA_STAGE_OPTS% -cp "bin;%APP_CLASSPATH%" stock.StockAnalysis %*
+set "EXIT_CODE=%ERRORLEVEL%"
+goto after_primary_run
+
+:run_market_data
+echo Compiling StockMarketDataOnlyAnalysis.java...
+"%JAVAC_CMD%" -encoding UTF-8 -cp "%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockMarketDataOnlyAnalysis.java
+if errorlevel 1 (
+    echo.
+    echo Compile failed.
+    set "EXIT_CODE=1"
+    goto cleanup
+)
+
+echo.
+echo Running stock.StockMarketDataOnlyAnalysis %RUN_MODE%
+"%JAVA_CMD%" -cp "bin;%APP_CLASSPATH%" stock.StockMarketDataOnlyAnalysis %RUN_MODE%
 set "EXIT_CODE=%ERRORLEVEL%"
 goto after_primary_run
 
@@ -171,9 +227,40 @@ if not "%EXIT_CODE%"=="0" (
 )
 
 if "%EXIT_CODE%"=="0" (
+    if /I "%RUN_MODE%"=="intraday-close" goto after_intraday_close_run
     if /I "%RUN_MODE%"=="close" goto after_close_run
     if /I "%RUN_MODE%"=="news-event" goto after_news_event_run
+    if /I "%RUN_MODE%"=="market-futures" goto after_market_data_run
+    if /I "%RUN_MODE%"=="futures-position" goto after_market_data_run
     goto after_full_run
+)
+goto cleanup
+
+:after_market_data_run
+if defined HAS_LIMITED_ARGS (
+    echo Limited market data run detected, skip export request.
+) else (
+    if defined STOCK_SKIP_EXPORT_REQUEST (
+        echo Export request skipped because STOCK_SKIP_EXPORT_REQUEST is set.
+    ) else (
+        echo Requesting serialized export after %RUN_MODE% stage...
+        "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode %RUN_MODE%
+        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    )
+)
+goto cleanup
+
+:after_intraday_close_run
+if defined HAS_LIMITED_ARGS (
+    echo Limited intraday-close run detected, skip export request.
+) else (
+    if defined STOCK_SKIP_EXPORT_REQUEST (
+        echo Export request skipped because STOCK_SKIP_EXPORT_REQUEST is set.
+    ) else (
+        echo Requesting serialized export after intraday close stage...
+        "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode intraday-close
+        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    )
 )
 goto cleanup
 
@@ -181,9 +268,13 @@ goto cleanup
 if defined HAS_LIMITED_ARGS (
     echo Limited close run detected, skip export request.
 ) else (
-    echo Requesting serialized export after close stage...
-    "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode close
-    if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    if defined STOCK_SKIP_EXPORT_REQUEST (
+        echo Export request skipped because STOCK_SKIP_EXPORT_REQUEST is set.
+    ) else (
+        echo Requesting serialized export after close stage...
+        "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode close
+        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    )
 )
 goto cleanup
 
@@ -191,9 +282,13 @@ goto cleanup
 if defined HAS_LIMITED_ARGS (
     echo Limited news-event run detected, skip export request.
 ) else (
-    echo Requesting serialized export after news-event stage...
-    "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode news-event
-    if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    if defined STOCK_SKIP_EXPORT_REQUEST (
+        echo Export request skipped because STOCK_SKIP_EXPORT_REQUEST is set.
+    ) else (
+        echo Requesting serialized export after news-event stage...
+        "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode news-event
+        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    )
 )
 goto cleanup
 
@@ -231,5 +326,5 @@ goto cleanup
 
 :cleanup
 if defined LOCK_ACQUIRED rd /s /q "%LOCK_DIR%" >nul 2>nul
-if not defined STOCK_ANALYSIS_NO_PAUSE pause
+if "%SHOULD_PAUSE%"=="1" if not defined STOCK_ANALYSIS_NO_PAUSE pause
 exit /b %EXIT_CODE%

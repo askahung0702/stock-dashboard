@@ -19,11 +19,12 @@ public class StockAnalysis {
 
     private static final String STAGE_FULL = "full";
     private static final String STAGE_CLOSE = "close";
+    private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
 
     public static void main(String[] args) throws Exception {
         RunOptions runOptions = parseArgs(args);
         int maxStocks = runOptions.maxStocks;
-        boolean closeStage = STAGE_CLOSE.equals(runOptions.stage);
+        boolean closeStage = STAGE_CLOSE.equals(runOptions.stage) || STAGE_INTRADAY_CLOSE.equals(runOptions.stage);
         boolean stageOnly = Boolean.getBoolean("stock.analysis.stageOnly");
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
         analyzer.setRunStage(runOptions.stage);
@@ -100,6 +101,8 @@ public class StockAnalysis {
         System.out.println("Analyzed stocks: " + results.size());
         if (maxStocks > 0) {
             System.out.println("Mode: " + runOptions.stage + " limited run (" + maxStocks + " stocks)");
+        } else if (STAGE_INTRADAY_CLOSE.equals(runOptions.stage)) {
+            System.out.println("Mode: intraday-close stage full-market run");
         } else if (closeStage) {
             System.out.println("Mode: close stage full-market run");
         } else {
@@ -115,6 +118,12 @@ public class StockAnalysis {
             }
             String trimmed = arg.trim();
             if (trimmed.length() == 0) {
+                continue;
+            }
+            if ("intraday-close".equalsIgnoreCase(trimmed) || "intraday".equalsIgnoreCase(trimmed)
+                    || "--stage=intraday-close".equalsIgnoreCase(trimmed)
+                    || "--mode=intraday-close".equalsIgnoreCase(trimmed)) {
+                options.stage = STAGE_INTRADAY_CLOSE;
                 continue;
             }
             if ("close".equalsIgnoreCase(trimmed) || "--stage=close".equalsIgnoreCase(trimmed)
@@ -487,7 +496,7 @@ public class StockAnalysis {
             }
             JSONObject result = new JSONObject();
             result.put("snapshotStage", stage);
-            result.put("stageLabel", STAGE_CLOSE.equals(stage) ? "盤後初版" : "夜間完整版");
+            result.put("stageLabel", stageLabel(stage));
             result.put("limitedRun", Boolean.valueOf(limitedRun));
             result.put("generatedAt", LocalDateTime.now().toString());
             Writer writer = new OutputStreamWriter(new FileOutputStream(statusFile), "UTF-8");
@@ -505,5 +514,15 @@ public class StockAnalysis {
     private static class RunOptions {
         private String stage = STAGE_FULL;
         private int maxStocks = -1;
+    }
+
+    private static String stageLabel(String stage) {
+        if (STAGE_INTRADAY_CLOSE.equals(stage)) {
+            return "收盤行情初版";
+        }
+        if (STAGE_CLOSE.equals(stage)) {
+            return "盤後初版";
+        }
+        return "夜間完整版";
     }
 }

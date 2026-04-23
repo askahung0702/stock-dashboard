@@ -1405,7 +1405,9 @@ public class TaiwanStockAnalyzer {
         LowFrequencyDataCache.Entry cacheEntry = lowFrequencyDataCache.get(stock.getCode());
         StockHistoryDatabase.SnapshotRow stagedRawRow = sameDayCloseRawRowsByCode.get(stock.getCode());
         boolean reuseCloseRaw = "full".equals(runStage) && stagedRawRow != null;
-        boolean closeStage = "close".equals(runStage);
+        boolean intradayCloseStage = "intraday-close".equals(runStage);
+        boolean closeStage = "close".equals(runStage) || intradayCloseStage;
+        boolean deferChips = intradayCloseStage && parseBooleanProperty("stock.intraday.deferChips", true);
         boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
         boolean deferEventRisk = closeStage && CLOSE_DEFER_EVENT_RISK;
         boolean hasRevenueCache = hasRevenueCache(cacheEntry);
@@ -1422,10 +1424,10 @@ public class TaiwanStockAnalyzer {
                     }
                 }, new ArrayList<MonthlyRevenueVO>())
                 : new ArrayList<MonthlyRevenueVO>();
-        List<InstitutionalTradingDailyVO> institutionalDaily = reuseCloseRaw ? new ArrayList<InstitutionalTradingDailyVO>()
+        List<InstitutionalTradingDailyVO> institutionalDaily = (reuseCloseRaw || deferChips) ? new ArrayList<InstitutionalTradingDailyVO>()
                 : yahooService.fetchInstitutionalTrading(stock);
         TechnicalSnapshotVO technical = reuseCloseRaw ? null : yahooService.fetchTechnicalSnapshot(stock);
-        BrokerTradingSummaryVO brokerSummary = reuseCloseRaw
+        BrokerTradingSummaryVO brokerSummary = deferChips ? new BrokerTradingSummaryVO("", 0L, 0L, 0L, 0D) : reuseCloseRaw
                 ? new BrokerTradingSummaryVO(currentDateStamp(), 0L, 0L, stagedRawRow.brokerNetLots,
                         stagedRawRow.brokerNetRatioPct)
                 : fetchOptional("broker trading", stock, new FetchSupplier<BrokerTradingSummaryVO>() {
@@ -1481,7 +1483,7 @@ public class TaiwanStockAnalyzer {
                     }
                 }, new NewsSignalVO());
 
-        if ((revenues.isEmpty() && !hasRevenueCache) || (!reuseCloseRaw && institutionalDaily.isEmpty())) {
+        if ((revenues.isEmpty() && !hasRevenueCache) || (!reuseCloseRaw && !deferChips && institutionalDaily.isEmpty())) {
             throw new Exception("missing core Yahoo data");
         }
 

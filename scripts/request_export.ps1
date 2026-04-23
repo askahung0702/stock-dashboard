@@ -25,6 +25,7 @@ try {
 
         Write-Host "Running serialized export for request mode: $Mode"
         $env:STOCK_ANALYSIS_NO_PAUSE = "1"
+        $env:STOCK_EXPORT_REQUEST_MODE = $Mode
         & cmd.exe /c "`"$repoRoot\run_stock_analysis.bat`" export-now"
         if ($LASTEXITCODE -ne 0) {
             throw "export-now failed with code $LASTEXITCODE"
@@ -39,4 +40,5 @@ try {
     if (Test-Path -LiteralPath $lockDir) {
         Remove-Item -LiteralPath $lockDir -Recurse -Force
     }
+    Remove-Item Env:\STOCK_EXPORT_REQUEST_MODE -ErrorAction SilentlyContinue
 }

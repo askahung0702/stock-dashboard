@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -125,6 +126,16 @@ public class StockHistoryDatabase {
         }
         seedSqliteIfNeeded(historyDirectory, sqliteStore);
         return sqliteStore.loadDailyMarketData(safeText(date), safeText(stage), safeText(dataKey));
+    }
+
+    public JSONObject loadLatestDailyMarketData(String dataKey) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return new JSONObject();
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        return sqliteStore.loadLatestDailyMarketData(safeText(dataKey));
     }
 
     public String getDatabasePath() {
@@ -1135,6 +1146,10 @@ public class StockHistoryDatabase {
         return value == null ? "" : value.toString();
     }
 
+    private String nowStamp() {
+        return LocalDateTime.now().toString();
+    }
+
     private double safeNumber(double value) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             return 0D;
@@ -1642,7 +1657,7 @@ public class StockHistoryDatabase {
                         insertRow.setDouble(11, safeNumber(row.volumeRatio));
                         insertRow.setInt(12, row.likely ? 1 : 0);
                         insertRow.setString(13, toRowJson(row).toJSONString());
-                        insertRow.setString(14, snapshot.date);
+                        insertRow.setString(14, nowStamp());
                         insertRow.executeUpdate();
                     }
                     connection.commit();
@@ -1709,7 +1724,7 @@ public class StockHistoryDatabase {
                     statement.setString(3, status);
                     statement.setInt(4, rowCount);
                     statement.setString(5, note);
-                    statement.setString(6, date);
+                    statement.setString(6, nowStamp());
                     statement.executeUpdate();
                     connection.commit();
                 } catch (Exception ex) {
@@ -1737,7 +1752,7 @@ public class StockHistoryDatabase {
                     statement.setString(2, stage);
                     statement.setString(3, dataKey);
                     statement.setString(4, dataObject.toJSONString());
-                    statement.setString(5, date);
+                    statement.setString(5, nowStamp());
                     statement.executeUpdate();
                     connection.commit();
                 } catch (Exception ex) {
@@ -1779,6 +1794,38 @@ public class StockHistoryDatabase {
                 } finally {
                     statement.close();
                     connection.commit();
+                }
+            } finally {
+                connection.close();
+            }
+            return result;
+        }
+
+        private JSONObject loadLatestDailyMarketData(String dataKey) throws Exception {
+            JSONObject result = new JSONObject();
+            if (dataKey.length() == 0) {
+                return result;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "select data_json from daily_market_data where data_key = ? order by trade_date desc, updated_at desc limit 1");
+                try {
+                    statement.setString(1, dataKey);
+                    ResultSet resultSet = statement.executeQuery();
+                    try {
+                        if (resultSet.next()) {
+                            String json = safeText(resultSet.getString("data_json"));
+                            Object parsed = new JSONParser().parse(json);
+                            if (parsed instanceof JSONObject) {
+                                return (JSONObject) parsed;
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    statement.close();
                 }
             } finally {
                 connection.close();

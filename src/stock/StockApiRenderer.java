@@ -31,7 +31,7 @@ public class StockApiRenderer {
             return "{\"date\":\"\",\"prevDate\":\"\",\"count\":0,\"likelyCount\":0,\"watchlistCount\":0,\"rows\":[],"
                  + "\"scoreUpCount\":0,\"scoreUpPct\":0,\"volumeSurgeCount\":0,\"marketScore\":50,"
                  + "\"marketSignal\":\"中性\",\"marketSignalText\":\"資料不足\",\"marketDangerScore\":50,"
-                 + "\"marketAlert\":\"中性\",\"marketAlertText\":\"資料不足\",\"themes\":[]}";
+                 + "\"marketAlert\":\"中性\",\"marketAlertText\":\"資料不足\",\"marketFutures\":{\"available\":false},\"themes\":[]}";
         }
 
         List<String> dates = new ArrayList<String>(snapshots.keySet());
@@ -114,6 +114,7 @@ public class StockApiRenderer {
         MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(snapshot.rows, prevRows,
                 snapshots, snapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(snapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
@@ -182,6 +183,7 @@ public class StockApiRenderer {
         result.put("marketRegimeLabel", marketRegime.getLabel());
         result.put("marketBreadth",     marketBreadthToJson(breadthSnapshot));
         result.put("marketIndex",       marketIndexToJson(marketIndexSnapshot));
+        result.put("marketFutures",     marketFuturesSnapshot);
         result.put("marketAdvisor",     marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal",    marketReversalToJson(marketReversal));
         result.put("marketWeakness",    marketWeaknessToJson(marketWeakness));
@@ -304,6 +306,7 @@ public class StockApiRenderer {
         MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(currentSnapshot.rows, prevRows,
                 snapshots, currentSnapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(currentSnapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
@@ -371,6 +374,7 @@ public class StockApiRenderer {
         result.put("marketRegimeLabel", marketRegime.getLabel());
         result.put("marketBreadth", marketBreadthToJson(breadthSnapshot));
         result.put("marketIndex", marketIndexToJson(marketIndexSnapshot));
+        result.put("marketFutures", marketFuturesSnapshot);
         result.put("marketAdvisor", marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal", marketReversalToJson(marketReversal));
         result.put("marketWeakness", marketWeaknessToJson(marketWeakness));
@@ -433,6 +437,7 @@ public class StockApiRenderer {
         payload.put("marketRegimeLabel", root.getOrDefault("marketRegimeLabel", ""));
         payload.put("marketBreadth", root.getOrDefault("marketBreadth", new JSONObject()));
         payload.put("marketIndex", root.getOrDefault("marketIndex", new JSONObject()));
+        payload.put("marketFutures", root.getOrDefault("marketFutures", new JSONObject()));
         payload.put("marketAdvisor", root.getOrDefault("marketAdvisor", new JSONObject()));
         payload.put("marketReversal", root.getOrDefault("marketReversal", new JSONObject()));
         payload.put("marketWeakness", root.getOrDefault("marketWeakness", new JSONObject()));
@@ -794,6 +799,65 @@ public class StockApiRenderer {
     }
 
     @SuppressWarnings("unchecked")
+    private JSONObject loadMarketFuturesJson(MarketBreadthSnapshot breadthSnapshot) {
+        JSONObject obj = new JSONObject();
+        try {
+            StockHistoryDatabase database = new StockHistoryDatabase();
+            JSONObject price = database.loadLatestDailyMarketData("marketFuturesPrice");
+            JSONObject position = database.loadLatestDailyMarketData("marketFuturesPosition");
+            boolean priceAvailable = Boolean.TRUE.equals(price.get("available"));
+            boolean positionAvailable = Boolean.TRUE.equals(position.get("available"));
+            obj.put("available", Boolean.valueOf(priceAvailable || positionAvailable));
+            obj.put("priceAvailable", Boolean.valueOf(priceAvailable));
+            obj.put("positionAvailable", Boolean.valueOf(positionAvailable));
+            obj.put("price", price);
+            obj.put("position", position);
+            obj.put("symbol", safeJsonText(price.get("symbol")));
+            obj.put("name", safeJsonText(price.get("name")));
+            obj.put("currentPrice", numberValue(price.get("currentPrice")));
+            obj.put("previousClose", numberValue(price.get("previousClose")));
+            obj.put("change", numberValue(price.get("change")));
+            obj.put("changePct", numberValue(price.get("changePct")));
+            obj.put("marketTime", safeJsonText(price.get("marketTime")));
+            obj.put("dataDate", safeJsonText(position.get("dataDate")));
+            obj.put("foreignOpenInterestLongLots", longValue(position.get("foreignOpenInterestLongLots")));
+            obj.put("foreignOpenInterestShortLots", longValue(position.get("foreignOpenInterestShortLots")));
+            obj.put("foreignOpenInterestNetLots", longValue(position.get("foreignOpenInterestNetLots")));
+            obj.put("foreignTradingLongLots", longValue(position.get("foreignTradingLongLots")));
+            obj.put("foreignTradingShortLots", longValue(position.get("foreignTradingShortLots")));
+            obj.put("foreignTradingNetLots", longValue(position.get("foreignTradingNetLots")));
+            obj.put("source", join(nonEmpty(safeJsonText(price.get("source")), safeJsonText(position.get("source"))), " / "));
+            MarketFuturesSignal signal = new MarketFuturesSignalAnalyzer().analyze(priceAvailable,
+                    numberValue(price.get("changePct")), positionAvailable,
+                    longValue(position.get("foreignOpenInterestNetLots")), longValue(position.get("foreignTradingNetLots")),
+                    breadthSnapshot);
+            obj.put("signal", marketFuturesSignalToJson(signal));
+            return obj;
+        } catch (Exception ex) {
+            obj.put("available", Boolean.FALSE);
+            obj.put("errorMessage", ex.getMessage());
+            return obj;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject marketFuturesSignalToJson(MarketFuturesSignal signal) {
+        JSONObject obj = new JSONObject();
+        if (signal == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.valueOf(signal.isAvailable()));
+        obj.put("riskScore", Double.valueOf(round1(signal.getRiskScore())));
+        obj.put("label", signal.getLabel());
+        obj.put("action", signal.getAction());
+        JSONArray reasons = new JSONArray();
+        reasons.addAll(signal.getReasons());
+        obj.put("reasons", reasons);
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
     private JSONObject marketAdvisorToJson(MarketAdvisorReport marketAdvisor) {
         JSONObject obj = new JSONObject();
         if (marketAdvisor == null) {
@@ -925,6 +989,29 @@ public class StockApiRenderer {
 
     private double round1(double value) {
         return Math.round(value * 10D) / 10D;
+    }
+
+    private String safeJsonText(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private double numberValue(Object value) {
+        return value instanceof Number ? ((Number) value).doubleValue() : 0D;
+    }
+
+    private long longValue(Object value) {
+        return value instanceof Number ? ((Number) value).longValue() : 0L;
+    }
+
+    private List<String> nonEmpty(String first, String second) {
+        List<String> values = new ArrayList<String>();
+        if (first != null && first.length() > 0) {
+            values.add(first);
+        }
+        if (second != null && second.length() > 0 && !second.equals(first)) {
+            values.add(second);
+        }
+        return values;
     }
 
     private String join(List<String> values, String delimiter) {
