@@ -1,13 +1,21 @@
 {
   "snapshot_date": "20260423",
-  "latest_track_date": "20260423",
-  "stock_count": 40,
+  "latest_track_date": "20260424",
+  "stock_count": 52,
   "groups": {
     "all": [
       {
         "track_date": "20260423",
         "days_since_buy": 0,
-        "stock_count": 40,
+        "stock_count": 52,
+        "avg_return_pct": -0.35,
+        "median_return_pct": -0.4,
+        "win_rate_pct": 38.46
+      },
+      {
+        "track_date": "20260424",
+        "days_since_buy": 1,
+        "stock_count": 52,
         "avg_return_pct": 0.0,
         "median_return_pct": 0.0,
         "win_rate_pct": 0.0
@@ -17,7 +25,15 @@
       {
         "track_date": "20260423",
         "days_since_buy": 0,
-        "stock_count": 9,
+        "stock_count": 12,
+        "avg_return_pct": -0.71,
+        "median_return_pct": -1.1,
+        "win_rate_pct": 41.67
+      },
+      {
+        "track_date": "20260424",
+        "days_since_buy": 1,
+        "stock_count": 12,
         "avg_return_pct": 0.0,
         "median_return_pct": 0.0,
         "win_rate_pct": 0.0
@@ -27,7 +43,15 @@
       {
         "track_date": "20260423",
         "days_since_buy": 0,
-        "stock_count": 4,
+        "stock_count": 11,
+        "avg_return_pct": -0.52,
+        "median_return_pct": -0.84,
+        "win_rate_pct": 45.45
+      },
+      {
+        "track_date": "20260424",
+        "days_since_buy": 1,
+        "stock_count": 11,
         "avg_return_pct": 0.0,
         "median_return_pct": 0.0,
         "win_rate_pct": 0.0
@@ -37,7 +61,15 @@
       {
         "track_date": "20260423",
         "days_since_buy": 0,
-        "stock_count": 31,
+        "stock_count": 40,
+        "avg_return_pct": -0.24,
+        "median_return_pct": -0.28,
+        "win_rate_pct": 37.5
+      },
+      {
+        "track_date": "20260424",
+        "days_since_buy": 1,
+        "stock_count": 40,
         "avg_return_pct": 0.0,
         "median_return_pct": 0.0,
         "win_rate_pct": 0.0
@@ -47,7 +79,15 @@
       {
         "track_date": "20260423",
         "days_since_buy": 0,
-        "stock_count": 22,
+        "stock_count": 30,
+        "avg_return_pct": -0.35,
+        "median_return_pct": -0.53,
+        "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260424",
+        "days_since_buy": 1,
+        "stock_count": 30,
         "avg_return_pct": 0.0,
         "median_return_pct": 0.0,
         "win_rate_pct": 0.0
