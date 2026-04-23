@@ -1410,6 +1410,7 @@ public class TaiwanStockAnalyzer {
         boolean deferChips = intradayCloseStage && parseBooleanProperty("stock.intraday.deferChips", true);
         boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
         boolean deferEventRisk = closeStage && CLOSE_DEFER_EVENT_RISK;
+        boolean allowFinancialFetch = "full".equals(runStage);
         boolean hasRevenueCache = hasRevenueCache(cacheEntry);
         boolean hasFinancialCache = hasFinancialCache(cacheEntry);
         boolean hasProfileCache = hasProfileCache(cacheEntry);
@@ -1442,28 +1443,28 @@ public class TaiwanStockAnalyzer {
                     }
                 }, emptyProfileSnapshot())
                 : profileFromCache(cacheEntry);
-        List<EpsRecordVO> epsRecords = (refreshFinancial || !hasFinancialCache)
+        List<EpsRecordVO> epsRecords = allowFinancialFetch && (refreshFinancial || !hasFinancialCache)
                 ? fetchOptional("eps", stock, new FetchSupplier<List<EpsRecordVO>>() {
                     public List<EpsRecordVO> get() throws Exception {
                         return yahooService.fetchEpsRecords(stock);
                     }
                 }, new ArrayList<EpsRecordVO>())
                 : new ArrayList<EpsRecordVO>();
-        List<CashFlowRecordVO> cashFlowRecords = (refreshFinancial || !hasFinancialCache)
+        List<CashFlowRecordVO> cashFlowRecords = allowFinancialFetch && (refreshFinancial || !hasFinancialCache)
                 ? fetchOptional("cash flow", stock, new FetchSupplier<List<CashFlowRecordVO>>() {
                     public List<CashFlowRecordVO> get() throws Exception {
                         return yahooService.fetchCashFlowRecords(stock);
                     }
                 }, new ArrayList<CashFlowRecordVO>())
                 : new ArrayList<CashFlowRecordVO>();
-        List<IncomeStatementRecordVO> incomeRecords = (refreshFinancial || !hasFinancialCache)
+        List<IncomeStatementRecordVO> incomeRecords = allowFinancialFetch && (refreshFinancial || !hasFinancialCache)
                 ? fetchOptional("income statement", stock, new FetchSupplier<List<IncomeStatementRecordVO>>() {
                     public List<IncomeStatementRecordVO> get() throws Exception {
                         return yahooService.fetchIncomeStatementRecords(stock);
                     }
                 }, new ArrayList<IncomeStatementRecordVO>())
                 : new ArrayList<IncomeStatementRecordVO>();
-        List<BalanceSheetRecordVO> balanceRecords = (refreshFinancial || !hasFinancialCache)
+        List<BalanceSheetRecordVO> balanceRecords = allowFinancialFetch && (refreshFinancial || !hasFinancialCache)
                 ? fetchOptional("balance sheet", stock, new FetchSupplier<List<BalanceSheetRecordVO>>() {
                     public List<BalanceSheetRecordVO> get() throws Exception {
                         return yahooService.fetchBalanceSheetRecords(stock);
