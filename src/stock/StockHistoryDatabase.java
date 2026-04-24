@@ -138,6 +138,16 @@ public class StockHistoryDatabase {
         return sqliteStore.loadLatestDailyMarketData(safeText(dataKey));
     }
 
+    public JSONObject loadLatestDailyMarketDataBefore(String dataKey, String beforeDate) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return new JSONObject();
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        return sqliteStore.loadLatestDailyMarketDataBefore(safeText(dataKey), safeText(beforeDate));
+    }
+
     public String getDatabasePath() {
         File historyDirectory = ensureHistoryDirectory();
         SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
@@ -1812,6 +1822,39 @@ public class StockHistoryDatabase {
                         "select data_json from daily_market_data where data_key = ? order by trade_date desc, updated_at desc limit 1");
                 try {
                     statement.setString(1, dataKey);
+                    ResultSet resultSet = statement.executeQuery();
+                    try {
+                        if (resultSet.next()) {
+                            String json = safeText(resultSet.getString("data_json"));
+                            Object parsed = new JSONParser().parse(json);
+                            if (parsed instanceof JSONObject) {
+                                return (JSONObject) parsed;
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+            return result;
+        }
+
+        private JSONObject loadLatestDailyMarketDataBefore(String dataKey, String beforeDate) throws Exception {
+            JSONObject result = new JSONObject();
+            if (dataKey.length() == 0 || beforeDate.length() == 0) {
+                return result;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "select data_json from daily_market_data where data_key = ? and trade_date < ? order by trade_date desc, updated_at desc limit 1");
+                try {
+                    statement.setString(1, dataKey);
+                    statement.setString(2, beforeDate);
                     ResultSet resultSet = statement.executeQuery();
                     try {
                         if (resultSet.next()) {

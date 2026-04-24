@@ -1411,6 +1411,7 @@ public class TaiwanStockAnalyzer {
         boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
         boolean deferEventRisk = closeStage && CLOSE_DEFER_EVENT_RISK;
         boolean allowFinancialFetch = "full".equals(runStage);
+        boolean allowProfileFetch = "full".equals(runStage);
         boolean hasRevenueCache = hasRevenueCache(cacheEntry);
         boolean hasFinancialCache = hasFinancialCache(cacheEntry);
         boolean hasProfileCache = hasProfileCache(cacheEntry);
@@ -1436,7 +1437,7 @@ public class TaiwanStockAnalyzer {
                         return yahooService.fetchBrokerTradingSummary(stock);
                     }
                 }, new BrokerTradingSummaryVO("", 0L, 0L, 0L, 0D));
-        ProfileSnapshotVO profile = (refreshProfile || !hasProfileCache)
+        ProfileSnapshotVO profile = allowProfileFetch && (refreshProfile || !hasProfileCache)
                 ? fetchOptional("profile", stock, new FetchSupplier<ProfileSnapshotVO>() {
                     public ProfileSnapshotVO get() throws Exception {
                         return yahooService.fetchProfileSnapshot(stock);

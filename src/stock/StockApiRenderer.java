@@ -102,6 +102,7 @@ public class StockApiRenderer {
         double averageThemeScore = total > 0 ? themeScoreSum / total : 0;
         double averageConfidence = confidenceReadyCount > 0 ? confidenceSum / confidenceReadyCount : 0;
         double prevAverageSelectionScore = prevTotal > 0 ? prevSelectionScoreSum / prevTotal : averageSelectionScore;
+        double prevVolumeSurgePct = prevTotal > 0 ? computeVolumeSurgePct(snapshots.get(prevDate).rows) : volumeSurgePct;
         double marketScore = computeMarketScore(scoreUpPct, breadthPct, qualifiedPct, buyPointPct,
                 averageSelectionScore);
         double marketDangerScore = computeMarketDangerScore(marketScore, averageSelectionScore, prevAverageSelectionScore,
@@ -113,8 +114,12 @@ public class StockApiRenderer {
         JSONArray themes = buildThemeHeatJson(snapshot.rows, prevRows);
         MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(snapshot.rows, prevRows,
                 snapshots, snapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
+        MarketBreadthSnapshot prevBreadthSnapshot = prevDate != null && snapshots.get(prevDate) != null
+                ? new MarketBreadthAnalyzer().analyzeRows(snapshots.get(prevDate).rows, new HashMap<String, SnapshotRow>(),
+                        snapshots, prevDate, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD)
+                : null;
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
-        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot);
+        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, latestDate);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(snapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
@@ -161,6 +166,8 @@ public class StockApiRenderer {
         result.put("scoreUpPct",        Double.valueOf(Math.round(scoreUpPct * 10) / 10.0));
         result.put("volumeSurgeCount",  Long.valueOf(volumeSurgeCount));
         result.put("volumeSurgePct",    Double.valueOf(Math.round(volumeSurgePct * 10) / 10.0));
+        result.put("prevVolumeSurgePct", Double.valueOf(Math.round(prevVolumeSurgePct * 10) / 10.0));
+        result.put("volumeSurgePctDelta", Double.valueOf(round1(volumeSurgePct - prevVolumeSurgePct)));
         result.put("qualifiedCount",    Long.valueOf(qualifiedCount));
         result.put("qualifiedPct",      Double.valueOf(Math.round(qualifiedPct * 10) / 10.0));
         result.put("buyPointCount",     Long.valueOf(buyPointCount));
@@ -181,7 +188,7 @@ public class StockApiRenderer {
         result.put("marketAlertText",   marketAlertText);
         result.put("marketRegime",      marketRegime.name());
         result.put("marketRegimeLabel", marketRegime.getLabel());
-        result.put("marketBreadth",     marketBreadthToJson(breadthSnapshot));
+        result.put("marketBreadth",     marketBreadthToJson(breadthSnapshot, prevBreadthSnapshot));
         result.put("marketIndex",       marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures",     marketFuturesSnapshot);
         result.put("marketAdvisor",     marketAdvisorToJson(marketAdvisor));
@@ -294,6 +301,7 @@ public class StockApiRenderer {
         double averageThemeScore = total > 0 ? themeScoreSum / total : 0;
         double averageConfidence = confidenceReadyCount > 0 ? confidenceSum / confidenceReadyCount : 0;
         double prevAverageSelectionScore = prevTotal > 0 ? prevSelectionScoreSum / prevTotal : averageSelectionScore;
+        double prevVolumeSurgePct = prevTotal > 0 ? computeVolumeSurgePct(snapshots.get(prevDate).rows) : volumeSurgePct;
         double marketScore = computeMarketScore(scoreUpPct, breadthPct, qualifiedPct, buyPointPct,
                 averageSelectionScore);
         double marketDangerScore = computeMarketDangerScore(marketScore, averageSelectionScore, prevAverageSelectionScore,
@@ -305,8 +313,12 @@ public class StockApiRenderer {
         JSONArray themes = buildThemeHeatJson(currentSnapshot.rows, prevRows);
         MarketBreadthSnapshot breadthSnapshot = new MarketBreadthAnalyzer().analyzeRows(currentSnapshot.rows, prevRows,
                 snapshots, currentSnapshot.date, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD);
+        MarketBreadthSnapshot prevBreadthSnapshot = prevDate != null && snapshots.get(prevDate) != null
+                ? new MarketBreadthAnalyzer().analyzeRows(snapshots.get(prevDate).rows, new HashMap<String, SnapshotRow>(),
+                        snapshots, prevDate, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD)
+                : null;
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
-        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot);
+        JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, currentSnapshot.date);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(currentSnapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
@@ -352,6 +364,8 @@ public class StockApiRenderer {
         result.put("scoreUpPct", Double.valueOf(Math.round(scoreUpPct * 10) / 10.0));
         result.put("volumeSurgeCount", Long.valueOf(volumeSurgeCount));
         result.put("volumeSurgePct", Double.valueOf(Math.round(volumeSurgePct * 10) / 10.0));
+        result.put("prevVolumeSurgePct", Double.valueOf(Math.round(prevVolumeSurgePct * 10) / 10.0));
+        result.put("volumeSurgePctDelta", Double.valueOf(round1(volumeSurgePct - prevVolumeSurgePct)));
         result.put("qualifiedCount", Long.valueOf(qualifiedCount));
         result.put("qualifiedPct", Double.valueOf(Math.round(qualifiedPct * 10) / 10.0));
         result.put("buyPointCount", Long.valueOf(buyPointCount));
@@ -372,7 +386,7 @@ public class StockApiRenderer {
         result.put("marketAlertText", marketAlertText);
         result.put("marketRegime", marketRegime.name());
         result.put("marketRegimeLabel", marketRegime.getLabel());
-        result.put("marketBreadth", marketBreadthToJson(breadthSnapshot));
+        result.put("marketBreadth", marketBreadthToJson(breadthSnapshot, prevBreadthSnapshot));
         result.put("marketIndex", marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures", marketFuturesSnapshot);
         result.put("marketAdvisor", marketAdvisorToJson(marketAdvisor));
@@ -475,6 +489,19 @@ public class StockApiRenderer {
             result.put(row.code, Integer.valueOf(count));
         }
         return result;
+    }
+
+    private double computeVolumeSurgePct(List<SnapshotRow> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return 0D;
+        }
+        int volumeSurgeCount = 0;
+        for (SnapshotRow row : rows) {
+            if (row.volumeRatio >= 1.8D) {
+                volumeSurgeCount++;
+            }
+        }
+        return volumeSurgeCount * 100D / rows.size();
     }
 
     // ── JSON ──────────────────────────────────────────────────────────────────
@@ -770,6 +797,27 @@ public class StockApiRenderer {
     }
 
     @SuppressWarnings("unchecked")
+    private JSONObject marketBreadthToJson(MarketBreadthSnapshot breadthSnapshot, MarketBreadthSnapshot prevBreadthSnapshot) {
+        JSONObject obj = marketBreadthToJson(breadthSnapshot);
+        if (breadthSnapshot == null || prevBreadthSnapshot == null) {
+            obj.put("aboveMa20PctPrev", Double.valueOf(0D));
+            obj.put("aboveMa20PctDelta", Double.valueOf(0D));
+            obj.put("aboveMa18PctPrev", Double.valueOf(0D));
+            obj.put("aboveMa18PctDelta", Double.valueOf(0D));
+            obj.put("belowMa20PctPrev", Double.valueOf(0D));
+            obj.put("belowMa20PctDelta", Double.valueOf(0D));
+            return obj;
+        }
+        obj.put("aboveMa20PctPrev", Double.valueOf(round1(prevBreadthSnapshot.getAboveMa20Pct())));
+        obj.put("aboveMa20PctDelta", Double.valueOf(round1(breadthSnapshot.getAboveMa20Pct() - prevBreadthSnapshot.getAboveMa20Pct())));
+        obj.put("aboveMa18PctPrev", Double.valueOf(round1(prevBreadthSnapshot.getAboveMa18Pct())));
+        obj.put("aboveMa18PctDelta", Double.valueOf(round1(breadthSnapshot.getAboveMa18Pct() - prevBreadthSnapshot.getAboveMa18Pct())));
+        obj.put("belowMa20PctPrev", Double.valueOf(round1(prevBreadthSnapshot.getBelowMa20Pct())));
+        obj.put("belowMa20PctDelta", Double.valueOf(round1(breadthSnapshot.getBelowMa20Pct() - prevBreadthSnapshot.getBelowMa20Pct())));
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
     private JSONObject marketIndexToJson(MarketIndexSnapshot marketIndexSnapshot) {
         JSONObject obj = new JSONObject();
         if (marketIndexSnapshot == null) {
@@ -799,12 +847,14 @@ public class StockApiRenderer {
     }
 
     @SuppressWarnings("unchecked")
-    private JSONObject loadMarketFuturesJson(MarketBreadthSnapshot breadthSnapshot) {
+    private JSONObject loadMarketFuturesJson(MarketBreadthSnapshot breadthSnapshot, String currentDate) {
         JSONObject obj = new JSONObject();
         try {
             StockHistoryDatabase database = new StockHistoryDatabase();
             JSONObject price = database.loadLatestDailyMarketData("marketFuturesPrice");
             JSONObject position = database.loadLatestDailyMarketData("marketFuturesPosition");
+            JSONObject prevPrice = database.loadLatestDailyMarketDataBefore("marketFuturesPrice", currentDate);
+            JSONObject prevPosition = database.loadLatestDailyMarketDataBefore("marketFuturesPosition", currentDate);
             boolean priceAvailable = Boolean.TRUE.equals(price.get("available"));
             boolean positionAvailable = Boolean.TRUE.equals(position.get("available"));
             obj.put("available", Boolean.valueOf(priceAvailable || positionAvailable));
@@ -826,12 +876,29 @@ public class StockApiRenderer {
             obj.put("foreignTradingLongLots", longValue(position.get("foreignTradingLongLots")));
             obj.put("foreignTradingShortLots", longValue(position.get("foreignTradingShortLots")));
             obj.put("foreignTradingNetLots", longValue(position.get("foreignTradingNetLots")));
+            obj.put("prevCurrentPrice", numberValue(prevPrice.get("currentPrice")));
+            obj.put("currentPriceDelta", Double.valueOf(round1(numberValue(price.get("currentPrice")) - numberValue(prevPrice.get("currentPrice")))));
+            obj.put("prevForeignOpenInterestShortLots", Long.valueOf(longValue(prevPosition.get("foreignOpenInterestShortLots"))));
+            obj.put("foreignOpenInterestShortLotsDelta", Long.valueOf(longValue(position.get("foreignOpenInterestShortLots")) - longValue(prevPosition.get("foreignOpenInterestShortLots"))));
             obj.put("source", join(nonEmpty(safeJsonText(price.get("source")), safeJsonText(position.get("source"))), " / "));
             MarketFuturesSignal signal = new MarketFuturesSignalAnalyzer().analyze(priceAvailable,
                     numberValue(price.get("changePct")), positionAvailable,
                     longValue(position.get("foreignOpenInterestNetLots")), longValue(position.get("foreignTradingNetLots")),
                     breadthSnapshot);
             obj.put("signal", marketFuturesSignalToJson(signal));
+            double prevRiskScore = 0D;
+            if (Boolean.TRUE.equals(prevPrice.get("available")) || Boolean.TRUE.equals(prevPosition.get("available"))) {
+                MarketFuturesSignal prevSignal = new MarketFuturesSignalAnalyzer().analyze(
+                        Boolean.TRUE.equals(prevPrice.get("available")),
+                        numberValue(prevPrice.get("changePct")),
+                        Boolean.TRUE.equals(prevPosition.get("available")),
+                        longValue(prevPosition.get("foreignOpenInterestNetLots")),
+                        longValue(prevPosition.get("foreignTradingNetLots")),
+                        breadthSnapshot);
+                prevRiskScore = prevSignal != null ? prevSignal.getRiskScore() : 0D;
+            }
+            obj.put("signalRiskScorePrev", Double.valueOf(round1(prevRiskScore)));
+            obj.put("signalRiskScoreDelta", Double.valueOf(round1(signal.getRiskScore() - prevRiskScore)));
             return obj;
         } catch (Exception ex) {
             obj.put("available", Boolean.FALSE);

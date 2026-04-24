@@ -1247,10 +1247,10 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">可交易標的 <b>${(d.qualifiedPct||0).toFixed(1)}%</b></div>` +
     `<div class="mkt-chip">好買點 <b>${(d.buyPointPct||0).toFixed(1)}%</b></div>` +
     `<div class="mkt-chip">危險警報 <b>${d.marketAlert || '中性'}</b></div>` +
-    `<div class="mkt-chip">爆量股 <b>${(d.volumeSurgePct||0).toFixed(1)}%</b></div>` +
-    `<div class="mkt-chip">台指期 <b>${futures.priceAvailable ? fmt1(futures.currentPrice) : '未更新'}</b></div>` +
-    `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtAbsLots(futures.foreignOpenInterestShortLots || 0) : '未更新'}</b></div>` +
-    `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? `${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}` : '資料不足'}</b></div>` +
+    `<div class="mkt-chip">爆量股 <b>${fmtMetricWithDelta(`${(d.volumeSurgePct||0).toFixed(1)}%`, fmtDeltaTag(Number(d.volumeSurgePctDelta || 0), '%', 1))}</b></div>` +
+    `<div class="mkt-chip">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(fmt1(futures.currentPrice), fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
+    `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '未更新'}</b></div>` +
+    `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></div>` +
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
 }
 
@@ -1334,9 +1334,9 @@ function renderMarketAdvisor(d) {
 
   document.getElementById('ma-metrics').innerHTML =
     `<span class="ma-metric">ADR <b>${fmt1(breadth.adr)}</b></span>` +
-    `<span class="ma-metric">站上 MA20 <b>${fmt1(breadth.aboveMa20Pct)}%</b></span>` +
-    `<span class="ma-metric">站上 MA18 <b>${fmt1(breadth.aboveMa18Pct)}%</b></span>` +
-    `<span class="ma-metric">跌破 MA20 <b>${fmt1(breadth.belowMa20Pct)}%</b></span>` +
+    `<span class="ma-metric">站上 MA20 <b>${fmtMetricWithDelta(`${fmt1(breadth.aboveMa20Pct)}%`, fmtDeltaTag(Number(breadth.aboveMa20PctDelta || 0), '%', 1))}</b></span>` +
+    `<span class="ma-metric">站上 MA18 <b>${fmtMetricWithDelta(`${fmt1(breadth.aboveMa18Pct)}%`, fmtDeltaTag(Number(breadth.aboveMa18PctDelta || 0), '%', 1))}</b></span>` +
+    `<span class="ma-metric">跌破 MA20 <b>${fmtMetricWithDelta(`${fmt1(breadth.belowMa20Pct)}%`, fmtDeltaTag(Number(breadth.belowMa20PctDelta || 0), '%', 1))}</b></span>` +
     `<span class="ma-metric">反轉風險 <b>${escapeHtml(reversal.label || '未提供')}</b></span>` +
     `<span class="ma-metric">寬度背離 <b>${weakness.breadthDivergence ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">動能破位 <b>${weakness.momentumBreakdown ? '是' : '否'}</b></span>` +
@@ -1344,12 +1344,12 @@ function renderMarketAdvisor(d) {
     `<span class="ma-metric">波動擴張 <b>${weakness.volatilityExpansion ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">指數趨勢 <b>${escapeHtml(index.trendLabel || '資料不足')}</b></span>` +
     `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>` +
-    `<span class="ma-metric">台指期 <b>${futures.priceAvailable ? `${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)` : '未更新'}</b></span>` +
+    `<span class="ma-metric">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(`${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)`, fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></span>` +
     `<span class="ma-metric">台指期時間 <b>${futures.priceAvailable ? escapeHtml(futures.marketTime || '已更新') : '—'}</b></span>` +
     `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable ? escapeHtml(futures.dataDate || '已更新') : '未更新'}</b></span>` +
-    `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtAbsLots(futures.foreignOpenInterestShortLots || 0) : '—'}</b></span>` +
+    `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '—'}</b></span>` +
     `<span class="ma-metric">外資期貨淨額 <b>${futures.positionAvailable ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
-    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? `${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分` : '資料不足'}</b></span>`;
+    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></span>`;
 
   const alerts = advisor.alerts || [];
   const mergedAlerts = [];
@@ -1631,6 +1631,15 @@ function fmtLotsCell(v) {
   if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
   if (v === 0) return '<td style="color:var(--muted)">0</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${Math.round(v).toLocaleString()}</td>`;
+}
+function fmtDeltaTag(v, suffix = '', digits = 1) {
+  if (!Number.isFinite(v) || Math.abs(v) < 0.05) return '<span class="muted">較昨 0</span>';
+  const cls = v > 0 ? 'rp' : 'rn';
+  const num = digits === 0 ? Math.round(v).toLocaleString() : v.toFixed(digits);
+  return `<span class="${cls}">較昨 ${v > 0 ? '+' : ''}${num}${suffix}</span>`;
+}
+function fmtMetricWithDelta(valueHtml, deltaHtml) {
+  return `${valueHtml}<span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">${deltaHtml}</span>`;
 }
 function parseChipsFallback(s) {
   const text = String(s?.chipsReason || '');
