@@ -63,6 +63,11 @@ public class StockStageExporter {
                     : hasClose ? new ExportSelection(close, STAGE_CLOSE)
                             : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
         }
+        if ("market-futures".equals(mode) || "futures-price".equals(mode)) {
+            return hasIntradayClose ? new ExportSelection(intradayClose, STAGE_INTRADAY_CLOSE)
+                    : hasClose ? new ExportSelection(close, STAGE_CLOSE)
+                            : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
+        }
         if ("close".equals(mode)) {
             return hasClose ? new ExportSelection(close, STAGE_CLOSE) : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
         }
