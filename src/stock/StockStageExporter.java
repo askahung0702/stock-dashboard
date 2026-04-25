@@ -142,6 +142,8 @@ public class StockStageExporter {
         t.earningsTurnaroundSignalScore = s.earningsTurnaroundSignalScore; t.profitabilityTurnaroundSignalScore = s.profitabilityTurnaroundSignalScore;
         t.oneOffRiskScore = s.oneOffRiskScore; t.suggestedStopPrice = s.suggestedStopPrice; t.suggestedStopPct = s.suggestedStopPct;
         t.suggestedTrailingStopPrice = s.suggestedTrailingStopPrice; t.suggestedTargetPrice = s.suggestedTargetPrice;
+        t.fairValueLow = s.fairValueLow; t.fairValueBase = s.fairValueBase; t.fairValueHigh = s.fairValueHigh;
+        t.fairValueConfidence = s.fairValueConfidence; t.fairValueMethod = s.fairValueMethod; t.fairValueReason = s.fairValueReason;
         t.upsidePotentialPct = s.upsidePotentialPct; t.sellSignalScore = s.sellSignalScore; t.sellSignalLabel = s.sellSignalLabel;
         t.reducePositionSize = s.reducePositionSize; t.buyPointScore = s.buyPointScore; t.dataConfidence = s.dataConfidence;
         t.selectionQualified = s.selectionQualified; t.marketRegime = s.marketRegime; t.price = s.price;

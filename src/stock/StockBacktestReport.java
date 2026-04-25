@@ -22,6 +22,10 @@ public class StockBacktestReport {
     private static final double MIN_LIKELY_FINANCIAL_SCORE = 12D;
     private static final double LIKELY_MIN_VOLUME_RATIO = 0.8D;
     private static final double LIKELY_MAX_VOLUME_RATIO = 2.5D;
+    private static final double STRUCTURE_EDGE_QUALITY_SCORE = 70D;
+    private static final double STRUCTURE_EDGE_BUY_POINT_SCORE = 78D;
+    private static final double STRUCTURE_EDGE_SELECTION_SCORE = 72D;
+    private static final double STRUCTURE_EDGE_FINANCIAL_SCORE = 14D;
     private static final double BUY_FEE_PCT = parseDoubleProperty("stock.backtest.buyFeePct", 0.1425D);
     private static final double SELL_FEE_PCT = parseDoubleProperty("stock.backtest.sellFeePct", 0.1425D);
     private static final double SELL_TAX_PCT = parseDoubleProperty("stock.backtest.sellTaxPct", 0.3000D);
@@ -82,6 +86,7 @@ public class StockBacktestReport {
         stats.put("WATCHLIST", new CohortStats());
         stats.put("QUALIFIED", new CohortStats());
         stats.put("QUALITY_70", new CohortStats());
+        stats.put("STRUCTURE_EDGE", new CohortStats());
         stats.put("MOMENTUM_70", new CohortStats());
         stats.put("SECTOR_60", new CohortStats());
         stats.put("TREND_65", new CohortStats());
@@ -127,6 +132,9 @@ public class StockBacktestReport {
                 }
                 if (qualityScore >= 70D) {
                     stats.get("QUALITY_70").add(trade, selectionScore, row.score);
+                }
+                if (isStructureEdge(row)) {
+                    stats.get("STRUCTURE_EDGE").add(trade, selectionScore, row.score);
                 }
                 if (momentumScore >= 70D) {
                     stats.get("MOMENTUM_70").add(trade, selectionScore, row.score);
@@ -323,6 +331,27 @@ public class StockBacktestReport {
         return selectionScoreOf(row) >= LIKELY_THRESHOLD && isQualified(row)
                 && row.financialQualityScore >= MIN_LIKELY_FINANCIAL_SCORE
                 && row.volumeRatio >= LIKELY_MIN_VOLUME_RATIO && row.volumeRatio <= LIKELY_MAX_VOLUME_RATIO;
+    }
+
+    private boolean isStructureEdge(SnapshotRow row) {
+        boolean bearCorrection = "空頭修正".equals(row.marketRegime);
+        double minQualityScore = bearCorrection ? 75D : STRUCTURE_EDGE_QUALITY_SCORE;
+        double minBuyPointScore = bearCorrection ? 82D : STRUCTURE_EDGE_BUY_POINT_SCORE;
+        return selectionScoreOf(row) >= STRUCTURE_EDGE_SELECTION_SCORE
+                && isQualified(row)
+                && qualityScoreOf(row) >= minQualityScore
+                && buyPointScoreOf(row) >= minBuyPointScore
+                && row.financialQualityScore >= STRUCTURE_EDGE_FINANCIAL_SCORE
+                && row.volumeRatio >= LIKELY_MIN_VOLUME_RATIO
+                && row.volumeRatio <= LIKELY_MAX_VOLUME_RATIO
+                && row.return20DayPct > 0D
+                && row.return60DayPct > 0D
+                && (row.rsi14 <= 0D || row.rsi14 < 78D)
+                && row.newsRiskScore < 60D
+                && !"負向風險".equals(row.eventDirection)
+                && !"恐慌殺盤".equals(row.marketRegime)
+                && !"追高風險".equals(row.structureLabel)
+                && !"結構未完成".equals(row.structureLabel);
     }
 
     private boolean isTradeable(SnapshotRow row) {

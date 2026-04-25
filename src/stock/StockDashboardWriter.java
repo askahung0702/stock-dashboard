@@ -107,7 +107,7 @@ public class StockDashboardWriter {
         appendNewsRadarSection(builder, results, historyBundle);
         appendDetailedSection(builder, "收盤後高勝率候選", "品質、續航、結構、風報比同步達標，優先看這份名單。",
                 filterPostCloseCategory(results, "高勝率候選"), historyBundle);
-        appendDetailedSection(builder, "收盤後短線主攻", "偏向隔日續強與主線延伸，適合找短線攻擊名單。",
+        appendDetailedSection(builder, "收盤後短線觀察", "偏向主線延伸與隔日確認，先觀察不當作主攻買進依據。",
                 filterPostCloseCategory(results, "短線主攻"), historyBundle);
         appendDetailedSection(builder, "收盤後波段布局", "偏品質與風報比，適合找可分批布局的標的。",
                 filterPostCloseCategory(results, "波段布局"), historyBundle);
@@ -195,7 +195,7 @@ public class StockDashboardWriter {
         builder.append("<section class=\"hero\">");
         builder.append("<div class=\"eyebrow\">Taiwan Stock Dashboard</div>");
         builder.append("<h1>台股分析網頁報表</h1>");
-        builder.append("<p>除了當天的高分候選與爆量名單，這份頁面現在也會把股票拆成收盤後高勝率、短線主攻、波段布局、催化觀察四種名單，並把每天跑出來的快照串成歷史資料，讓你看今天相較前一天的變化，以及每一檔股票的分數、價格和量比趨勢。</p>");
+        builder.append("<p>除了當天的高分候選與爆量名單，這份頁面現在也會把股票拆成收盤後高勝率、短線觀察、波段布局、催化觀察四種名單，並把每天跑出來的快照串成歷史資料，讓你看今天相較前一天的變化，以及每一檔股票的分數、價格和量比趨勢。</p>");
         builder.append("<div class=\"meta-row\">");
         pill(builder, "資料日期 " + displayDate);
         pill(builder, "Likely 門檻 " + format(likelyThreshold));
@@ -205,7 +205,7 @@ public class StockDashboardWriter {
         builder.append("<div class=\"metric-grid\">");
         metric(builder, "全部標的", Integer.toString(results.size()), "本次完成分析的股票數");
         metric(builder, "高勝率候選", Integer.toString(highConvictionCount), "收盤後最優先研究名單");
-        metric(builder, "短線主攻", Integer.toString(momentumAttackCount), "偏強勢主線與隔日續強");
+        metric(builder, "短線觀察", Integer.toString(momentumAttackCount), "偏強勢主線與隔日確認");
         metric(builder, "波段布局", Integer.toString(swingPositionCount), "偏品質與風報比");
         metric(builder, "新聞雷達", Integer.toString(newsRadarCount), "多來源、時間較新、可信度較高");
         metric(builder, "比較有可能", Integer.toString(likelyCandidates.size()), "分數達標且流動性通過");
@@ -712,7 +712,7 @@ public class StockDashboardWriter {
     private void appendFootnoteSection(StringBuilder builder) {
         builder.append("<section class=\"panel\">");
         builder.append("<div class=\"section-head\"><div><h2>如何閱讀這份頁面</h2><p class=\"hint\">先看收盤後四種名單，再看每日變化、likely 與爆量名單，最後用個股歷史追蹤確認是不是持續轉強。</p></div></div>");
-        builder.append("<div class=\"footer-note\">交易面反應快，基本面反應慢。比較值得注意的通常不是單一分數，而是基本面沒有太差、交易與籌碼開始轉強、股價還沒有過度反應這種組合。收盤後高勝率名單偏嚴格，短線主攻偏強勢主線，波段布局偏品質與風報比，催化觀察則是有題材但不建議追價。現在你每天跑出來的資料都會累積成歷史快照，所以可以開始觀察哪些股票是連續轉強，而不是只看單日結果。</div>");
+        builder.append("<div class=\"footer-note\">交易面反應快，基本面反應慢。比較值得注意的通常不是單一分數，而是基本面沒有太差、交易與籌碼開始轉強、股價還沒有過度反應這種組合。收盤後高勝率名單偏嚴格，短線觀察偏強勢主線但不當作主攻買進依據，波段布局偏品質、買點、風報比與大盤狀態，催化觀察則是有題材但不建議追價。現在你每天跑出來的資料都會累積成歷史快照，所以可以開始觀察哪些股票是連續轉強，而不是只看單日結果。</div>");
         builder.append("</section>");
     }
 

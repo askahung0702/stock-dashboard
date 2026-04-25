@@ -423,6 +423,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-continuation" data-t="continuation" onclick="tab('continuation')">🔥 強勢續攻 <span class="tcnt" id="tc-continuation">0</span></div>
     <div class="tab tab-breakout1854" data-t="breakout1854" onclick="tab('breakout1854')">🌿 早期起漲 18/54 <span class="tcnt" id="tc-breakout1854">0</span></div>
     <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
+    <div class="tab tab-highwin" data-t="structure" onclick="tab('structure')">🏗️ 波段優勢 <span class="tcnt" id="tc-structure">0</span></div>
     <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">🏆 highWinMode <span class="tcnt" id="tc-highwin">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
@@ -879,6 +880,7 @@ async function init() {
         score: typeof s.selectionScore === 'number' && s.selectionScore > 0 ? s.selectionScore : s.score,
         shortScore: calcShortScore(normalized),
         midScore:   calcMidScore(normalized),
+        structureEdgeScore: calcStructureEdgeScore(normalized),
         type:       ''  // will be set after scores computed
       };
     });
@@ -1403,6 +1405,7 @@ function updateTabCounts() {
   document.getElementById('tc-continuation').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'continuation').length;
   document.getElementById('tc-breakout1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'early').length;
   document.getElementById('tc-continuation1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'continuation').length;
+  document.getElementById('tc-structure').textContent = S.all.filter(isStructureEdgeMode).length;
   document.getElementById('tc-highwin').textContent = S.all.filter(isHighWinMode).length;
 }
 
@@ -1433,6 +1436,7 @@ function go() {
   else if (t === 'continuation') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'continuation');
   else if (t === 'breakout1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'early');
   else if (t === 'continuation1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'continuation');
+  else if (t === 'structure') stocks = stocks.filter(isStructureEdgeMode);
   else if (t === 'highwin') stocks = stocks.filter(isHighWinMode);
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
@@ -1453,6 +1457,7 @@ function go() {
 
   // 切換起漲/續攻 tab 時會預設改成篩選器分數；使用者點欄位後，必須尊重欄位排序。
   let defaultKey = S.sortKey;
+  if (t === 'structure' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'structureEdgeScore';
   if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
@@ -1484,6 +1489,9 @@ function tab(t) {
   }
   else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore')) {
     S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
+  }
+  else if (t === 'structure' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore')) {
+    S.sortKey = 'structureEdgeScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (isEarlyBreakoutTab(t)) {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
@@ -1729,6 +1737,52 @@ function warningBadgesHtml(s) {
 }
 function isGoodBuyPoint(s) {
   return (s.buyPointScore || 0) >= 75 && !!s.selectionQualified;
+}
+function calcStructureEdgeScore(s) {
+  const quality = Number(s.qualityScore || 0);
+  const buy = Number(s.buyPointScore || 0);
+  const trend = Number(s.trendPersistenceScore || 0);
+  const rr = Number(s.riskRewardScore || 0);
+  const sector = Number(s.sectorScore || 0);
+  const newsRisk = Number(s.newsRiskScore || 0);
+  const relative = Math.max(0, Number(s.relativeStrengthScore || 0) - 50);
+  let score = quality * 0.35 + buy * 0.30 + trend * 0.15 + rr * 0.10 + sector * 0.05 + Math.max(0, 100 - newsRisk) * 0.05;
+  score += relative * 0.10;
+  const regime = String(s.marketRegime || S.meta?.marketRegimeLabel || '');
+  if (regime.includes('區間')) score -= 3;
+  else if (regime.includes('空頭')) score -= 8;
+  else if (regime.includes('恐慌')) score -= 20;
+  return Math.max(0, Math.min(100, score));
+}
+function isStructureEdgeMode(s) {
+  const regime = String(s.marketRegime || S.meta?.marketRegimeLabel || '');
+  const bear = regime.includes('空頭');
+  const panic = regime.includes('恐慌');
+  const quality = Number(s.qualityScore || 0);
+  const buy = Number(s.buyPointScore || 0);
+  const selection = Number(s.score || s.selectionScore || 0);
+  const financialQuality = Number(s.financialQualityScore || 0);
+  const volumeRatio = Number(s.volumeRatio || 0);
+  const return20 = Number(s.return20DayPct || 0);
+  const return60 = Number(s.return60DayPct || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const newsRiskScore = Number(s.newsRiskScore || 0);
+  const structureLabel = String(s.structureLabel || '');
+  const eventDirection = String(s.eventDirection || '');
+  return !!s.selectionQualified
+    && !panic
+    && quality >= (bear ? 75 : 70)
+    && buy >= (bear ? 82 : 78)
+    && selection >= 72
+    && financialQuality >= 14
+    && volumeRatio >= 0.8 && volumeRatio <= 2.5
+    && return20 > 0
+    && return60 > 0
+    && (rsi <= 0 || rsi < 78)
+    && newsRiskScore < 60
+    && !eventDirection.includes('負向')
+    && structureLabel !== '追高風險'
+    && structureLabel !== '結構未完成';
 }
 function isHighWinMode(s) {
   const selectionQualified = !!s.selectionQualified;
@@ -2023,8 +2077,16 @@ function renderDB(s, history) {
   const invConclusion = buildConclusion(s, ss, ms);
   const stopLoss   = s.suggestedStopPrice > 0 ? s.suggestedStopPrice.toFixed(0) : (s.price > 0 ? (s.price * 0.93).toFixed(0) : '—');
   const target1    = s.suggestedTargetPrice > 0 ? s.suggestedTargetPrice.toFixed(0) : (s.price > 0 ? (s.price * 1.15).toFixed(0) : '—');
-  const target2    = s.price > 0 ? (s.price * 1.25).toFixed(0) : '—';
-  const target3    = s.price > 0 ? (s.price * 1.40).toFixed(0) : '—';
+  const fairLow    = Number(s.fairValueLow || 0);
+  const fairBase   = Number(s.fairValueBase || 0);
+  const fairHigh   = Number(s.fairValueHigh || 0);
+  const fairConf   = Number(s.fairValueConfidence || 0);
+  const fairReady  = fairLow > 0 && fairBase > 0 && fairHigh > 0;
+  const fairGapPct = fairReady && Number(s.price || 0) > 0 ? ((fairBase - Number(s.price || 0)) / Number(s.price || 0) * 100) : 0;
+  const fairGapText = fairReady ? `${fairGapPct >= 0 ? '+' : ''}${fairGapPct.toFixed(1)}% vs 現價` : '待財報齊備';
+  const fairRangeText = fairReady ? `$${formatMoney(fairLow)} ~ $${formatMoney(fairHigh)}` : '—';
+  const fairBaseText = fairReady ? `$${formatMoney(fairBase)}` : '—';
+  const fairMethodText = s.fairValueMethod || '混合估值';
   const holdDays   = ss >= 65 && ms < 65 ? '5～15 個交易日（短線）' : ss >= 65 && ms >= 65 ? '20～60 個交易日（彈性）' : '20～60 個交易日（中線）';
 
   const invCard = `
@@ -2054,19 +2116,19 @@ function renderDB(s, history) {
           <div class="sl-item-sub">超過未動考慮換股</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--yellow)">
-          <div class="sl-item-lbl">🎯 模型目標</div>
-          <div class="sl-item-val" style="color:var(--yellow)">$${target1}</div>
-          <div class="sl-item-sub">${s.upsidePotentialPct > 0 ? '+' + s.upsidePotentialPct.toFixed(1) + '% 上檔空間' : '+15%，先出 1/2'}</div>
+          <div class="sl-item-lbl">🧭 合理價中位</div>
+          <div class="sl-item-val" style="color:var(--yellow)">${fairBaseText}</div>
+          <div class="sl-item-sub">${fairReady ? fairGapText : '待 full 財報補齊後估值'}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--green)">
-          <div class="sl-item-lbl">🎯 第二停利</div>
-          <div class="sl-item-val" style="color:var(--green)">$${target2}</div>
-          <div class="sl-item-sub">+25%，出剩餘 1/2</div>
+          <div class="sl-item-lbl">🧮 合理價區間</div>
+          <div class="sl-item-val" style="color:var(--green);font-size:13px">${fairRangeText}</div>
+          <div class="sl-item-sub">${fairReady ? `${fairMethodText}｜信心 ${fairConf.toFixed(0)} 分` : '尚未建立估值區間'}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--orange)">
-          <div class="sl-item-lbl">🚀 強勢目標</div>
-          <div class="sl-item-val" style="color:var(--orange)">$${target3}</div>
-          <div class="sl-item-sub">+40%，剩餘部位賺飽</div>
+          <div class="sl-item-lbl">🎯 交易目標</div>
+          <div class="sl-item-val" style="color:var(--orange)">$${target1}</div>
+          <div class="sl-item-sub">${s.upsidePotentialPct > 0 ? '+' + s.upsidePotentialPct.toFixed(1) + '% 上檔空間' : '+15%，先出 1/2'}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--purple)">
           <div class="sl-item-lbl">📊 建議買法</div>
@@ -2074,6 +2136,7 @@ function renderDB(s, history) {
           <div class="sl-item-sub">首次 50%，確認後加碼</div>
         </div>
       </div>
+      ${s.fairValueReason ? `<div style="margin-top:10px;font-size:11px;color:var(--muted)">估值說明：${s.fairValueReason}</div>` : ''}
     </div>`;
 
   const savedCost = getPositionCost(s.code);
@@ -2148,6 +2211,8 @@ function renderDB(s, history) {
       <div class="met"><div class="met-lbl">結構型態</div><div class="met-val" style="font-size:13px;color:${structureScore>=75?'var(--green)':structureScore>=60?'var(--yellow)':'var(--muted)'}">${structureLabel}</div></div>
       <div class="met"><div class="met-lbl">風報比</div><div class="met-val" style="color:${rrRatio>=2?'var(--green)':rrRatio>=1.2?'var(--yellow)':'var(--muted)'}">${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}</div></div>
       <div class="met"><div class="met-lbl">資料信心</div><div class="met-val" style="color:${confidenceColorValue}">${confidenceReady ? confidence.toFixed(1) : '未刷新'}</div></div>
+      ${fairReady ? `<div class="met"><div class="met-lbl">合理價</div><div class="met-val" style="color:${fairGapPct>=8?'var(--green)':fairGapPct<=-8?'var(--red)':'var(--yellow)'}">$${formatMoney(fairBase)}</div></div>` : ''}
+      ${fairReady ? `<div class="met"><div class="met-lbl">合理區間</div><div class="met-val" style="font-size:13px;color:var(--muted)">$${formatMoney(fairLow)} ~ $${formatMoney(fairHigh)}</div></div>` : ''}
       <div class="met"><div class="met-lbl">日變化</div><div class="met-val ${dv>0?'dp':dv<0?'dn':'dz'}">${dv>0?'+':''}${dv.toFixed(1)}</div></div>
       <div class="met"><div class="met-lbl">連續高分</div><div class="met-val">${cd>=3?'<span class="db3">'+cd+'天</span>':cd>=2?'<span class="db2">'+cd+'天</span>':'<span style="color:var(--muted)">'+cd+'天</span>'}</div></div>
       <div class="met"><div class="met-lbl">20日漲跌</div><div class="met-val ${ret>0?'rp':ret<0?'rn':''}">${ret>0?'+':''}${ret.toFixed(2)}%</div></div>
@@ -2295,7 +2360,8 @@ function buildPositionCostAdvice(s, cost) {
       <div class="pos-metric">現價<b>$${formatMoney(price)}</b></div>
       <div class="pos-metric">成本損益<b style="color:${pnlColor}">${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}%</b></div>
       <div class="pos-metric">防守價<b style="color:${stopColor}">$${formatMoney(stop)} <span style="font-size:11px">(${stopText})</span></b></div>
-      <div class="pos-metric">模型目標<b>$${formatMoney(target)} <span style="font-size:11px;color:var(--muted)">(${targetText})</span></b></div>
+      <div class="pos-metric">合理價中位<b>${Number(s.fairValueBase || 0) > 0 ? '$' + formatMoney(s.fairValueBase) : '—'} <span style="font-size:11px;color:var(--muted)">${Number(s.fairValueConfidence || 0) > 0 ? `(信心 ${Number(s.fairValueConfidence).toFixed(0)})` : '(待估值)'}</span></b></div>
+      <div class="pos-metric">交易目標<b>$${formatMoney(target)} <span style="font-size:11px;color:var(--muted)">(${targetText})</span></b></div>
       <div class="pos-metric">承接參考<b>${entryRefText}</b></div>
     </div>
     <div class="pos-note">${reason}<br>輔助判斷：${s.postCloseCategory || '—'} / ${s.postCloseAction || '—'}；${bearishCount ? `轉空警示 ${bearishCount} 項` : '未見明確轉空警示'}；${overheatedCount ? `過熱 ${overheatedCount} 項` : '未見明顯過熱'}。</div>

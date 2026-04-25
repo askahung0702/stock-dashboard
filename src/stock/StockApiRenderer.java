@@ -559,6 +559,12 @@ public class StockApiRenderer {
         obj.put("suggestedStopPct",                Double.valueOf(row.suggestedStopPct));
         obj.put("suggestedTrailingStopPrice",      Double.valueOf(row.suggestedTrailingStopPrice));
         obj.put("suggestedTargetPrice",            Double.valueOf(row.suggestedTargetPrice));
+        obj.put("fairValueLow",                    Double.valueOf(row.fairValueLow));
+        obj.put("fairValueBase",                   Double.valueOf(row.fairValueBase));
+        obj.put("fairValueHigh",                   Double.valueOf(row.fairValueHigh));
+        obj.put("fairValueConfidence",             Double.valueOf(row.fairValueConfidence));
+        obj.put("fairValueMethod",                 row.fairValueMethod);
+        obj.put("fairValueReason",                 row.fairValueReason);
         obj.put("upsidePotentialPct",              Double.valueOf(row.upsidePotentialPct));
         obj.put("sellSignalScore",                 Double.valueOf(row.sellSignalScore));
         obj.put("sellSignalLabel",                 row.sellSignalLabel);

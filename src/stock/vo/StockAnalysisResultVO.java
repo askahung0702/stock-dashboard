@@ -107,6 +107,10 @@ public class StockAnalysisResultVO {
     private double suggestedStopPct;
     private double suggestedTrailingStopPrice;
     private double suggestedTargetPrice;
+    private double fairValueLow;
+    private double fairValueBase;
+    private double fairValueHigh;
+    private double fairValueConfidence;
     private double upsidePotentialPct;
     private double sellSignalScore;
     private String sellSignalLabel;
@@ -121,6 +125,8 @@ public class StockAnalysisResultVO {
     private String transformationHint;
     private String practicalAdvice;
     private double adviceConfidence;
+    private String fairValueMethod;
+    private String fairValueReason;
     private String marketRegime;
     private String snapshotStage;
     private boolean techReady;
@@ -1004,6 +1010,38 @@ public class StockAnalysisResultVO {
         this.suggestedTargetPrice = suggestedTargetPrice;
     }
 
+    public double getFairValueLow() {
+        return fairValueLow;
+    }
+
+    public void setFairValueLow(double fairValueLow) {
+        this.fairValueLow = fairValueLow;
+    }
+
+    public double getFairValueBase() {
+        return fairValueBase;
+    }
+
+    public void setFairValueBase(double fairValueBase) {
+        this.fairValueBase = fairValueBase;
+    }
+
+    public double getFairValueHigh() {
+        return fairValueHigh;
+    }
+
+    public void setFairValueHigh(double fairValueHigh) {
+        this.fairValueHigh = fairValueHigh;
+    }
+
+    public double getFairValueConfidence() {
+        return fairValueConfidence;
+    }
+
+    public void setFairValueConfidence(double fairValueConfidence) {
+        this.fairValueConfidence = fairValueConfidence;
+    }
+
     public double getUpsidePotentialPct() {
         return upsidePotentialPct;
     }
@@ -1106,6 +1144,22 @@ public class StockAnalysisResultVO {
 
     public void setAdviceConfidence(double adviceConfidence) {
         this.adviceConfidence = adviceConfidence;
+    }
+
+    public String getFairValueMethod() {
+        return fairValueMethod;
+    }
+
+    public void setFairValueMethod(String fairValueMethod) {
+        this.fairValueMethod = fairValueMethod;
+    }
+
+    public String getFairValueReason() {
+        return fairValueReason;
+    }
+
+    public void setFairValueReason(String fairValueReason) {
+        this.fairValueReason = fairValueReason;
     }
 
     public String getMarketRegime() {

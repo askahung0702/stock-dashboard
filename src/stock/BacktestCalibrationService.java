@@ -114,14 +114,14 @@ public class BacktestCalibrationService {
         try {
             writer.write('\uFEFF');
             writer.println("signal_type,horizon_days,recommended_cohort,recommended_rule,reason");
-            writeThresholdRow(writer, "隔日續強", 1, chooseBest(rowsByHorizon.get(Integer.valueOf(1)),
+            writeThresholdRow(writer, "隔日觀察", 1, chooseBest(rowsByHorizon.get(Integer.valueOf(1)),
                     new String[] { "BUYPOINT_A", "BUYPOINT_75", "LIKELY", "WATCHLIST" }));
             writeThresholdRow(writer, "3-5日延續", 3, chooseBest(rowsByHorizon.get(Integer.valueOf(3)),
-                    new String[] { "LIKELY", "QUALITY_70", "BUYPOINT_A", "BUYPOINT_75", "WATCHLIST" }));
+                    new String[] { "STRUCTURE_EDGE", "LIKELY", "QUALITY_70", "BUYPOINT_A", "BUYPOINT_75", "WATCHLIST" }));
             writeThresholdRow(writer, "5-10日波段", 5, chooseBest(rowsByHorizon.get(Integer.valueOf(5)),
-                    new String[] { "QUALITY_70", "LIKELY", "BUYPOINT_A", "QUALIFIED" }));
+                    new String[] { "STRUCTURE_EDGE", "QUALITY_70", "LIKELY", "BUYPOINT_A", "QUALIFIED" }));
             writeThresholdRow(writer, "5-10日波段", 10, chooseBest(rowsByHorizon.get(Integer.valueOf(10)),
-                    new String[] { "QUALITY_70", "LIKELY", "QUALIFIED", "BUYPOINT_A" }));
+                    new String[] { "STRUCTURE_EDGE", "QUALITY_70", "LIKELY", "QUALIFIED", "BUYPOINT_A" }));
         } finally {
             writer.close();
         }
@@ -142,17 +142,17 @@ public class BacktestCalibrationService {
         try {
             writer.write('\uFEFF');
             writer.println("signal_type,horizon_days,rule_type,recommended_rule,reason");
-            writeExcludeComparison(writer, "隔日續強", 1, findRow(rowsByHorizon.get(Integer.valueOf(1)), "WATCHLIST"),
+            writeExcludeComparison(writer, "隔日觀察", 1, findRow(rowsByHorizon.get(Integer.valueOf(1)), "WATCHLIST"),
                     findRow(rowsByHorizon.get(Integer.valueOf(1)), "LIKELY"),
                     "avoid_weaker_watchlist", "短線優先 likely，不把 watchlist 當主攻");
-            writeExcludeComparison(writer, "隔日續強", 1, findRow(rowsByHorizon.get(Integer.valueOf(1)), "BUYPOINT_75"),
+            writeExcludeComparison(writer, "隔日觀察", 1, findRow(rowsByHorizon.get(Integer.valueOf(1)), "BUYPOINT_75"),
                     findRow(rowsByHorizon.get(Integer.valueOf(1)), "BUYPOINT_A"),
                     "prefer_stricter_timing", "短線追價時機要更嚴格，優先 A 級時機");
             writeExcludeComparison(writer, "5-10日波段", 5, findRow(rowsByHorizon.get(Integer.valueOf(5)), "QUALIFIED"),
-                    findRow(rowsByHorizon.get(Integer.valueOf(5)), "QUALITY_70"),
+                    findRow(rowsByHorizon.get(Integer.valueOf(5)), "STRUCTURE_EDGE"),
                     "require_quality_gate", "波段布局優先保留品質門檻");
             writeExcludeComparison(writer, "5-10日波段", 10, findRow(rowsByHorizon.get(Integer.valueOf(10)), "ALL"),
-                    findRow(rowsByHorizon.get(Integer.valueOf(10)), "LIKELY"),
+                    findRow(rowsByHorizon.get(Integer.valueOf(10)), "STRUCTURE_EDGE"),
                     "avoid_broad_low_edge_pool", "避免把低邊際優勢標的放入波段主名單");
         } finally {
             writer.close();
@@ -250,6 +250,9 @@ public class BacktestCalibrationService {
         }
         if ("QUALITY_70".equals(cohort)) {
             return "quality_score >= 70";
+        }
+        if ("STRUCTURE_EDGE".equals(cohort)) {
+            return "quality >= 70, buy_point >= 78, selection >= 72, financial_quality >= 14, volume 0.8-2.5";
         }
         if ("WATCHLIST".equals(cohort)) {
             return "watchlist only if catalyst is fresh";
