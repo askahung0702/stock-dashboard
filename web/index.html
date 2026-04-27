@@ -149,6 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-breakout1854.active{color:#a855f7;border-bottom-color:#a855f7}
 .tab.tab-continuation1854.active{color:#eab308;border-bottom-color:#eab308}
 .tab.tab-highwin.active{color:#fb7185;border-bottom-color:#fb7185}
+.tab.tab-bear.active{color:#ef4444;border-bottom-color:#ef4444}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
 .tab.tab-mid.active .tcnt{background:var(--green)}
@@ -159,6 +160,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-breakout1854.active .tcnt{background:#a855f7;color:#fff}
 .tab.tab-continuation1854.active .tcnt{background:#eab308;color:#111827}
 .tab.tab-highwin.active .tcnt{background:#fb7185;color:#fff}
+.tab.tab-bear.active .tcnt{background:#ef4444;color:#fff}
 
 /* Table */
 .tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto}
@@ -185,6 +187,10 @@ td{padding:7px 9px;vertical-align:middle}
 .t-both{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(168,85,247,.18);color:var(--purple)}
 .t-short{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(59,130,246,.15);color:var(--blue)}
 .t-mid{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(34,197,94,.15);color:var(--green)}
+.t-bear{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(239,68,68,.16);color:var(--red)}
+.t-bear-fresh{background:rgba(249,115,22,.16);color:var(--orange)}
+.t-bear-confirm{background:rgba(239,68,68,.16);color:var(--red)}
+.t-bear-rebound{background:rgba(234,179,8,.16);color:var(--yellow)}
 
 /* Consecutive days */
 .db3{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;background:rgba(34,197,94,.15);color:var(--green)}
@@ -490,6 +496,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
     <div class="tab tab-highwin" data-t="structure" onclick="tab('structure')">🏗️ 波段優勢 <span class="tcnt" id="tc-structure">0</span></div>
     <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">🏆 highWinMode <span class="tcnt" id="tc-highwin">0</span></div>
+    <div class="tab tab-bear" data-t="bearish" onclick="tab('bearish')">轉弱預警 <span class="tcnt" id="tc-bearish">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
@@ -505,6 +512,7 @@ td{padding:7px 9px;vertical-align:middle}
         <th onclick="srt('industry')">產業<span class="sa" id="sa-industry"></span></th>
         <th class="srt" onclick="srt('score')">總分<span class="sa" id="sa-score">▼</span></th>
         <th onclick="srt('buyPointScore')">買點<span class="sa" id="sa-buyPointScore"></span></th>
+        <th onclick="srt('bearishScore')">轉弱<span class="sa" id="sa-bearishScore"></span></th>
         <th onclick="srt('primaryTheme')">題材<span class="sa" id="sa-primaryTheme"></span></th>
         <th onclick="srt('newsScore')">新聞<span class="sa" id="sa-newsScore"></span></th>
         <th onclick="srt('dataConfidence')">信心<span class="sa" id="sa-dataConfidence"></span></th>
@@ -906,6 +914,72 @@ function calcMidScore(s) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+function calcBearishProfile(s) {
+  const price = Number(s.price) || 0;
+  const ma20 = Number(s.movingAverage20) || 0;
+  const ma60 = Number(s.movingAverage60) || 0;
+  const ma120 = Number(s.movingAverage120) || 0;
+  const ret20 = Number(s.return20DayPct) || 0;
+  const ret60 = Number(s.return60DayPct) || 0;
+  const vol = Number(s.volumeRatio) || 0;
+  const rsi = Number(s.rsi14) || 50;
+  const k = Number(s.stochasticK) || 50;
+  const d = Number(s.stochasticD) || 50;
+  const drawdown = Number(s.drawdownFromHigh60Pct) || 0;
+  const sell = Number(s.sellSignalScore) || 0;
+  const label = String(s.sellSignalLabel || '');
+  const scoreDelta = Number(s.scoreDelta) || 0;
+  const buy = Number(s.buyPointScore) || 0;
+  const total = Number(s.score) || 0;
+  const fairHigh = Number(s.fairValueHigh) || 0;
+  const inst5 = Number(s.fiveDayInstitutionalNetRatioPct) || 0;
+  const broker = Number(s.brokerNetRatioPct) || 0;
+  const newsRisk = Number(s.newsRiskScore) || 0;
+  let score = 0;
+  const reasons = [];
+
+  function add(points, text) { score += points; reasons.push(text); }
+
+  if (label.includes('轉弱') || label.includes('出場') || sell >= 70) add(24, `賣訊 ${label || sell.toFixed(0)}`);
+  if (price > 0 && ma20 > 0 && price < ma20) add(14, '跌破 MA20');
+  if (price > 0 && ma60 > 0 && price < ma60) add(18, '跌破 MA60');
+  if (price > 0 && ma120 > 0 && price < ma120) add(10, '跌破 MA120');
+  if (ma20 > 0 && ma60 > 0 && ma20 < ma60) add(8, 'MA20 下彎到 MA60 下方');
+  if (ma60 > 0 && ma120 > 0 && ma60 < ma120) add(6, 'MA60 低於 MA120');
+  if (ret20 <= -8) add(12, '20 日跌幅擴大');
+  if (ret60 <= -15) add(8, '60 日趨勢轉弱');
+  if (drawdown <= -18) add(8, '距 60 日高點回落過深');
+  if (rsi < 45) add(8, 'RSI 跌入弱勢區');
+  if (k < d && k < 45) add(7, 'KD 偏空');
+  if (vol >= 1.5 && price > 0 && ma20 > 0 && price < ma20) add(8, '跌破 MA20 且放量');
+  if (scoreDelta <= -5) add(8, '分數快速下修');
+  if (buy < 50) add(5, '買點分不足');
+  if (inst5 <= -1.5) add(8, '5 日法人賣壓');
+  if (broker <= -2) add(7, '主力賣壓');
+  if (newsRisk >= 65) add(5, '新聞風險偏高');
+  if (fairHigh > 0 && price > fairHigh && (ret20 < 0 || (ma20 > 0 && price < ma20))) add(6, '估值偏貴後轉弱');
+
+  const normalized = Math.max(0, Math.min(100, Math.round(score)));
+  const wasActionable = buy >= 60 || total >= 60 || !!s.selectionQualified || !!s.likely;
+  const sellWeak = label.includes('轉弱') || label.includes('出場') || sell >= 70;
+  const momentumWeak = ret20 <= -8 || scoreDelta <= -5 || drawdown <= -18;
+  const below20 = price > 0 && ma20 > 0 && price < ma20;
+  const below60 = price > 0 && ma60 > 0 && price < ma60;
+  const freshBreak = wasActionable && normalized >= 58 && below20 && !below60
+    && (scoreDelta <= -3 || vol >= 1.3 || sellWeak);
+  const confirmedBreak = wasActionable && normalized >= 82 && below20 && below60
+    && (sellWeak || momentumWeak || vol >= 1.5);
+  const reboundExit = wasActionable && normalized >= 78 && price > 0 && ma20 > 0 && price >= ma20 * 0.98
+    && below60 && (sellWeak || ret20 < -5 || scoreDelta < -3);
+  const stage = freshBreak ? 'fresh' : confirmedBreak ? 'confirm' : reboundExit ? 'rebound' : '';
+  const stageLabel = stage === 'fresh' ? '剛轉弱' : stage === 'rebound' ? '反彈減碼' : stage === 'confirm' ? '走空確認' : '';
+  return { score: normalized, stage, stageLabel, reasons: reasons.slice(0, 4) };
+}
+
+function isBearishWatch(s) {
+  return !!s.bearishStage;
+}
+
 function getType(s) {
   const ss = s.shortScore, ms = s.midScore;
   if (ss >= 65 && ms >= 65) return 'both';
@@ -939,6 +1013,7 @@ async function init() {
         brokerNetLots: resolvedNumber(s.brokerNetLots, chipsFallback.brokerNetLots),
         brokerNetRatioPct: resolvedNumber(s.brokerNetRatioPct, chipsFallback.brokerNetRatioPct)
       };
+      const bearish = calcBearishProfile(normalized);
       return {
         ...normalized,
         legacyScore: typeof s.legacyScore === 'number' ? s.legacyScore : s.score,
@@ -946,6 +1021,10 @@ async function init() {
         shortScore: calcShortScore(normalized),
         midScore:   calcMidScore(normalized),
         structureEdgeScore: calcStructureEdgeScore(normalized),
+        bearishScore: bearish.score,
+        bearishStage: bearish.stage,
+        bearishStageLabel: bearish.stageLabel,
+        bearishReasons: bearish.reasons,
         type:       ''  // will be set after scores computed
       };
     });
@@ -1472,6 +1551,7 @@ function updateTabCounts() {
   document.getElementById('tc-continuation1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'continuation').length;
   document.getElementById('tc-structure').textContent = S.all.filter(isStructureEdgeMode).length;
   document.getElementById('tc-highwin').textContent = S.all.filter(isHighWinMode).length;
+  document.getElementById('tc-bearish').textContent = S.all.filter(isBearishWatch).length;
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
@@ -1503,6 +1583,7 @@ function go() {
   else if (t === 'continuation1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'continuation');
   else if (t === 'structure') stocks = stocks.filter(isStructureEdgeMode);
   else if (t === 'highwin') stocks = stocks.filter(isHighWinMode);
+  else if (t === 'bearish') stocks = stocks.filter(isBearishWatch);
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
   if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
@@ -1524,6 +1605,7 @@ function go() {
   let defaultKey = S.sortKey;
   if (t === 'structure' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'structureEdgeScore';
   if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
+  if (t === 'bearish' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'bearishScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -1549,19 +1631,25 @@ function tab(t) {
   S.activeTab = t;
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.t === t));
   // 切換 tab 時同步預設排序
-  if (t === 'catalyst' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore')) {
+  if (t === 'catalyst' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
   }
-  else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore')) {
+  else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'structureEdgeScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
   }
-  else if (t === 'structure' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore')) {
+  else if (t === 'structure' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'structureEdgeScore'; S.sortDir = -1; refreshSortArrows();
+  }
+  else if (t === 'bearish' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore' || S.sortKey === 'structureEdgeScore')) {
+    S.sortKey = 'bearishScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (isEarlyBreakoutTab(t)) {
     S.sortKey = 'earlyBreakoutScreenScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (S.sortKey === 'earlyBreakoutScreenScore') {
+    S.sortKey = 'score'; S.sortDir = -1; refreshSortArrows();
+  }
+  else if (t !== 'bearish' && S.sortKey === 'bearishScore') {
     S.sortKey = 'score'; S.sortDir = -1; refreshSortArrows();
   }
   else if (t !== 'catalyst' && (S.sortKey === 'shortScore' || S.sortKey === 'midScore')) {
@@ -1595,7 +1683,7 @@ function render(fresh) {
   const stocks = S.filtered;
 
   if (fresh && stocks.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="26"><div class="empty">沒有符合條件的股票</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="29"><div class="empty">沒有符合條件的股票</div></td></tr>';
     document.getElementById('lmore').style.display = 'none';
     document.getElementById('rinfo').textContent = '0 筆';
     return;
@@ -1624,6 +1712,7 @@ function mkRow(s) {
   const sc  = s.likely ? 'sl' : s.score >= getWatchlistThreshold() ? 'sw' : 'sn';
   const buy = s.buyPointScore || 0;
   const buyLabelText = explainBuyPointLabel(s) || s.buyPointLabel;
+  const bear = s.bearishScore || 0;
   const confidenceReady = hasConfidenceData(s);
   const conf = confidenceReady ? (s.dataConfidence || 0) : 0;
   const dv  = s.scoreDelta || 0;
@@ -1651,6 +1740,9 @@ function mkRow(s) {
   if (String(s?.analysisVersion || '').endsWith('-cached')) {
     nameExtra += `<span style="font-size:10px;color:var(--muted);margin-left:4px">📦快取</span>`;
   }
+  if (S.activeTab === 'bearish' && s.bearishReasons && s.bearishReasons.length) {
+    nameExtra += `<div class="et" style="color:var(--red)">轉弱：${s.bearishReasons.join('、')}</div>`;
+  }
   nameExtra += warningBadgesHtml(s);
 
   // 短中線分用漸層背景
@@ -1665,6 +1757,7 @@ function mkRow(s) {
     `<td style="color:var(--muted);max-width:105px;overflow:hidden;text-overflow:ellipsis" title="${s.industry||''}">${s.industry||''}</td>` +
     `<td><span class="sb ${sc}">${s.score.toFixed(0)}</span></td>` +
     `<td>${fmtBuyBadge(buy, buyLabelText)}</td>` +
+    `<td>${fmtBearishBadge(bear, s.bearishStageLabel, s.bearishReasons)}</td>` +
     `<td title="${s.themeTags||s.primaryTheme||''}" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;color:${(s.themeScore||0)>=65?'var(--green)':(s.themeScore||0)>=55?'var(--yellow)':'var(--muted)'}">${s.primaryTheme||'—'}</td>` +
     `<td style="color:${(s.newsScore||0)>=65?'var(--green)':(s.newsRiskScore||0)>=65?'var(--red)':'var(--muted)'}">${(s.newsScore||0).toFixed(0)}</td>` +
     `<td>${fmtConfidenceBadge(conf, confidenceReady)}</td>` +
@@ -1960,6 +2053,16 @@ function fmtBuyBadge(score, label) {
   const text = label || (score >= 85 ? 'A級買點' : score >= 75 ? 'B級買點' : score >= 60 ? '等確認' : '暫不建議');
   return `<span title="${score.toFixed(1)}分" style="display:inline-block;padding:2px 8px;border-radius:12px;background:${bg};color:${fg};font-weight:700">${text}</span>`;
 }
+function fmtBearishBadge(score, label, reasons) {
+  if (!score || score < 50) return '<span style="color:var(--muted)">—</span>';
+  const stage = label || (score >= 78 ? '走空確認' : score >= 70 ? '轉弱預警' : '觀察');
+  let cls = 't-bear';
+  if (stage.includes('剛')) cls += ' t-bear-fresh';
+  else if (stage.includes('反彈')) cls += ' t-bear-rebound';
+  else if (stage.includes('確認')) cls += ' t-bear-confirm';
+  const title = Array.isArray(reasons) && reasons.length ? `${score.toFixed(1)}分｜${reasons.join('、')}` : `${score.toFixed(1)}分`;
+  return `<span class="${cls}" title="${title}">${stage}</span>`;
+}
 function fmtConfidenceBadge(score, ready) {
   if (!ready) return '<span style="color:var(--muted)">未刷新</span>';
   if (!score) return '<span style="color:var(--muted)">—</span>';
@@ -2148,11 +2251,20 @@ function renderDB(s, history) {
   const fairConf   = Number(s.fairValueConfidence || 0);
   const fairReady  = fairLow > 0 && fairBase > 0 && fairHigh > 0;
   const fairGapPct = fairReady && Number(s.price || 0) > 0 ? ((fairBase - Number(s.price || 0)) / Number(s.price || 0) * 100) : 0;
+  const valuationRich = fairReady && Number(s.price || 0) > fairHigh;
   const fairGapText = fairReady ? `${fairGapPct >= 0 ? '+' : ''}${fairGapPct.toFixed(1)}% vs 現價` : '待財報齊備';
   const fairRangeText = fairReady ? `$${formatMoney(fairLow)} ~ $${formatMoney(fairHigh)}` : '—';
   const fairBaseText = fairReady ? `$${formatMoney(fairBase)}` : '—';
   const fairMethodText = s.fairValueMethod || '混合估值';
   const holdDays   = ss >= 65 && ms < 65 ? '5～15 個交易日（短線）' : ss >= 65 && ms >= 65 ? '20～60 個交易日（彈性）' : '20～60 個交易日（中線）';
+  const targetLabel = valuationRich ? '技術壓力' : '交易目標';
+  const targetSub = valuationRich
+    ? `估值已高於合理區間上緣，$${target1} 只當前高壓力`
+    : (s.upsidePotentialPct > 0 ? '+' + s.upsidePotentialPct.toFixed(1) + '% 上檔空間' : '+15%，先出 1/2');
+  const entryPlan = valuationRich ? '等待回檔' : '分批進場';
+  const entrySub = valuationRich
+    ? `接近合理區間上緣 $${formatMoney(fairHigh)} 或支撐轉強再評估`
+    : '首次 50%，確認後加碼';
 
   const invCard = `
     <div class="inv-card">
@@ -2191,14 +2303,14 @@ function renderDB(s, history) {
           <div class="sl-item-sub">${fairReady ? `${fairMethodText}｜信心 ${fairConf.toFixed(0)} 分` : '尚未建立估值區間'}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--orange)">
-          <div class="sl-item-lbl">🎯 交易目標</div>
+          <div class="sl-item-lbl">🎯 ${targetLabel}</div>
           <div class="sl-item-val" style="color:var(--orange)">$${target1}</div>
-          <div class="sl-item-sub">${s.upsidePotentialPct > 0 ? '+' + s.upsidePotentialPct.toFixed(1) + '% 上檔空間' : '+15%，先出 1/2'}</div>
+          <div class="sl-item-sub">${targetSub}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--purple)">
           <div class="sl-item-lbl">📊 建議買法</div>
-          <div class="sl-item-val" style="color:var(--purple);font-size:13px">分批進場</div>
-          <div class="sl-item-sub">首次 50%，確認後加碼</div>
+          <div class="sl-item-val" style="color:var(--purple);font-size:13px">${entryPlan}</div>
+          <div class="sl-item-sub">${entrySub}</div>
         </div>
       </div>
       ${s.fairValueReason ? `<div style="margin-top:10px;font-size:11px;color:var(--muted)">估值說明：${s.fairValueReason}</div>` : ''}
@@ -2450,8 +2562,11 @@ function buildStockCard(s, ss, ms) {
   const stopPct  = Number(s.suggestedStopPct)  > 0 ? Number(s.suggestedStopPct)  : 7;
   const target   = Number(s.suggestedTargetPrice) > 0 ? Number(s.suggestedTargetPrice) : price * 1.15;
   const fairBase = Number(s.fairValueBase) || 0;
-  const fairOk   = fairBase > 0;
+  const fairLow  = Number(s.fairValueLow) || 0;
+  const fairHigh = Number(s.fairValueHigh) || 0;
+  const fairOk   = fairLow > 0 && fairBase > 0 && fairHigh > 0;
   const fairGapPct = (fairOk && price > 0) ? (fairBase - price) / price * 100 : 0;
+  const valuationRich = fairOk && price > fairHigh;
   const instDay  = Number(s.latestInstitutionalNetRatioPct) || 0;
   const inst5    = Number(s.fiveDayInstitutionalNetRatioPct) || 0;
   const foreignL = Number(s.latestForeignNetLots) || 0;
@@ -2474,9 +2589,9 @@ function buildStockCard(s, ss, ms) {
   const support2 = ma60 > 0 ? ma60 * 0.985 : (price > 0 ? price * 0.88 : 0);
 
   // Banner 判斷
-  const bannerClass = (ss >= 65 && ms >= 65 && buyScore >= 75) ? 'sc-banner-buy'
+  const bannerClass = (ss >= 65 && ms >= 65 && buyScore >= 75 && !valuationRich) ? 'sc-banner-buy'
                     : (ss >= 65 && ms < 65) ? 'sc-banner-short'
-                    : (ms >= 65 && ss < 65) ? 'sc-banner-mid'
+                    : (ms >= 65 && ss < 65 && !valuationRich) ? 'sc-banner-mid'
                     : 'sc-banner-watch';
   const bannerIcon  = bannerClass === 'sc-banner-buy'   ? '買'
                     : bannerClass === 'sc-banner-short' ? '短'
@@ -2522,7 +2637,9 @@ function buildStockCard(s, ss, ms) {
 
   // 可能路徑文字
   const p1text = high60 > price * 1.005
-    ? `若突破近期高點 $${formatMoney(high60)}，可望挑戰 $${formatMoney(Math.max(target, high60 * 1.05))}`
+    ? valuationRich
+      ? `若挑戰近期高點 $${formatMoney(high60)}，視為技術壓力，不當成估值合理目標`
+      : `若突破近期高點 $${formatMoney(high60)}，可望挑戰 $${formatMoney(Math.max(target, high60 * 1.05))}`
     : `若維持強勢站穩，目標 $${formatMoney(target)}`;
   const p2text = ma20 > 0
     ? `若跌破 MA20（$${formatMoney(support1)}），可能回測${ma60 > 0 ? ' MA60（$' + formatMoney(support2) + '）' : '下方支撐'}`
@@ -2536,11 +2653,16 @@ function buildStockCard(s, ss, ms) {
 
   // 星評
   const diffScore   = Math.max(0, 100 - vol20 * 8);
-  const overallLabel = buyScore >= 85 ? '高潛力，注意波動'
+  const overallLabel = valuationRich ? '估值偏高，等待回檔'
+                     : buyScore >= 85 ? '高潛力，注意波動'
                      : buyScore >= 75 ? '值得關注，分批布局'
                      : buyScore >= 60 ? '審慎觀察，等待確認'
                      :                  '暫不建議，列入追蹤';
   const resistDisplay = formatMoney(resist > price * 1.005 ? resist : target);
+  const buyPlan = valuationRich ? '等待回檔' : '分批進場';
+  const buyPlanSub = valuationRich
+    ? `估值偏貴，接近 $${formatMoney(fairHigh)} 或支撐轉強再評估`
+    : '首次 50%，確認後加碼';
 
   return `
 <div class="sc-wrap">
@@ -2659,8 +2781,8 @@ function buildStockCard(s, ss, ms) {
       </div>` : ''}
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
         <div style="font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">建議買法</div>
-        <div style="font-size:12px;color:var(--purple);font-weight:600">分批進場</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">首次 50%，確認後加碼</div>
+        <div style="font-size:12px;color:var(--purple);font-weight:600">${buyPlan}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${buyPlanSub}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:6px">${holdDays}</div>
       </div>
     </div>
@@ -2728,16 +2850,24 @@ function buildConclusion(s, ss, ms) {
   const sector = s.sectorScore || 0;
   const trend = s.trendPersistenceScore || 0;
   const rr = s.riskRewardRatio || 0;
+  const price = Number(s.price || 0);
+  const fairHigh = Number(s.fairValueHigh || 0);
+  const valuationRich = price > 0 && fairHigh > 0 && price > fairHigh;
   const market = S.meta.marketScore || 50;
   const both = ss >= 65 && ms >= 65;
   const shortOnly = ss >= 65 && ms < 65;
   const midOnly   = ms >= 65 && ss < 65;
   let prefix = '';
 
-  if (buy >= 85 && market >= 60 && sector >= 60 && trend >= 65) prefix = '目前屬於相對理想的出手區。';
+  if (valuationRich) prefix = '估值已高於合理區間上緣，技術目標只適合作為壓力參考。';
+  else if (buy >= 85 && market >= 60 && sector >= 60 && trend >= 65) prefix = '目前屬於相對理想的出手區。';
   else if (buy >= 75 && rr >= 1.5) prefix = '買點條件不錯，但仍建議分批進場。';
   else if (buy >= 60) prefix = '基本面與趨勢可看，但時機還需要確認。';
   else prefix = '這檔可以追蹤，但目前時機面不算漂亮。';
+
+  if (valuationRich) {
+    return prefix + ` <b>不建議用估值角度追價</b>，等待回到合理區間上緣 $${formatMoney(fairHigh)} 附近，或支撐轉強後再評估。`;
+  }
 
   if (both) {
     let note = prefix + ' 短中皆宜。';
