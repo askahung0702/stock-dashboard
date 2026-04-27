@@ -281,6 +281,71 @@ td{padding:7px 9px;vertical-align:middle}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ── 個股分析卡 ── */
+.sc-wrap{margin-bottom:14px}
+.sc-banner{border-radius:10px 10px 0 0;padding:12px 16px;display:flex;align-items:center;gap:14px;border:1px solid}
+.sc-banner-buy{background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(59,130,246,.08));border-color:rgba(34,197,94,.35)}
+.sc-banner-short{background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(168,85,247,.08));border-color:rgba(59,130,246,.35)}
+.sc-banner-mid{background:linear-gradient(135deg,rgba(234,179,8,.12),rgba(34,197,94,.08));border-color:rgba(234,179,8,.35)}
+.sc-banner-watch{background:linear-gradient(135deg,rgba(148,163,184,.08),rgba(15,23,42,.5));border-color:rgba(148,163,184,.2)}
+.sc-banner-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0}
+.sc-banner-buy .sc-banner-icon{background:rgba(34,197,94,.2);color:var(--green);border:2px solid rgba(34,197,94,.5)}
+.sc-banner-short .sc-banner-icon{background:rgba(59,130,246,.2);color:var(--blue);border:2px solid rgba(59,130,246,.5)}
+.sc-banner-mid .sc-banner-icon{background:rgba(234,179,8,.2);color:var(--yellow);border:2px solid rgba(234,179,8,.5)}
+.sc-banner-watch .sc-banner-icon{background:rgba(148,163,184,.15);color:var(--muted);border:2px solid rgba(148,163,184,.3)}
+.sc-banner-main{flex:1}
+.sc-banner-label{font-size:13px;color:#cbd5e1;line-height:1.6}
+.sc-banner-scores{display:flex;gap:12px;flex-shrink:0}
+.sc-score-item{text-align:center}
+.sc-score-val{font-size:22px;font-weight:700}
+.sc-score-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.sc-body{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--border);border-top:none;overflow:hidden}
+.sc-col{padding:12px 14px;border-right:1px solid var(--border)}
+.sc-col:last-child{border-right:none}
+.sc-col-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.ind-row{margin-bottom:9px}
+.ind-lbl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.ind-lbl span{color:var(--muted)}
+.ind-lbl b{font-size:12px}
+.ind-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.ind-fill{height:100%;border-radius:3px}
+.ind-conclusion{font-size:11px;color:var(--muted);line-height:1.55;margin-top:8px;padding:7px 9px;background:rgba(255,255,255,.03);border-radius:5px}
+.ma-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px}
+.ma-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ma-info{color:var(--muted)}
+.ma-val{color:var(--text);font-weight:600}
+.ma-pct{margin-left:auto;font-weight:600}
+.chip-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+.chip-lbl{color:var(--muted);min-width:56px;flex-shrink:0}
+.chip-bar-wrap{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.chip-bar-fill{height:100%;border-radius:3px}
+.chip-val{font-weight:600;min-width:64px;text-align:right;font-size:11px}
+.kp-item{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px}
+.kp-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.kp-lbl{font-size:11px;color:var(--muted);min-width:56px}
+.kp-val{font-size:15px;font-weight:700}
+.kp-sub{font-size:10px;color:var(--muted);margin-left:auto}
+.sc-paths{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--border);border-top:none}
+.sc-path{padding:10px 14px;border-right:1px solid var(--border)}
+.sc-path:last-child{border-right:none}
+.sc-path-num{font-size:12px;font-weight:700;margin-bottom:4px}
+.sc-path-desc{font-size:11px;color:var(--muted);line-height:1.55}
+.sc-path-up .sc-path-num{color:var(--green)}
+.sc-path-pull .sc-path-num{color:var(--yellow)}
+.sc-path-weak .sc-path-num{color:var(--red)}
+.sc-ratings{display:flex;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
+.sc-ratings-table{flex:1;padding:10px 14px}
+.sc-ratings-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,.04)}
+.sc-ratings-row:last-child{border-bottom:none}
+.sc-ratings-lbl{min-width:68px;color:var(--muted)}
+.sc-ratings-quality{min-width:68px;font-size:11px}
+.sc-stars{color:#eab308}
+.sc-empty-stars{color:rgba(255,255,255,.15)}
+.sc-overall-box{background:rgba(234,179,8,.08);border-left:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:130px}
+.sc-overall-stars{font-size:18px;letter-spacing:2px;margin-bottom:4px}
+.sc-divider{height:1px;background:var(--border);margin:14px 0}
+@media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}}
 </style>
 </head>
 <body>
@@ -2196,6 +2261,7 @@ function renderDB(s, history) {
   }
 
   document.getElementById('db-body').innerHTML =
+    buildStockCard(s, ss, ms) +
     `<div class="met-row">
       <div class="met"><div class="met-lbl">股價</div><div class="met-val">${s.price>0?'$'+s.price.toLocaleString():'—'}</div></div>
       <div class="met"><div class="met-lbl">總分</div><div class="met-val"><span class="sb ${sc}">${s.score.toFixed(1)}</span></div></div>
@@ -2366,6 +2432,287 @@ function buildPositionCostAdvice(s, cost) {
     </div>
     <div class="pos-note">${reason}<br>輔助判斷：${s.postCloseCategory || '—'} / ${s.postCloseAction || '—'}；${bearishCount ? `轉空警示 ${bearishCount} 項` : '未見明確轉空警示'}；${overheatedCount ? `過熱 ${overheatedCount} 項` : '未見明顯過熱'}。</div>
   `;
+}
+
+function starsHtml(score, max) {
+  const n = Math.round(Math.max(0, Math.min(1, Number(score) / Number(max))) * 5);
+  return `<span class="sc-stars">${'★'.repeat(n)}</span><span class="sc-empty-stars">${'☆'.repeat(5 - n)}</span>`;
+}
+
+function buildStockCard(s, ss, ms) {
+  const price    = Number(s.price)    || 0;
+  const rsi      = Number(s.rsi14)   || 0;
+  const kK       = Number(s.stochasticK) || 0;
+  const kD       = Number(s.stochasticD) || 0;
+  const ma20     = Number(s.movingAverage20) || 0;
+  const ma60     = Number(s.movingAverage60) || 0;
+  const stopP    = Number(s.suggestedStopPrice) > 0 ? Number(s.suggestedStopPrice) : price * 0.93;
+  const stopPct  = Number(s.suggestedStopPct)  > 0 ? Number(s.suggestedStopPct)  : 7;
+  const target   = Number(s.suggestedTargetPrice) > 0 ? Number(s.suggestedTargetPrice) : price * 1.15;
+  const fairBase = Number(s.fairValueBase) || 0;
+  const fairOk   = fairBase > 0;
+  const fairGapPct = (fairOk && price > 0) ? (fairBase - price) / price * 100 : 0;
+  const instDay  = Number(s.latestInstitutionalNetRatioPct) || 0;
+  const inst5    = Number(s.fiveDayInstitutionalNetRatioPct) || 0;
+  const foreignL = Number(s.latestForeignNetLots) || 0;
+  const brokerL  = Number(s.brokerNetLots) || 0;
+  const volRatio = Number(s.volumeRatio) || 0;
+  const ret20    = Number(s.return20DayPct) || 0;
+  const vol20    = Number(s.volatility20Pct) || 0;
+  const atr20    = Number(s.atr20) || 0;
+  const drawdown = Number(s.drawdownFromHigh60Pct) || 0;
+  const techScore   = Number(s.technicalScore) || 0;
+  const chipsScore  = Number(s.chipsScore) || 0;
+  const structScore = Number(s.structureScore) || 0;
+  const structLabel = s.structureLabel || '整理待確認';
+  const buyScore    = Number(s.buyPointScore) || Number(s.score) || 0;
+
+  // 60日高點估算
+  const high60   = (drawdown < -0.1 && price > 0) ? price / (1 + drawdown / 100) : 0;
+  const resist   = high60 > price * 1.005 ? high60 : target;
+  const support1 = ma20 > 0 ? ma20 * 0.985 : (price > 0 ? price * 0.95 : 0);
+  const support2 = ma60 > 0 ? ma60 * 0.985 : (price > 0 ? price * 0.88 : 0);
+
+  // Banner 判斷
+  const bannerClass = (ss >= 65 && ms >= 65 && buyScore >= 75) ? 'sc-banner-buy'
+                    : (ss >= 65 && ms < 65) ? 'sc-banner-short'
+                    : (ms >= 65 && ss < 65) ? 'sc-banner-mid'
+                    : 'sc-banner-watch';
+  const bannerIcon  = bannerClass === 'sc-banner-buy'   ? '買'
+                    : bannerClass === 'sc-banner-short' ? '短'
+                    : bannerClass === 'sc-banner-mid'   ? '中' : '觀';
+
+  // RSI 顏色與標籤
+  const rsiColor = rsi >= 80 ? 'var(--red)' : rsi >= 70 ? 'var(--orange)' : rsi >= 50 ? 'var(--green)' : rsi >= 30 ? 'var(--yellow)' : 'var(--red)';
+  const rsiZone  = rsi >= 80 ? '超買' : rsi >= 70 ? '偏熱' : rsi >= 50 ? '偏多' : rsi >= 30 ? '中性' : '超賣';
+
+  // KD 顏色與標籤
+  const kdColor  = kK >= 80 ? 'var(--red)' : (kK > kD && kK < 80) ? 'var(--green)' : kK < 20 ? 'var(--red)' : 'var(--yellow)';
+  const kdSignal = kK >= 80 ? '高檔鈍化' : (kK > kD && kK < 80) ? '黃金交叉' : (kK < kD && kK <= 20) ? '超賣' : kK < kD ? '死亡交叉' : '中性';
+
+  // 技術面結語
+  const techText = (rsi >= 80 || kK >= 80)  ? '技術面過熱，短線漲幅偏大，容易出現拉回震盪。'
+                 : (rsi >= 60 && kK > kD)    ? '技術面偏強，動能充足，趨勢向上確立中。'
+                 : rsi >= 40                  ? '技術面中性整理，等待方向確認。'
+                 :                             '技術面偏弱，短線動能不足，建議等待反彈確認。';
+
+  // MA 相對股價
+  const ma20Color = ma20 > 0 ? (price >= ma20 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+  const ma60Color = ma60 > 0 ? (price >= ma60 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+  const ma20Label = ma20 > 0 ? (price >= ma20 ? '↑ 站上' : '↓ 跌破') : '';
+  const ma60Label = ma60 > 0 ? (price >= ma60 ? '↑ 站上' : '↓ 跌破') : '';
+
+  // 籌碼條形圖輔助
+  function cb(val, maxAbs, color) {
+    const pct = maxAbs > 0 ? Math.min(100, Math.abs(val) / maxAbs * 100) : 0;
+    return `<div class="chip-bar-wrap"><div class="chip-bar-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>`;
+  }
+  const instC = instDay > 0 ? 'var(--green)' : instDay < 0 ? 'var(--red)' : 'var(--muted)';
+  const inst5C = inst5  > 0 ? 'var(--green)' : inst5  < 0 ? 'var(--red)' : 'var(--muted)';
+  const brkC  = brokerL > 0 ? 'var(--green)' : brokerL < 0 ? 'var(--red)' : 'var(--muted)';
+  const forC  = foreignL > 0 ? 'var(--green)' : foreignL < 0 ? 'var(--red)' : 'var(--muted)';
+  const volC  = volRatio >= 2 ? 'var(--orange)' : volRatio >= 1.3 ? 'var(--green)' : 'var(--muted)';
+
+  // 籌碼結語
+  const chipsText = (inst5 > 2 && brokerL > 50)   ? '法人與主力同步買進，籌碼面支撐明顯。'
+                  : (inst5 < -2 || brokerL < -100) ? '法人或主力出現賣壓，籌碼面需謹慎。'
+                  : instDay > 0.5                   ? '法人單日買超，短線籌碼偏多。'
+                  : instDay < -0.5                  ? '單日法人賣超，注意籌碼鬆動。'
+                  :                                  '法人籌碼方向尚不明顯，持續觀察。';
+
+  // 可能路徑文字
+  const p1text = high60 > price * 1.005
+    ? `若突破近期高點 $${formatMoney(high60)}，可望挑戰 $${formatMoney(Math.max(target, high60 * 1.05))}`
+    : `若維持強勢站穩，目標 $${formatMoney(target)}`;
+  const p2text = ma20 > 0
+    ? `若跌破 MA20（$${formatMoney(support1)}），可能回測${ma60 > 0 ? ' MA60（$' + formatMoney(support2) + '）' : '下方支撐'}`
+    : `若跌破支撐 $${formatMoney(support1)}，留意下方風險`;
+  const p3text = `若跌破停損 $${formatMoney(stopP)}，短線轉弱，應降低部位`;
+
+  // 持有天數建議
+  const holdDays = (ss >= 65 && ms >= 65) ? '20～60 個交易日（彈性）'
+                 : ss >= 65               ? '5～15 個交易日（短線）'
+                 :                          '20～60 個交易日（中線）';
+
+  // 星評
+  const diffScore   = Math.max(0, 100 - vol20 * 8);
+  const overallLabel = buyScore >= 85 ? '高潛力，注意波動'
+                     : buyScore >= 75 ? '值得關注，分批布局'
+                     : buyScore >= 60 ? '審慎觀察，等待確認'
+                     :                  '暫不建議，列入追蹤';
+  const resistDisplay = formatMoney(resist > price * 1.005 ? resist : target);
+
+  return `
+<div class="sc-wrap">
+  <div class="sc-banner ${bannerClass}">
+    <div class="sc-banner-icon">${bannerIcon}</div>
+    <div class="sc-banner-main">
+      <div class="sc-banner-label">${buildConclusion(s, ss, ms)}</div>
+    </div>
+    <div class="sc-banner-scores">
+      <div class="sc-score-item">
+        <div class="sc-score-val" style="color:${ss>=65?'var(--blue)':'var(--muted)'}">${ss}</div>
+        <div class="sc-score-lbl">短線</div>
+      </div>
+      <div class="sc-score-item">
+        <div class="sc-score-val" style="color:${ms>=65?'var(--green)':'var(--muted)'}">${ms}</div>
+        <div class="sc-score-lbl">中線</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc-body">
+    <div class="sc-col">
+      <div class="sc-col-title">技術面分析</div>
+      ${rsi > 0 ? `
+      <div class="ind-row">
+        <div class="ind-lbl"><span>RSI (14)</span><b style="color:${rsiColor}">${rsi.toFixed(1)} <span style="font-size:10px;font-weight:400">${rsiZone}</span></b></div>
+        <div class="ind-bar"><div class="ind-fill" style="width:${rsi}%;background:${rsiColor}"></div></div>
+      </div>` : ''}
+      ${kK > 0 ? `
+      <div class="ind-row">
+        <div class="ind-lbl"><span>KD（K/D）</span><b style="color:${kdColor}">${kK.toFixed(1)}/${kD.toFixed(1)} <span style="font-size:10px;font-weight:400">${kdSignal}</span></b></div>
+        <div class="ind-bar"><div class="ind-fill" style="width:${kK}%;background:${kdColor}"></div></div>
+      </div>` : ''}
+      ${ma20 > 0 ? `
+      <div class="ma-row">
+        <div class="ma-dot" style="background:#eab308"></div>
+        <span class="ma-info">MA20</span><span class="ma-val">${formatMoney(ma20)}</span>
+        <span class="ma-pct" style="color:${ma20Color}">${ma20Label}</span>
+      </div>` : ''}
+      ${ma60 > 0 ? `
+      <div class="ma-row">
+        <div class="ma-dot" style="background:#a855f7"></div>
+        <span class="ma-info">MA60</span><span class="ma-val">${formatMoney(ma60)}</span>
+        <span class="ma-pct" style="color:${ma60Color}">${ma60Label}</span>
+      </div>` : ''}
+      ${atr20 > 0 ? `
+      <div class="ma-row">
+        <div class="ma-dot" style="background:#475569"></div>
+        <span class="ma-info">ATR20</span><span class="ma-val">${atr20.toFixed(1)}</span>
+        ${vol20 > 0 ? `<span class="ma-pct" style="color:var(--muted)">${vol20.toFixed(1)}% 波動</span>` : ''}
+      </div>` : ''}
+      <div class="ind-conclusion">${techText}</div>
+    </div>
+
+    <div class="sc-col">
+      <div class="sc-col-title">籌碼面分析</div>
+      <div class="chip-item">
+        <span class="chip-lbl">單日法人%</span>${cb(instDay,3,instC)}
+        <span class="chip-val" style="color:${instC}">${instDay>0?'+':''}${instDay.toFixed(2)}%</span>
+      </div>
+      <div class="chip-item">
+        <span class="chip-lbl">5日法人%</span>${cb(inst5,5,inst5C)}
+        <span class="chip-val" style="color:${inst5C}">${inst5>0?'+':''}${inst5.toFixed(2)}%</span>
+      </div>
+      <div class="chip-item">
+        <span class="chip-lbl">外資單日</span>${cb(foreignL,500,forC)}
+        <span class="chip-val" style="color:${forC}">${foreignL>0?'+':''}${foreignL.toLocaleString()}張</span>
+      </div>
+      <div class="chip-item">
+        <span class="chip-lbl">主力淨買</span>${cb(brokerL,500,brkC)}
+        <span class="chip-val" style="color:${brkC}">${brokerL>0?'+':''}${brokerL.toLocaleString()}張</span>
+      </div>
+      <div class="chip-item">
+        <span class="chip-lbl">量比</span>${cb(volRatio,4,volC)}
+        <span class="chip-val" style="color:${volC}">${volRatio.toFixed(2)}x</span>
+      </div>
+      <div class="chip-item">
+        <span class="chip-lbl">20日漲跌</span>${cb(ret20,30,ret20>0?'var(--green)':'var(--red)')}
+        <span class="chip-val" style="color:${ret20>0?'var(--green)':ret20<0?'var(--red)':'var(--muted)'}">${ret20>0?'+':''}${ret20.toFixed(1)}%</span>
+      </div>
+      <div class="ind-conclusion">${chipsText}</div>
+    </div>
+
+    <div class="sc-col">
+      <div class="sc-col-title">操作建議</div>
+      <div class="kp-item">
+        <div class="kp-dot" style="background:var(--red)"></div>
+        <span class="kp-lbl">壓力區</span>
+        <span class="kp-val" style="color:var(--red)">$${resistDisplay}</span>
+        <span class="kp-sub">${high60 > price * 1.005 ? '近期高點' : '目標價'}</span>
+      </div>
+      <div class="kp-item">
+        <div class="kp-dot" style="background:var(--green)"></div>
+        <span class="kp-lbl">支撐區</span>
+        <span class="kp-val" style="color:var(--green)">$${formatMoney(support1)}</span>
+        <span class="kp-sub">MA20 附近</span>
+      </div>
+      <div class="kp-item">
+        <div class="kp-dot" style="background:var(--blue)"></div>
+        <span class="kp-lbl">強支撐</span>
+        <span class="kp-val" style="color:var(--blue)">$${formatMoney(support2)}</span>
+        <span class="kp-sub">MA60 附近</span>
+      </div>
+      <div class="kp-item">
+        <div class="kp-dot" style="background:var(--orange)"></div>
+        <span class="kp-lbl">停損參考</span>
+        <span class="kp-val" style="color:var(--orange)">$${formatMoney(stopP)}</span>
+        <span class="kp-sub">-${stopPct.toFixed(1)}%</span>
+      </div>
+      ${fairOk ? `
+      <div class="kp-item">
+        <div class="kp-dot" style="background:var(--yellow)"></div>
+        <span class="kp-lbl">合理價</span>
+        <span class="kp-val" style="color:var(--yellow)">$${formatMoney(fairBase)}</span>
+        <span class="kp-sub">${fairGapPct>=0?'+':''}${fairGapPct.toFixed(1)}%</span>
+      </div>` : ''}
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">建議買法</div>
+        <div style="font-size:12px;color:var(--purple);font-weight:600">分批進場</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">首次 50%，確認後加碼</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px">${holdDays}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sc-paths">
+    <div class="sc-path sc-path-up">
+      <div class="sc-path-num">① 上漲路徑</div>
+      <div class="sc-path-desc">${p1text}</div>
+    </div>
+    <div class="sc-path sc-path-pull">
+      <div class="sc-path-num">② 回檔路徑</div>
+      <div class="sc-path-desc">${p2text}</div>
+    </div>
+    <div class="sc-path sc-path-weak">
+      <div class="sc-path-num">③ 轉弱路徑</div>
+      <div class="sc-path-desc">${p3text}</div>
+    </div>
+  </div>
+
+  <div class="sc-ratings">
+    <div class="sc-ratings-table">
+      <div class="sc-ratings-row">
+        <span class="sc-ratings-lbl">股價趨勢</span>
+        <span class="sc-ratings-quality">${structLabel}</span>
+        ${starsHtml(structScore, 100)}
+      </div>
+      <div class="sc-ratings-row">
+        <span class="sc-ratings-lbl">技術面</span>
+        <span class="sc-ratings-quality">${rsi>=70?'短線過熱':rsi>=50?'偏強':'整理中'}</span>
+        ${starsHtml(techScore, 20)}
+      </div>
+      <div class="sc-ratings-row">
+        <span class="sc-ratings-lbl">籌碼面</span>
+        <span class="sc-ratings-quality">${inst5>2?'法人積極':inst5<-2?'需觀察':'持平'}</span>
+        ${starsHtml(chipsScore, 30)}
+      </div>
+      <div class="sc-ratings-row">
+        <span class="sc-ratings-lbl">操作難度</span>
+        <span class="sc-ratings-quality">${vol20>5?'偏高':vol20>3?'中等':'偏低'}</span>
+        ${starsHtml(diffScore, 100)}
+      </div>
+    </div>
+    <div class="sc-overall-box">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-align:center">綜合評估</div>
+      <div class="sc-overall-stars">${starsHtml(buyScore, 100)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;text-align:center;line-height:1.5">${overallLabel}</div>
+    </div>
+  </div>
+
+  <div class="sc-divider"></div>
+</div>`;
 }
 
 function formatMoney(value) {

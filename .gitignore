@@ -2,6 +2,7 @@
 /bin/
 /site/
 *.class
+__pycache__/
 
 # IDE and local settings
 /.settings/
@@ -13,6 +14,7 @@
 /stock_dashboard_*.html
 
 # Local logs and scratch files
+/logs/
 /server_out.txt
 /server_err.txt
 /stdout

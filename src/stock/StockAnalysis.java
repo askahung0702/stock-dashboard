@@ -22,11 +22,22 @@ public class StockAnalysis {
     private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
 
     public static void main(String[] args) throws Exception {
+        RunContext context = new RunContext();
+        try {
+            run(args, context);
+        } catch (Throwable ex) {
+            handleRunFailure(context, ex);
+            rethrow(ex);
+        }
+    }
+
+    private static void run(String[] args, RunContext context) throws Exception {
         RunOptions runOptions = parseArgs(args);
         int maxStocks = runOptions.maxStocks;
         boolean closeStage = STAGE_CLOSE.equals(runOptions.stage) || STAGE_INTRADAY_CLOSE.equals(runOptions.stage);
         boolean stageOnly = Boolean.getBoolean("stock.analysis.stageOnly");
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
+        context.analyzer = analyzer;
         analyzer.setRunStage(runOptions.stage);
         analyzer.markRunStatus("starting", 0, "stage boot");
         String allFileName = analyzer.buildDatedFileName("stock_candidates");
@@ -44,6 +55,7 @@ public class StockAnalysis {
         String latestHistoryDashboardFileName = "history_dashboard.html";
 
         List<StockAnalysisResultVO> results = analyzer.analyze(maxStocks);
+        context.rowCount = results.size();
         analyzer.writeStageSnapshots(results);
         writeStageMarketDataSafely(analyzer, results);
         analyzer.markRunStatus("stage_snapshot_saved", results.size(), "raw and analysis saved");
@@ -108,6 +120,35 @@ public class StockAnalysis {
         } else {
             System.out.println("Mode: full TWSE + TPEX run");
         }
+    }
+
+    private static void handleRunFailure(RunContext context, Throwable ex) {
+        System.out.println("Stock analysis failed: " + ex.toString());
+        ex.printStackTrace(System.out);
+        if (context.analyzer != null) {
+            context.analyzer.markRunStatus("failed", context.rowCount, failureNote(ex));
+        }
+    }
+
+    private static String failureNote(Throwable ex) {
+        String message = ex.getMessage();
+        String note = ex.getClass().getSimpleName() + (message == null || message.length() == 0 ? "" : ": " + message);
+        return note.length() > 240 ? note.substring(0, 240) : note;
+    }
+
+    private static void rethrow(Throwable ex) throws Exception {
+        if (ex instanceof Exception) {
+            throw (Exception) ex;
+        }
+        if (ex instanceof Error) {
+            throw (Error) ex;
+        }
+        throw new RuntimeException(ex);
+    }
+
+    private static class RunContext {
+        private TaiwanStockAnalyzer analyzer;
+        private int rowCount;
     }
 
     private static RunOptions parseArgs(String[] args) {

@@ -3329,9 +3329,12 @@ public class TaiwanStockAnalyzer {
         double volatilityStopPct = Math.max(4D, Math.min(12D, volatility20Pct * 2.2D));
         double volatilityStopPrice = currentPrice * (1D - volatilityStopPct / 100D);
         double atrStopPrice = atr20 > 0D ? currentPrice - atr20 * activeScoringStrategy.stopAtrMultiplier() : 0D;
-        double stopCandidatePrice = Math.min(supportPrice, volatilityStopPrice);
+        double stopCandidatePrice;
         if (atrStopPrice > 0D) {
-            stopCandidatePrice = Math.min(stopCandidatePrice, atrStopPrice);
+            // ATR 存在時取最緊（最高價）的停損，避免 MA 支撐將停損距離拉得過寬
+            stopCandidatePrice = Math.max(atrStopPrice, Math.max(volatilityStopPrice, supportPrice));
+        } else {
+            stopCandidatePrice = Math.min(supportPrice, volatilityStopPrice);
         }
         double stopLossPrice = Math.max(currentPrice * 0.82D, stopCandidatePrice);
         double stopLossPct = currentPrice <= stopLossPrice ? 0D : (currentPrice - stopLossPrice) * 100D / currentPrice;
