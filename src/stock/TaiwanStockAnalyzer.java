@@ -2597,13 +2597,42 @@ public class TaiwanStockAnalyzer {
                 justifiedPb *= 0.94D;
             }
             double pbValue = bookValue * justifiedPb;
-            if ("growth".equals(style) && !coreValues.isEmpty()) {
+            boolean recoveryPriced = trailingEps <= 0D && (latestQuarterEpsYoYPct > 0D || averageThreeMonthRevenueYoY > 0D);
+            if (("growth".equals(style) && !coreValues.isEmpty())
+                    || (recoveryPriced && pbValue < currentPrice * 0.6D)) {
                 supportNotes.add("PB/ROE " + format(justifiedPb) + "倍僅作資產面輔助");
             } else {
                 coreValues.add(Double.valueOf(pbValue));
                 coreWeights.add(Double.valueOf(pbWeight));
                 methodNotes.add("PB/ROE " + format(justifiedPb) + "倍");
             }
+        }
+
+        if (coreValues.isEmpty() && trailingEps <= 0D
+                && (latestQuarterEpsYoYPct > 0D || averageThreeMonthRevenueYoY > 0D)) {
+            double recoveryFactor = 0.92D;
+            if (latestQuarterEpsYoYPct > 0D) {
+                recoveryFactor += Math.min(0.05D, latestQuarterEpsYoYPct / 1000D);
+            }
+            if (averageThreeMonthRevenueYoY > 0D) {
+                recoveryFactor += Math.min(0.06D, averageThreeMonthRevenueYoY * 0.004D);
+            }
+            if (financialQualityScore >= 12D) {
+                recoveryFactor += 0.04D;
+            } else if (financialQualityScore < 8D) {
+                recoveryFactor -= 0.08D;
+            }
+            if (returnOnEquityPct > 0D && returnOnEquityPct < 2D) {
+                recoveryFactor -= 0.06D;
+            }
+            if (nonOperatingRatioPct > 25D) {
+                recoveryFactor -= 0.04D;
+            }
+            recoveryFactor *= regimeDiscount;
+            recoveryFactor = NumberParser.clamp(recoveryFactor, 0.72D, 1.08D);
+            coreValues.add(Double.valueOf(currentPrice * recoveryFactor));
+            coreWeights.add(Double.valueOf(0.65D));
+            methodNotes.add("復甦期市場定價 " + format(recoveryFactor) + "倍");
         }
 
         if (coreValues.isEmpty()) {
@@ -2646,7 +2675,9 @@ public class TaiwanStockAnalyzer {
         basePrice = NumberParser.clamp(basePrice, lowPrice, highPrice);
 
         double gapPct = currentPrice > 0D ? (basePrice - currentPrice) * 100D / currentPrice : 0D;
-        String method = "growth".equals(style) ? "成長混合估值" : "stable".equals(style) ? "品質資產混合估值"
+        String method = trailingEps <= 0D && !methodNotes.isEmpty() && methodNotes.get(0).indexOf("復甦期市場定價") >= 0
+                ? "復甦期參考估值"
+                : "growth".equals(style) ? "成長混合估值" : "stable".equals(style) ? "品質資產混合估值"
                 : "cyclical".equals(style) ? "循環股混合估值" : "均衡混合估值";
         String supportText = supportNotes.isEmpty() ? "" : "；" + joinReasonNotes(supportNotes);
         String reason = "以 " + joinReasonNotes(methodNotes) + " 綜合估算" + supportText + "，合理價中位 " + format(basePrice)
