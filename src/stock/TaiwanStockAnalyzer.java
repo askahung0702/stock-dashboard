@@ -2532,9 +2532,10 @@ public class TaiwanStockAnalyzer {
             return FairValueProfile.empty();
         }
 
-        List<Double> values = new ArrayList<Double>();
-        List<Double> weights = new ArrayList<Double>();
+        List<Double> coreValues = new ArrayList<Double>();
+        List<Double> coreWeights = new ArrayList<Double>();
         List<String> methodNotes = new ArrayList<String>();
+        List<String> supportNotes = new ArrayList<String>();
 
         String style = resolveFairValueStyle(industry, latestQuarterEpsYoYPct, averageThreeMonthRevenueYoY, peg,
                 returnOnEquityPct, bookValue);
@@ -2547,12 +2548,11 @@ public class TaiwanStockAnalyzer {
             regimeDiscount = 0.97D;
         }
 
-        double peerWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.35D : "cyclical".equals(style) ? 0.55D
+        double peerWeight = "growth".equals(style) ? 0.50D : "stable".equals(style) ? 0.40D : "cyclical".equals(style) ? 0.55D
                 : 0.4D;
-        double pegWeight = "growth".equals(style) ? 0.4D : "stable".equals(style) ? 0.15D : "cyclical".equals(style) ? 0.1D
+        double pegWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.20D : "cyclical".equals(style) ? 0.1D
                 : 0.25D;
-        double pbWeight = "growth".equals(style) ? 0.15D : "stable".equals(style) ? 0.5D : "cyclical".equals(style) ? 0.35D
-                : 0.35D;
+        double pbWeight = "stable".equals(style) ? 0.40D : "cyclical".equals(style) ? 0.35D : 0.25D;
 
         if (trailingEps > 0D && peerAveragePe > 0D) {
             double peerFactor = 1D;
@@ -2571,8 +2571,8 @@ public class TaiwanStockAnalyzer {
             }
             double targetPe = NumberParser.clamp(peerAveragePe * peerFactor * regimeDiscount, 8D, 36D);
             double peerValue = trailingEps * targetPe;
-            values.add(Double.valueOf(peerValue));
-            weights.add(Double.valueOf(peerWeight));
+            coreValues.add(Double.valueOf(peerValue));
+            coreWeights.add(Double.valueOf(peerWeight));
             methodNotes.add("同業PE " + format(targetPe) + "倍");
         }
 
@@ -2585,8 +2585,8 @@ public class TaiwanStockAnalyzer {
             targetPeg = NumberParser.clamp(targetPeg, 0.6D, 1.05D);
             double targetPe = NumberParser.clamp(latestQuarterEpsYoYPct * targetPeg, 10D, 40D);
             double pegValue = trailingEps * targetPe;
-            values.add(Double.valueOf(pegValue));
-            weights.add(Double.valueOf(pegWeight));
+            coreValues.add(Double.valueOf(pegValue));
+            coreWeights.add(Double.valueOf(pegWeight));
             methodNotes.add("PEG 推估 " + format(targetPe) + "倍");
         }
 
@@ -2597,12 +2597,16 @@ public class TaiwanStockAnalyzer {
                 justifiedPb *= 0.94D;
             }
             double pbValue = bookValue * justifiedPb;
-            values.add(Double.valueOf(pbValue));
-            weights.add(Double.valueOf(pbWeight));
-            methodNotes.add("PB/ROE " + format(justifiedPb) + "倍");
+            if ("growth".equals(style) && !coreValues.isEmpty()) {
+                supportNotes.add("PB/ROE " + format(justifiedPb) + "倍僅作資產面輔助");
+            } else {
+                coreValues.add(Double.valueOf(pbValue));
+                coreWeights.add(Double.valueOf(pbWeight));
+                methodNotes.add("PB/ROE " + format(justifiedPb) + "倍");
+            }
         }
 
-        if (values.isEmpty()) {
+        if (coreValues.isEmpty()) {
             return FairValueProfile.empty();
         }
 
@@ -2610,18 +2614,21 @@ public class TaiwanStockAnalyzer {
         double weightedValueSum = 0D;
         double minValue = Double.MAX_VALUE;
         double maxValue = 0D;
-        for (int i = 0; i < values.size(); i++) {
-            double value = values.get(i).doubleValue();
-            double weight = weights.get(i).doubleValue();
+        for (int i = 0; i < coreValues.size(); i++) {
+            double value = coreValues.get(i).doubleValue();
+            double weight = coreWeights.get(i).doubleValue();
             weightSum += weight;
             weightedValueSum += value * weight;
             minValue = Math.min(minValue, value);
             maxValue = Math.max(maxValue, value);
         }
-        double basePrice = weightSum > 0D ? weightedValueSum / weightSum : values.get(0).doubleValue();
-        double confidence = 40D + Math.min(24D, values.size() * 8D) + Math.min(18D, dataConfidence * 0.18D)
+        double basePrice = weightSum > 0D ? weightedValueSum / weightSum : coreValues.get(0).doubleValue();
+        double confidence = 40D + Math.min(24D, coreValues.size() * 8D) + Math.min(18D, dataConfidence * 0.18D)
                 + Math.min(12D, financialQualityScore * 0.55D) + Math.min(8D, valuationScore * 0.35D)
                 + (selectionQualified ? 4D : 0D);
+        if (!supportNotes.isEmpty()) {
+            confidence += 3D;
+        }
         if (nonOperatingRatioPct > 25D) {
             confidence -= 6D;
         }
@@ -2630,7 +2637,7 @@ public class TaiwanStockAnalyzer {
         }
         confidence = NumberParser.clamp(confidence, 35D, 92D);
 
-        double bandPct = Math.max(8D, Math.min(24D, 22D - confidence * 0.12D + (3 - values.size()) * 2.5D));
+        double bandPct = Math.max(8D, Math.min(24D, 22D - confidence * 0.12D + (3 - coreValues.size()) * 2.5D));
         double lowPrice = basePrice * (1D - bandPct / 100D);
         double highPrice = basePrice * (1D + bandPct / 100D);
         lowPrice = Math.min(lowPrice, minValue * 0.98D);
@@ -2641,7 +2648,8 @@ public class TaiwanStockAnalyzer {
         double gapPct = currentPrice > 0D ? (basePrice - currentPrice) * 100D / currentPrice : 0D;
         String method = "growth".equals(style) ? "成長混合估值" : "stable".equals(style) ? "品質資產混合估值"
                 : "cyclical".equals(style) ? "循環股混合估值" : "均衡混合估值";
-        String reason = "以 " + joinReasonNotes(methodNotes) + " 綜合估算，合理價中位 " + format(basePrice)
+        String supportText = supportNotes.isEmpty() ? "" : "；" + joinReasonNotes(supportNotes);
+        String reason = "以 " + joinReasonNotes(methodNotes) + " 綜合估算" + supportText + "，合理價中位 " + format(basePrice)
                 + "，相對現價 " + formatSigned(gapPct) + "%，信心 " + format(confidence) + " 分";
         return new FairValueProfile(lowPrice, basePrice, highPrice, confidence, method, reason);
     }
