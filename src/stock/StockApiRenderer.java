@@ -16,9 +16,9 @@ import stock.vo.StockAnalysisResultVO;
 
 public class StockApiRenderer {
 
-    private static final double LIKELY_THRESHOLD = 72D;
+    private static final double LIKELY_THRESHOLD = 78D;
     private static final double WATCHLIST_THRESHOLD = 58D;
-    private static final double MIN_LIKELY_FINANCIAL_SCORE = 12D;
+    private static final double MIN_LIKELY_FINANCIAL_SCORE = 14D;
     private static final double LIKELY_MIN_VOLUME_RATIO = 0.8D;
     private static final double LIKELY_MAX_VOLUME_RATIO = 2.5D;
 
@@ -583,6 +583,7 @@ public class StockApiRenderer {
         obj.put("hardExclude",                     Boolean.valueOf(row.hardExclude));
         obj.put("hardExcludeReason",               row.hardExcludeReason);
         obj.put("dataQualityGrade",                row.dataQualityGrade);
+        obj.put("coreConditionCount",              Long.valueOf(row.coreConditionCount));
         obj.put("winratePriorityScore",            Double.valueOf(row.winratePriorityScore));
         obj.put("expectedReturnScore",             Double.valueOf(row.expectedReturnScore));
         obj.put("maxDrawdownPenalty",              Double.valueOf(row.maxDrawdownPenalty));
@@ -679,6 +680,7 @@ public class StockApiRenderer {
     private boolean isLikely(SnapshotRow row) {
         return selectionScoreOf(row) >= LIKELY_THRESHOLD && row.selectionQualified
                 && row.financialQualityScore >= MIN_LIKELY_FINANCIAL_SCORE
+                && (row.coreConditionCount == 0 || row.coreConditionCount >= 8)
                 && row.volumeRatio >= LIKELY_MIN_VOLUME_RATIO && row.volumeRatio <= LIKELY_MAX_VOLUME_RATIO;
     }
 

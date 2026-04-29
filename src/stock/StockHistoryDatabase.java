@@ -30,10 +30,10 @@ import stock.vo.StockAnalysisResultVO;
 public class StockHistoryDatabase {
 
     private static final long DATABASE_VERSION = 9L;
-    private static final double LIKELY_THRESHOLD = 72D;
+    private static final double LIKELY_THRESHOLD = 78D;
     private static final double MIN_LIQUIDITY_SCORE = 4D;
     private static final double MIN_SELECTION_FINANCIAL_SCORE = 8D;
-    private static final double MIN_LIKELY_FINANCIAL_SCORE = 12D;
+    private static final double MIN_LIKELY_FINANCIAL_SCORE = 14D;
     private static final double LIKELY_MIN_VOLUME_RATIO = 0.8D;
     private static final double LIKELY_MAX_VOLUME_RATIO = 2.5D;
     private static final String HISTORY_DIRECTORY_NAME = "history";
@@ -524,6 +524,7 @@ public class StockHistoryDatabase {
         row.hardExclude = booleanValue(rowObject.get("hardExclude"));
         row.hardExcludeReason = safeText(rowObject.get("hardExcludeReason"));
         row.dataQualityGrade = safeText(rowObject.get("dataQualityGrade"));
+        row.coreConditionCount = (int) numberValue(rowObject.get("coreConditionCount"));
         row.winratePriorityScore = numberValue(rowObject.get("winratePriorityScore"));
         row.expectedReturnScore = numberValue(rowObject.get("expectedReturnScore"));
         row.maxDrawdownPenalty = numberValue(rowObject.get("maxDrawdownPenalty"));
@@ -706,6 +707,7 @@ public class StockHistoryDatabase {
         row.hardExclude = result.isHardExclude();
         row.hardExcludeReason = safeText(result.getHardExcludeReason());
         row.dataQualityGrade = safeText(result.getDataQualityGrade());
+        row.coreConditionCount = result.getCoreConditionCount();
         row.winratePriorityScore = safeNumber(result.getWinratePriorityScore());
         row.expectedReturnScore = safeNumber(result.getExpectedReturnScore());
         row.maxDrawdownPenalty = safeNumber(result.getMaxDrawdownPenalty());
@@ -870,6 +872,7 @@ public class StockHistoryDatabase {
         rowObject.put("hardExclude", Boolean.valueOf(row.hardExclude));
         rowObject.put("hardExcludeReason", safeText(row.hardExcludeReason));
         rowObject.put("dataQualityGrade", safeText(row.dataQualityGrade));
+        rowObject.put("coreConditionCount", Integer.valueOf(row.coreConditionCount));
         rowObject.put("winratePriorityScore", Double.valueOf(safeNumber(row.winratePriorityScore)));
         rowObject.put("expectedReturnScore", Double.valueOf(safeNumber(row.expectedReturnScore)));
         rowObject.put("maxDrawdownPenalty", Double.valueOf(safeNumber(row.maxDrawdownPenalty)));
@@ -1004,6 +1007,7 @@ public class StockHistoryDatabase {
                         || "true".equalsIgnoreCase(valueAt(fields, indexes, "hard_exclude"));
                 row.hardExcludeReason = valueAt(fields, indexes, "hard_exclude_reason");
                 row.dataQualityGrade = valueAt(fields, indexes, "data_quality_grade");
+                row.coreConditionCount = (int) NumberParser.parseDouble(valueAt(fields, indexes, "core_count"));
                 row.winratePriorityScore = NumberParser.parseDouble(valueAt(fields, indexes, "winrate_priority_score"));
                 row.expectedReturnScore = NumberParser.parseDouble(valueAt(fields, indexes, "expected_return_score"));
                 row.maxDrawdownPenalty = NumberParser.parseDouble(valueAt(fields, indexes, "max_drawdown_penalty"));
@@ -1142,6 +1146,7 @@ public class StockHistoryDatabase {
     private boolean isLikelyCandidate(StockAnalysisResultVO result) {
         return result.getSelectionScore() >= LIKELY_THRESHOLD && result.isSelectionQualified()
                 && result.getFinancialQualityScore() >= MIN_LIKELY_FINANCIAL_SCORE
+                && (result.getCoreConditionCount() == 0 || result.getCoreConditionCount() >= 8)
                 && isHealthyVolumeRatio(result.getVolumeRatio());
     }
 
@@ -1152,6 +1157,7 @@ public class StockHistoryDatabase {
     private boolean isLikelyCandidate(SnapshotRow row) {
         return row.selectionScore >= LIKELY_THRESHOLD && isSelectionQualified(row)
                 && row.financialQualityScore >= MIN_LIKELY_FINANCIAL_SCORE
+                && (row.coreConditionCount == 0 || row.coreConditionCount >= 8)
                 && isHealthyVolumeRatio(row.volumeRatio);
     }
 
@@ -1439,6 +1445,7 @@ public class StockHistoryDatabase {
         public boolean hardExclude;
         public String hardExcludeReason = "";
         public String dataQualityGrade = "";
+        public int coreConditionCount;
         public double winratePriorityScore;
         public double expectedReturnScore;
         public double maxDrawdownPenalty;

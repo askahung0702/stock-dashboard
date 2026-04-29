@@ -177,6 +177,7 @@ public class StockAnalysisResultVO {
     private boolean hardExclude;
     private String hardExcludeReason;
     private String dataQualityGrade;
+    private int coreConditionCount;
     private double winratePriorityScore;
     private double expectedReturnScore;
     private double maxDrawdownPenalty;
@@ -1560,6 +1561,14 @@ public class StockAnalysisResultVO {
 
     public void setDataQualityGrade(String dataQualityGrade) {
         this.dataQualityGrade = dataQualityGrade;
+    }
+
+    public int getCoreConditionCount() {
+        return coreConditionCount;
+    }
+
+    public void setCoreConditionCount(int coreConditionCount) {
+        this.coreConditionCount = coreConditionCount;
     }
 
     public double getWinratePriorityScore() {

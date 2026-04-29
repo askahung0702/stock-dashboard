@@ -313,6 +313,7 @@ public class StockDashboardWriter {
             result.setHardExclude(point.hardExclude);
             result.setHardExcludeReason(point.hardExcludeReason);
             result.setDataQualityGrade(point.dataQualityGrade);
+            result.setCoreConditionCount(point.coreConditionCount);
             result.setWinratePriorityScore(point.winratePriorityScore);
             result.setExpectedReturnScore(point.expectedReturnScore);
             result.setMaxDrawdownPenalty(point.maxDrawdownPenalty);
@@ -955,6 +956,7 @@ public class StockDashboardWriter {
             point.hardExclude = row.hardExclude;
             point.hardExcludeReason = row.hardExcludeReason;
             point.dataQualityGrade = row.dataQualityGrade;
+            point.coreConditionCount = row.coreConditionCount;
             point.winratePriorityScore = row.winratePriorityScore;
             point.expectedReturnScore = row.expectedReturnScore;
             point.maxDrawdownPenalty = row.maxDrawdownPenalty;
@@ -1104,6 +1106,7 @@ public class StockDashboardWriter {
                         || "true".equalsIgnoreCase(valueAt(fields, indexes, "hard_exclude"));
                 point.hardExcludeReason = valueAt(fields, indexes, "hard_exclude_reason");
                 point.dataQualityGrade = valueAt(fields, indexes, "data_quality_grade");
+                point.coreConditionCount = (int) NumberParser.parseDouble(valueAt(fields, indexes, "core_count"));
                 point.winratePriorityScore = NumberParser.parseDouble(valueAt(fields, indexes, "winrate_priority_score"));
                 point.expectedReturnScore = NumberParser.parseDouble(valueAt(fields, indexes, "expected_return_score"));
                 point.maxDrawdownPenalty = NumberParser.parseDouble(valueAt(fields, indexes, "max_drawdown_penalty"));
@@ -1210,6 +1213,7 @@ public class StockDashboardWriter {
             point.hardExclude = result.isHardExclude();
             point.hardExcludeReason = result.getHardExcludeReason();
             point.dataQualityGrade = result.getDataQualityGrade();
+            point.coreConditionCount = result.getCoreConditionCount();
             point.winratePriorityScore = result.getWinratePriorityScore();
             point.expectedReturnScore = result.getExpectedReturnScore();
             point.maxDrawdownPenalty = result.getMaxDrawdownPenalty();
@@ -1462,7 +1466,7 @@ public class StockDashboardWriter {
     private boolean isLikely(double selectionScore, double liquidityScore, double financialQualityScore,
             double volumeRatio, boolean selectionQualified) {
         return selectionScore >= likelyThreshold && selectionQualified && liquidityScore >= LIQUIDITY_GATE
-                && financialQualityScore >= 12D && volumeRatio >= 0.8D && volumeRatio <= 2.5D;
+                && financialQualityScore >= 14D && volumeRatio >= 0.8D && volumeRatio <= 2.5D;
     }
 
     private boolean isSelectionQualified(StockAnalysisResultVO result) {
@@ -1471,7 +1475,8 @@ public class StockDashboardWriter {
 
     private boolean isLikelyCandidate(StockAnalysisResultVO result) {
         return isLikely(result.getSelectionScore(), result.getLiquidityScore(), result.getFinancialQualityScore(),
-                result.getVolumeRatio(), result.isSelectionQualified());
+                result.getVolumeRatio(), result.isSelectionQualified())
+                && (result.getCoreConditionCount() == 0 || result.getCoreConditionCount() >= 8);
     }
 
     private boolean hasVolumeSurge(StockAnalysisResultVO result) {
@@ -1793,6 +1798,7 @@ public class StockDashboardWriter {
         private boolean hardExclude;
         private String hardExcludeReason;
         private String dataQualityGrade;
+        private int coreConditionCount;
         private double winratePriorityScore;
         private double expectedReturnScore;
         private double maxDrawdownPenalty;

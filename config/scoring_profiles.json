@@ -2,7 +2,7 @@
   "qualification": {
     "minLiquidityScore": 4.0,
     "minFinancialQualityScore": 8.0,
-    "likelyMinFinancialQualityScore": 12.0,
+    "likelyMinFinancialQualityScore": 14.0,
     "healthyVolumeMin": 0.8,
     "healthyVolumeMax": 2.5,
     "minDataConfidence": 65.0
@@ -26,9 +26,9 @@
       "buyNewsRiskPenaltyMultiplier": 0.15,
       "stopAtrMultiplier": 2.0,
       "trailingAtrMultiplier": 2.8,
-      "buyPointThreshold": 75.0,
-      "likelySelectionThreshold": 72.0,
-      "likelyMinFinancialQualityScore": 12.0
+      "buyPointThreshold": 82.0,
+      "likelySelectionThreshold": 78.0,
+      "likelyMinFinancialQualityScore": 14.0
     },
     "RANGE_BOUND": {
       "selectionQualityWeight": 0.45,
@@ -48,9 +48,9 @@
       "buyNewsRiskPenaltyMultiplier": 0.18,
       "stopAtrMultiplier": 1.7,
       "trailingAtrMultiplier": 2.4,
-      "buyPointThreshold": 75.0,
-      "likelySelectionThreshold": 72.0,
-      "likelyMinFinancialQualityScore": 12.0
+      "buyPointThreshold": 82.0,
+      "likelySelectionThreshold": 78.0,
+      "likelyMinFinancialQualityScore": 14.0
     },
     "BEAR_CORRECTION": {
       "selectionQualityWeight": 0.56,
@@ -70,9 +70,9 @@
       "buyNewsRiskPenaltyMultiplier": 0.22,
       "stopAtrMultiplier": 1.45,
       "trailingAtrMultiplier": 2.1,
-      "buyPointThreshold": 78.0,
-      "likelySelectionThreshold": 76.0,
-      "likelyMinFinancialQualityScore": 13.0
+      "buyPointThreshold": 82.0,
+      "likelySelectionThreshold": 78.0,
+      "likelyMinFinancialQualityScore": 14.0
     },
     "PANIC_SELLOFF": {
       "selectionQualityWeight": 0.60,

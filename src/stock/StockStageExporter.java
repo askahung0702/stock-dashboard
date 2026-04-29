@@ -176,6 +176,7 @@ public class StockStageExporter {
         t.buyPointReason = s.buyPointReason; t.dataConfidenceReason = s.dataConfidenceReason; t.signalType = s.signalType;
         t.signalHorizonDays = s.signalHorizonDays; t.entryRule = s.entryRule; t.exitRule = s.exitRule; t.validationMode = s.validationMode;
         t.hardExclude = s.hardExclude; t.hardExcludeReason = s.hardExcludeReason; t.dataQualityGrade = s.dataQualityGrade;
+        t.coreConditionCount = s.coreConditionCount;
         t.winratePriorityScore = s.winratePriorityScore; t.expectedReturnScore = s.expectedReturnScore; t.maxDrawdownPenalty = s.maxDrawdownPenalty;
         t.backtestCohort = s.backtestCohort; t.postClosePriorityScore = s.postClosePriorityScore; t.postCloseCategory = s.postCloseCategory;
         t.postCloseAction = s.postCloseAction; t.postCloseReason = s.postCloseReason; t.snapshotStage = s.snapshotStage;
