@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260423",
-  "latest_track_date": "20260501",
+  "latest_track_date": "20260502",
   "stock_count": 52,
   "groups": {
     "all": [
@@ -55,6 +55,14 @@
       {
         "track_date": "20260501",
         "days_since_buy": 8,
+        "stock_count": 52,
+        "avg_return_pct": 0.39,
+        "median_return_pct": 0.39,
+        "win_rate_pct": 53.85
+      },
+      {
+        "track_date": "20260502",
+        "days_since_buy": 9,
         "stock_count": 52,
         "avg_return_pct": 0.39,
         "median_return_pct": 0.39,
@@ -117,6 +125,14 @@
         "avg_return_pct": -1.26,
         "median_return_pct": 0.76,
         "win_rate_pct": 66.67
+      },
+      {
+        "track_date": "20260502",
+        "days_since_buy": 9,
+        "stock_count": 12,
+        "avg_return_pct": -1.26,
+        "median_return_pct": 0.76,
+        "win_rate_pct": 66.67
       }
     ],
     "continuation_focus": [
@@ -171,6 +187,14 @@
       {
         "track_date": "20260501",
         "days_since_buy": 8,
+        "stock_count": 11,
+        "avg_return_pct": -0.3,
+        "median_return_pct": 0.84,
+        "win_rate_pct": 72.73
+      },
+      {
+        "track_date": "20260502",
+        "days_since_buy": 9,
         "stock_count": 11,
         "avg_return_pct": -0.3,
         "median_return_pct": 0.84,
@@ -233,6 +257,14 @@
         "avg_return_pct": 0.88,
         "median_return_pct": 0.01,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260502",
+        "days_since_buy": 9,
+        "stock_count": 40,
+        "avg_return_pct": 0.88,
+        "median_return_pct": 0.01,
+        "win_rate_pct": 50.0
       }
     ],
     "early_focus": [
@@ -287,6 +319,14 @@
       {
         "track_date": "20260501",
         "days_since_buy": 8,
+        "stock_count": 30,
+        "avg_return_pct": 1.0,
+        "median_return_pct": 0.01,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260502",
+        "days_since_buy": 9,
         "stock_count": 30,
         "avg_return_pct": 1.0,
         "median_return_pct": 0.01,
