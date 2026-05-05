@@ -506,6 +506,7 @@ public class StockHistoryDatabase {
         row.eligibilityReason = safeText(rowObject.get("eligibilityReason"));
         row.primaryTheme = safeText(rowObject.get("primaryTheme"));
         row.themeTags = safeText(rowObject.get("themeTags"));
+        row.launchTags = safeText(rowObject.get("launchTags"));
         row.newsSummary = safeText(rowObject.get("newsSummary"));
         if (row.newsDigest.length() == 0) {
             row.newsDigest = row.newsSummary;
@@ -679,6 +680,7 @@ public class StockHistoryDatabase {
         row.eligibilityReason = safeText(result.getEligibilityReason());
         row.primaryTheme = safeText(result.getPrimaryTheme());
         row.themeTags = safeText(result.getThemeTags());
+        row.launchTags = safeText(result.getLaunchTags());
         row.newsSummary = safeText(result.getNewsSummary());
         row.newsDigest = safeText(result.getNewsDigest());
         row.newsSourceSummary = safeText(result.getNewsSourceSummary());
@@ -844,6 +846,7 @@ public class StockHistoryDatabase {
         rowObject.put("eligibilityReason", safeText(row.eligibilityReason));
         rowObject.put("primaryTheme", safeText(row.primaryTheme));
         rowObject.put("themeTags", safeText(row.themeTags));
+        rowObject.put("launchTags", safeText(row.launchTags));
         rowObject.put("newsSummary", safeText(row.newsSummary));
         rowObject.put("newsDigest", safeText(row.newsDigest));
         rowObject.put("newsSourceSummary", safeText(row.newsSourceSummary));
@@ -993,6 +996,7 @@ public class StockHistoryDatabase {
                 row.eligibilityReason = valueAt(fields, indexes, "eligibility_reason");
                 row.primaryTheme = valueAt(fields, indexes, "primary_theme");
                 row.themeTags = valueAt(fields, indexes, "theme_tags");
+                row.launchTags = valueAt(fields, indexes, "launch_tags");
                 row.structureLabel = valueAt(fields, indexes, "structure_label");
                 row.turnaroundLabel = valueAt(fields, indexes, "turnaround_label");
                 row.turnaroundReason = valueAt(fields, indexes, "turnaround_reason");
@@ -1415,6 +1419,7 @@ public class StockHistoryDatabase {
         public String eligibilityReason = "";
         public String primaryTheme = "";
         public String themeTags = "";
+        public String launchTags = "";
         public String newsSummary = "";
         public String newsDigest = "";
         public String newsSourceSummary = "";

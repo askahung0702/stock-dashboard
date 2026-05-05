@@ -8,7 +8,9 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -79,6 +81,7 @@ public class TaiwanStockAnalyzer {
     private static final boolean CLOSE_DEFER_EVENT_RISK = parseBooleanProperty("stock.close.deferEventRisk", true);
     private static final ZoneId TAIPEI_ZONE = ZoneId.of("Asia/Taipei");
     private static final DateTimeFormatter DATE_STAMP_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+    private static final LocalTime NIGHT_RUN_TRADING_DATE_CUTOFF = LocalTime.of(5, 0);
     private static final String DAILY_SNAPSHOT_DIRECTORY_NAME = "daily_snapshots";
     private static final String ANALYSIS_VERSION = "stage-cache-v1";
     private static final String[] POSITIVE_NEWS_KEYWORDS = { "營收", "訂單", "擴產", "漲價", "法說", "合作", "量產", "受惠",
@@ -101,6 +104,8 @@ public class TaiwanStockAnalyzer {
     private final MarketThemeRadar marketThemeRadar = new MarketThemeRadar();
     private final NewsCompanySummarizer newsCompanySummarizer = new NewsCompanySummarizer();
     private final LowFrequencyDataCache lowFrequencyDataCache = LowFrequencyDataCache.loadDefault();
+    private final FinancialDataProvider finMindFinancialProvider = new FinMindFinancialProvider();
+    private final FinancialDataProvider mopsFinancialProvider = new MopsFinancialProvider();
     private final ScoringConfig scoringConfig = ScoringConfig.loadDefault();
     private MarketThemeNewsAnalyzer.ReferenceBundle lastMarketThemeReferenceBundle = MarketThemeNewsAnalyzer.ReferenceBundle.empty();
     private String lastNewsOnlyReferenceDate = "";
@@ -242,7 +247,7 @@ public class TaiwanStockAnalyzer {
                 new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8")));
         writer.write('\uFEFF');
         writer.println(
-                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,company_summary,recent_news_brief,transformation_hint,practical_advice,advice_confidence,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,fair_value_low,fair_value_base,fair_value_high,fair_value_confidence,fair_value_method,fair_value_reason,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,core_count,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,snapshot_stage,tech_ready,market_ready,institutional_ready,broker_ready,financial_ready,news_ready,analysis_version,source_updated_at,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
+                "code,name,market,industry,score,raw_score,selection_score,momentum_score,quality_score,sector_score,theme_score,primary_theme,theme_tags,launch_tags,trend_persistence_score,trend_persistence_days,news_score,news_risk_score,relative_strength_score,industry_return_strength,industry_volume_strength,industry_flow_strength,event_direction,event_confidence,event_freshness_days,event_type_summary,news_summary,news_digest,news_source_summary,latest_news_published_hint,news_source_credibility_score,news_freshness_score,news_source_count,news_official_source_count,news_media_source_count,company_summary,recent_news_brief,transformation_hint,practical_advice,advice_confidence,structure_score,structure_label,risk_reward_score,risk_reward_ratio,turnaround_score,revenue_growth_signal_score,earnings_turnaround_signal_score,profitability_turnaround_signal_score,one_off_risk_score,turnaround_label,turnaround_reason,suggested_stop_price,suggested_stop_pct,suggested_target_price,fair_value_low,fair_value_base,fair_value_high,fair_value_confidence,fair_value_method,fair_value_reason,upside_potential_pct,buy_point_score,buy_point_label,buy_point_reason,signal_type,signal_horizon_days,entry_rule,exit_rule,validation_mode,hard_exclude,hard_exclude_reason,data_quality_grade,core_count,winrate_priority_score,expected_return_score,max_drawdown_penalty,backtest_cohort,post_close_priority_score,post_close_category,post_close_action,post_close_reason,data_confidence,data_confidence_reason,selection_qualified,eligibility_reason,revenue_score,chips_score,liquidity_score,valuation_score,technical_score,financial_quality_score,event_risk_penalty,current_price,latest_revenue_yoy_pct,avg_3m_revenue_yoy_pct,accumulated_revenue_yoy_pct,positive_revenue_months,latest_institutional_net_lots,latest_institutional_net_ratio_pct,five_day_institutional_net_lots,five_day_institutional_net_ratio_pct,latest_foreign_net_lots,broker_net_lots,broker_net_ratio_pct,snapshot_stage,tech_ready,market_ready,institutional_ready,broker_ready,financial_ready,news_ready,analysis_version,source_updated_at,trailing_eps,trailing_pe,peer_average_pe,latest_quarter_eps,latest_quarter_eps_yoy_pct,positive_eps_quarters,latest_operating_cash_flow,latest_free_cash_flow,positive_operating_cash_flow_quarters,positive_free_cash_flow_quarters,ma18,ma20,ma54,ma60,ma120,return_18d_pct,return_20d_pct,return_54d_pct,return_60d_pct,volume_ratio,avg_lots_20,avg_trade_value_20_billion,volatility_20_pct,drawdown_from_high60_pct,gross_margin_pct,operating_margin_pct,roa_pct,roe_pct,debt_ratio_pct,current_ratio,non_operating_ratio_pct,note,score_reason,revenue_reason,chips_reason,liquidity_reason,valuation_reason,technical_reason,financial_quality_reason,event_risk_reason");
 
         for (StockAnalysisResultVO result : results) {
             writer.println(csv(result.getStock().getCode()) + "," + csv(result.getStock().getName()) + ","
@@ -251,7 +256,7 @@ public class TaiwanStockAnalyzer {
                     + format(result.getSelectionScore()) + "," + format(result.getMomentumScore()) + ","
                     + format(result.getQualityScore()) + "," + format(result.getSectorScore()) + ","
                     + format(result.getThemeScore()) + "," + csv(result.getPrimaryTheme()) + ","
-                    + csv(result.getThemeTags()) + ","
+                    + csv(result.getThemeTags()) + "," + csv(result.getLaunchTags()) + ","
                     + format(result.getTrendPersistenceScore()) + "," + result.getTrendPersistenceDays() + ","
                     + format(result.getNewsScore()) + "," + format(result.getNewsRiskScore()) + ","
                     + format(result.getRelativeStrengthScore()) + ","
@@ -522,7 +527,18 @@ public class TaiwanStockAnalyzer {
     }
 
     public String currentDateStamp() {
-        return LocalDate.now(TAIPEI_ZONE).format(DATE_STAMP_FORMATTER);
+        return resolveRunTradingDate().format(DATE_STAMP_FORMATTER);
+    }
+
+    private LocalDate resolveRunTradingDate() {
+        LocalDate date = LocalDate.now(TAIPEI_ZONE);
+        if (LocalTime.now(TAIPEI_ZONE).isBefore(NIGHT_RUN_TRADING_DATE_CUTOFF)) {
+            date = date.minusDays(1);
+        }
+        while (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            date = date.minusDays(1);
+        }
+        return date;
     }
 
     public String buildDatedFileName(String prefix) {
@@ -1503,6 +1519,33 @@ public class TaiwanStockAnalyzer {
                         return yahooService.fetchNewsSignal(stock);
                     }
                 }, new NewsSignalVO());
+        String revenueSourceName = !revenues.isEmpty() ? "Yahoo" : cachedSource(cacheEntry, true);
+        String financialSourceName = hasAnyFinancialRecords(epsRecords, incomeRecords, balanceRecords, cashFlowRecords)
+                ? "Yahoo" : cachedSource(cacheEntry, false);
+        if (allowFinancialFetch && shouldFetchFinancialSupplement(cacheEntry, revenues, epsRecords, incomeRecords,
+                balanceRecords, cashFlowRecords, newsSignal)) {
+            FinancialDataBundle supplement = fetchFinancialSupplement(stock);
+            String currentRevenuePeriod = !revenues.isEmpty() ? revenues.get(0).getPeriod()
+                    : cacheEntry == null ? "" : emptyIfBlank(cacheEntry.latestRevenuePeriod, "");
+            String currentFinancialPeriod = resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords,
+                    cashFlowRecords);
+            if (currentFinancialPeriod.length() == 0 && cacheEntry != null) {
+                currentFinancialPeriod = emptyIfBlank(cacheEntry.latestFinancialPeriod, "");
+            }
+            if (supplement.hasRevenueData() && isNewerMonthPeriod(supplement.latestRevenuePeriod(), currentRevenuePeriod)) {
+                revenues = supplement.getRevenues();
+                revenueSourceName = supplement.getSourceName();
+            }
+            if (hasCompleteFinancialSupplement(supplement)
+                    && (currentFinancialPeriod.length() == 0
+                            || isNewerQuarterPeriod(supplement.latestFinancialPeriod(), currentFinancialPeriod))) {
+                epsRecords = supplement.getEpsRecords();
+                incomeRecords = supplement.getIncomeRecords();
+                balanceRecords = supplement.getBalanceRecords();
+                cashFlowRecords = supplement.getCashFlowRecords();
+                financialSourceName = supplement.getSourceName();
+            }
+        }
 
         if ((revenues.isEmpty() && !hasRevenueCache) || (!reuseCloseRaw && !deferChips && institutionalDaily.isEmpty())) {
             throw new Exception("missing core Yahoo data");
@@ -1515,9 +1558,9 @@ public class TaiwanStockAnalyzer {
         result.setBrokerSummary(brokerSummary);
 
         fillMetrics(result, epsRecords, cashFlowRecords, technical, profile, incomeRecords, balanceRecords, eventRisk,
-                newsSignal, cacheEntry, stagedRawRow);
+                newsSignal, cacheEntry, stagedRawRow, revenueSourceName, financialSourceName);
         updateLowFrequencyCache(stock, cacheEntry, result, profile, revenues, epsRecords, incomeRecords, balanceRecords,
-                cashFlowRecords);
+                cashFlowRecords, revenueSourceName, financialSourceName);
         return result;
     }
 
@@ -1525,7 +1568,7 @@ public class TaiwanStockAnalyzer {
             List<CashFlowRecordVO> cashFlowRecords, TechnicalSnapshotVO technical, ProfileSnapshotVO profile,
             List<IncomeStatementRecordVO> incomeRecords, List<BalanceSheetRecordVO> balanceRecords, EventRiskVO eventRisk,
             NewsSignalVO newsSignal, LowFrequencyDataCache.Entry cacheEntry,
-            StockHistoryDatabase.SnapshotRow stagedRawRow) {
+            StockHistoryDatabase.SnapshotRow stagedRawRow, String revenueSourceName, String financialSourceName) {
         List<MonthlyRevenueVO> revenues = result.getRevenues();
         List<InstitutionalTradingDailyVO> institutional = result.getInstitutionalDaily();
         BrokerTradingSummaryVO broker = result.getBrokerSummary();
@@ -1766,8 +1809,15 @@ public class TaiwanStockAnalyzer {
                 newsRiskScore);
         String eligibilityReason = buildEligibilityReason(selectionQualified, liquidityScore, financialQualityScore,
                 volumeRatio);
+        String revenueSourceLabel = sourceLabel(revenueSourceName,
+                !revenues.isEmpty() ? revenues.get(0).getPeriod()
+                        : cacheEntry == null ? "" : emptyIfBlank(cacheEntry.latestRevenuePeriod, ""));
+        String financialSourceLabel = sourceLabel(financialSourceName,
+                resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords, cashFlowRecords).length() > 0
+                        ? resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords, cashFlowRecords)
+                        : cacheEntry == null ? "" : emptyIfBlank(cacheEntry.latestFinancialPeriod, ""));
         String dataConfidenceReason = buildDataConfidenceReason(hasProfileData, hasEpsData, hasCashFlowData,
-                hasIncomeData, hasBalanceData, hasBrokerData);
+                hasIncomeData, hasBalanceData, hasBrokerData, revenueSourceLabel, financialSourceLabel);
 
         result.setCurrentPrice(currentPrice);
         result.setIndustry(industry);
@@ -1903,6 +1953,11 @@ public class TaiwanStockAnalyzer {
         result.setSourceUpdatedAt(sourceUpdatedAt);
         result.setScore(score);
         applyPostCloseDecisionProfile(result);
+        result.setLaunchTags(buildLaunchTags(currentPrice, movingAverage20, movingAverage60, return20DayPct,
+                return60DayPct, volumeRatio, drawdownFromHigh60Pct, rsi14, averageThreeMonthRevenueYoY,
+                positiveRevenueMonths, latestQuarterEps, latestQuarterEpsYoYPct, financialQualityScore,
+                latestForeignNetLots, brokerNetLots, fiveDayInstitutionalNetLots, structureProfile.label,
+                selectionScore, buyPointScore, chipsScore, result.getPostCloseAction()));
         result.setAnalysisNote(buildAnalysisNote(result));
         result.setScoreReason(buildScoreReason(result));
         result.setRevenueReason(buildRevenueReason(result));
@@ -1912,6 +1967,85 @@ public class TaiwanStockAnalyzer {
         result.setTechnicalReason(buildTechnicalReason(result));
         result.setFinancialQualityReason(buildFinancialQualityReason(result));
         result.setEventRiskReason(eventRisk.getReason());
+    }
+
+    private String buildLaunchTags(double currentPrice, double movingAverage20, double movingAverage60,
+            double return20DayPct, double return60DayPct, double volumeRatio, double drawdownFromHigh60Pct,
+            double rsi14, double averageThreeMonthRevenueYoY, int positiveRevenueMonths, double latestQuarterEps,
+            double latestQuarterEpsYoYPct, double financialQualityScore, long latestForeignNetLots, long brokerNetLots,
+            long fiveDayInstitutionalNetLots, String structureLabel, double selectionScore, double buyPointScore,
+            double chipsScore, String postCloseAction) {
+        List<String> tags = new ArrayList<String>();
+        boolean aboveTrend = currentPrice > 0D && movingAverage20 > 0D && movingAverage60 > 0D
+                && currentPrice >= movingAverage20 && movingAverage20 >= movingAverage60;
+        boolean healthyRsi = rsi14 >= 50D && rsi14 <= 70D;
+        boolean healthyVolume = volumeRatio >= 0.8D && volumeRatio <= 2.0D;
+        boolean earlyReturn = return20DayPct >= 3D && return20DayPct <= 30D;
+        boolean notOverheated = healthyRsi && healthyVolume && return20DayPct <= 30D;
+        boolean healthyPullback = aboveTrend && drawdownFromHigh60Pct <= -2D && drawdownFromHigh60Pct >= -25D
+                && ("回踩承接".equals(structureLabel) || "整理待確認".equals(structureLabel));
+        boolean fundamentalSupport = averageThreeMonthRevenueYoY > 5D && positiveRevenueMonths >= 2
+                && financialQualityScore >= MIN_SELECTION_FINANCIAL_SCORE
+                && (latestQuarterEps > 0D || latestQuarterEpsYoYPct > 0D);
+        boolean chipsNotWeak = latestForeignNetLots > 0L || brokerNetLots > 0L || fiveDayInstitutionalNetLots > 0L;
+        boolean hot = return20DayPct > 30D || rsi14 >= 75D || volumeRatio > 2.8D || drawdownFromHigh60Pct > -1D;
+
+        if (isPreLaunchMode(currentPrice, movingAverage20, movingAverage60, selectionScore, buyPointScore,
+                financialQualityScore, chipsScore, latestForeignNetLots, return20DayPct, return60DayPct, volumeRatio,
+                rsi14, drawdownFromHigh60Pct, structureLabel, postCloseAction)) {
+            tags.add("起漲前夜");
+        }
+        if (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) {
+            tags.add("起漲共振");
+        }
+        if (healthyPullback) {
+            tags.add("健康回踩");
+        }
+        if (notOverheated && return20DayPct >= 3D) {
+            tags.add("價量未過熱");
+        }
+        if (fundamentalSupport) {
+            tags.add("營收EPS支撐");
+        }
+        if (latestForeignNetLots > 0L && brokerNetLots > 0L) {
+            tags.add("外資主力轉買");
+        } else if (brokerNetLots > 0L && latestForeignNetLots <= 0L) {
+            tags.add("主力先行");
+        } else if (latestForeignNetLots > 0L && brokerNetLots <= 0L) {
+            tags.add("外資接棒");
+        } else if (fiveDayInstitutionalNetLots > 0L) {
+            tags.add("法人籌碼未轉弱");
+        }
+        if (aboveTrend && return20DayPct >= 3D && return20DayPct <= 25D && return60DayPct > 10D
+                && drawdownFromHigh60Pct >= -6D && drawdownFromHigh60Pct <= 1D && !hot) {
+            tags.add("強勢續攻");
+        }
+        if (hot) {
+            tags.add("已過熱勿追");
+        }
+        return join(tags, "、");
+    }
+
+    private boolean isPreLaunchMode(double currentPrice, double movingAverage20, double movingAverage60,
+            double selectionScore, double buyPointScore, double financialQualityScore, double chipsScore,
+            long latestForeignNetLots, double return20DayPct, double return60DayPct, double volumeRatio, double rsi14,
+            double drawdownFromHigh60Pct, String structureLabel, String postCloseAction) {
+        boolean aboveTrend = currentPrice > 0D && movingAverage20 > 0D && movingAverage60 > 0D
+                && currentPrice >= movingAverage20 && movingAverage20 >= movingAverage60;
+        boolean studyCandidate = postCloseAction != null && postCloseAction.contains("優先研究");
+        return aboveTrend
+                && "整理待確認".equals(structureLabel)
+                && studyCandidate
+                && selectionScore >= 70D
+                && buyPointScore >= 85D
+                && financialQualityScore >= 14D
+                && chipsScore >= 18D
+                && latestForeignNetLots > 0L
+                && return20DayPct >= 3D && return20DayPct <= 15D
+                && return60DayPct >= 20D
+                && volumeRatio >= 0.8D && volumeRatio <= 1.8D
+                && rsi14 >= 45D && rsi14 <= 60D
+                && drawdownFromHigh60Pct >= -16D && drawdownFromHigh60Pct <= -8D;
     }
 
     private void applyNewsSignalMetadata(StockAnalysisResultVO result, NewsSignalVO newsSignal) {
@@ -2652,7 +2786,34 @@ public class TaiwanStockAnalyzer {
         }
 
         if (coreValues.isEmpty()) {
-            return FairValueProfile.empty();
+            double gapPct = currentPrice > 0D && fairValueEps > 0D ? (fairValueEps - currentPrice) * 100D / currentPrice
+                    : 0D;
+            String epsText = "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
+                    + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
+            List<String> blockedReasons = new ArrayList<String>();
+            if (fairValueEps <= 0D) {
+                blockedReasons.add("估值EPS仍為負或不足");
+            }
+            if (peerAveragePe <= 0D) {
+                blockedReasons.add("同業本益比不可用");
+            }
+            if (latestQuarterEpsYoYPct <= 0D) {
+                blockedReasons.add("最新季EPS年增未轉正");
+            }
+            if (averageThreeMonthRevenueYoY <= 0D) {
+                blockedReasons.add("近3月營收年增未轉正");
+            }
+            if (returnOnEquityPct <= 0D) {
+                blockedReasons.add("ROE仍為負或不足");
+            }
+            if (blockedReasons.isEmpty()) {
+                blockedReasons.add("估值條件不足");
+            }
+            String reason = epsText + "；" + joinReasonNotes(blockedReasons) + "，暫不建立合理價區間";
+            if (gapPct != 0D) {
+                reason += "，估值EPS相對現價 " + formatSigned(gapPct) + "%";
+            }
+            return FairValueProfile.unavailable(reason);
         }
 
         double weightSum = 0D;
@@ -4478,7 +4639,8 @@ public class TaiwanStockAnalyzer {
     }
 
     private String buildDataConfidenceReason(boolean hasProfileData, boolean hasEpsData, boolean hasCashFlowData,
-            boolean hasIncomeData, boolean hasBalanceData, boolean hasBrokerData) {
+            boolean hasIncomeData, boolean hasBalanceData, boolean hasBrokerData, String revenueSourceName,
+            String financialSourceName) {
         List<String> ok = new ArrayList<String>();
         List<String> miss = new ArrayList<String>();
         if (hasProfileData) {
@@ -4511,11 +4673,13 @@ public class TaiwanStockAnalyzer {
         } else {
             miss.add("主力籌碼");
         }
+        String sourceText = "資料來源：月營收 " + emptyIfBlank(revenueSourceName, "未標示") + "，財報 "
+                + emptyIfBlank(financialSourceName, "未標示");
         String available = ok.isEmpty() ? "可用資料有限" : "可用：" + join(ok, "、");
         if (miss.isEmpty()) {
-            return available + "；資料完整度高";
+            return sourceText + "；" + available + "；資料完整度高";
         }
-        return available + "；缺少：" + join(miss, "、");
+        return sourceText + "；" + available + "；缺少：" + join(miss, "、");
     }
 
     private String buildEligibilityReason(boolean selectionQualified, double liquidityScore, double financialQualityScore,
@@ -4670,6 +4834,7 @@ public class TaiwanStockAnalyzer {
         result.setEligibilityReason(row.eligibilityReason);
         result.setPrimaryTheme(row.primaryTheme);
         result.setThemeTags(row.themeTags);
+        result.setLaunchTags(row.launchTags);
         result.setNewsSummary(row.newsSummary);
         result.setNewsDigest(row.newsDigest);
         result.setNewsSourceSummary(row.newsSourceSummary);
@@ -4799,6 +4964,197 @@ public class TaiwanStockAnalyzer {
         return entry != null && entry.latestRevenuePeriod != null && entry.latestRevenuePeriod.length() > 0;
     }
 
+    private String cachedSource(LowFrequencyDataCache.Entry entry, boolean revenue) {
+        if (entry == null) {
+            return "";
+        }
+        String source = revenue ? entry.latestRevenueSource : entry.latestFinancialSource;
+        if (source != null && source.trim().length() > 0) {
+            return source.trim();
+        }
+        return revenue ? "Yahoo/Cache" : "Yahoo/Cache";
+    }
+
+    private boolean hasAnyFinancialRecords(List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
+            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords) {
+        return (epsRecords != null && !epsRecords.isEmpty()) || (incomeRecords != null && !incomeRecords.isEmpty())
+                || (balanceRecords != null && !balanceRecords.isEmpty())
+                || (cashFlowRecords != null && !cashFlowRecords.isEmpty());
+    }
+
+    private boolean hasCompleteFinancialSupplement(FinancialDataBundle bundle) {
+        return bundle != null && !bundle.getEpsRecords().isEmpty() && !bundle.getIncomeRecords().isEmpty()
+                && !bundle.getBalanceRecords().isEmpty() && !bundle.getCashFlowRecords().isEmpty();
+    }
+
+    private boolean shouldFetchFinancialSupplement(LowFrequencyDataCache.Entry cacheEntry,
+            List<MonthlyRevenueVO> revenues, List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
+            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords,
+            NewsSignalVO newsSignal) {
+        if (!finMindFinancialProvider.isEnabled() && !mopsFinancialProvider.isEnabled()) {
+            return false;
+        }
+        if (parseBooleanProperty("stock.financialSupplement.always", false)) {
+            return true;
+        }
+        String forceCodes = System.getProperty("stock.financialSupplement.forceCodes", "");
+        if (forceCodes.length() > 0 && cacheEntry != null && containsCode(forceCodes, cacheEntry.code)) {
+            return true;
+        }
+        boolean noFinancialData = !hasAnyFinancialRecords(epsRecords, incomeRecords, balanceRecords, cashFlowRecords)
+                && !hasFinancialCache(cacheEntry);
+        if (noFinancialData) {
+            return true;
+        }
+        boolean newsHasFinancialHint = hasFinancialNewsHint(newsSignal);
+        String currentFinancialPeriod = resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords, cashFlowRecords);
+        if (currentFinancialPeriod.length() == 0 && cacheEntry != null) {
+            currentFinancialPeriod = emptyIfBlank(cacheEntry.latestFinancialPeriod, "");
+        }
+        boolean financialLooksStale = isNewerQuarterPeriod(expectedFinancialPeriod(), currentFinancialPeriod);
+        if (newsHasFinancialHint && financialLooksStale) {
+            return true;
+        }
+        if (parseBooleanProperty("stock.financialSupplement.allStale", false) && financialLooksStale) {
+            return true;
+        }
+        return false;
+    }
+
+    private FinancialDataBundle fetchFinancialSupplement(TaiwanStockVO stock) {
+        FinancialDataBundle bundle = fetchFinancialSupplement(finMindFinancialProvider, stock);
+        if (bundle.hasFinancialData() || bundle.hasRevenueData()) {
+            return bundle;
+        }
+        return fetchFinancialSupplement(mopsFinancialProvider, stock);
+    }
+
+    private FinancialDataBundle fetchFinancialSupplement(FinancialDataProvider provider, TaiwanStockVO stock) {
+        if (!provider.isEnabled()) {
+            return FinancialDataBundle.empty(provider.providerName());
+        }
+        try {
+            FinancialDataBundle bundle = provider.fetch(stock);
+            if (bundle.hasFinancialData() || bundle.hasRevenueData()) {
+                System.out.println("Supplement " + stock.getYahooSymbol() + " financial data from "
+                        + provider.providerName() + " revenue=" + bundle.latestRevenuePeriod()
+                        + " financial=" + bundle.latestFinancialPeriod());
+            }
+            return bundle;
+        } catch (Exception ex) {
+            System.out.println("Fallback " + stock.getYahooSymbol() + " " + provider.providerName()
+                    + " financial supplement because " + ex.getMessage());
+            return FinancialDataBundle.empty(provider.providerName());
+        }
+    }
+
+    private boolean hasFinancialNewsHint(NewsSignalVO newsSignal) {
+        if (newsSignal == null) {
+            return false;
+        }
+        String text = newsSignal.getSummaryText();
+        return containsAnyText(text, "財報", "每股盈餘", "EPS", "eps", "獲利", "淨利", "稅後", "第一季", "第1季",
+                "Q1", "q1", "第二季", "第2季", "Q2", "q2", "第三季", "第3季", "Q3", "q3", "第四季", "第4季",
+                "Q4", "q4", "財務業務資訊", "自結");
+    }
+
+    private boolean containsAnyText(String text, String... tokens) {
+        String source = text == null ? "" : text;
+        for (String token : tokens) {
+            if (source.contains(token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsCode(String csv, String code) {
+        if (code == null || code.length() == 0) {
+            return false;
+        }
+        String[] parts = csv.split(",");
+        for (String part : parts) {
+            if (code.equals(part.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String sourceLabel(String sourceName, String period) {
+        String source = emptyIfBlank(sourceName, "");
+        String dataPeriod = emptyIfBlank(period, "");
+        if (source.length() == 0) {
+            return dataPeriod;
+        }
+        if (dataPeriod.length() == 0) {
+            return source;
+        }
+        return source + " " + dataPeriod;
+    }
+
+    private String expectedFinancialPeriod() {
+        LocalDate today = LocalDate.now(TAIPEI_ZONE);
+        int year = today.getYear();
+        int month = today.getMonthValue();
+        if (month >= 5 && month <= 7) {
+            return year + " Q1";
+        }
+        if (month >= 8 && month <= 10) {
+            return year + " Q2";
+        }
+        if (month >= 11) {
+            return year + " Q3";
+        }
+        if (month <= 2) {
+            return (year - 1) + " Q3";
+        }
+        return (year - 1) + " Q4";
+    }
+
+    private boolean isNewerMonthPeriod(String candidate, String current) {
+        int candidateRank = monthPeriodRank(candidate);
+        int currentRank = monthPeriodRank(current);
+        return candidateRank > 0 && candidateRank > currentRank;
+    }
+
+    private boolean isNewerQuarterPeriod(String candidate, String current) {
+        int candidateRank = quarterPeriodRank(candidate);
+        int currentRank = quarterPeriodRank(current);
+        return candidateRank > 0 && candidateRank > currentRank;
+    }
+
+    private int monthPeriodRank(String period) {
+        String text = emptyIfBlank(period, "");
+        try {
+            String[] parts = text.split("/");
+            if (parts.length < 2) {
+                return 0;
+            }
+            int year = Integer.parseInt(parts[0].trim());
+            int month = Integer.parseInt(parts[1].trim());
+            return year * 12 + month;
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
+    private int quarterPeriodRank(String period) {
+        String text = emptyIfBlank(period, "").replace("財報", "").replace("FinMind", "").replace("Yahoo", "")
+                .replace("MOPS", "").trim();
+        try {
+            String[] parts = text.split("\\s+Q");
+            if (parts.length < 2) {
+                return 0;
+            }
+            int year = Integer.parseInt(parts[0].trim());
+            int quarter = Integer.parseInt(parts[1].trim());
+            return year * 4 + quarter;
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
     private boolean hasFinancialCache(LowFrequencyDataCache.Entry entry) {
         return entry != null && entry.latestFinancialPeriod != null && entry.latestFinancialPeriod.length() > 0;
     }
@@ -4911,7 +5267,8 @@ public class TaiwanStockAnalyzer {
     private void updateLowFrequencyCache(TaiwanStockVO stock, LowFrequencyDataCache.Entry cacheEntry,
             StockAnalysisResultVO result, ProfileSnapshotVO profile, List<MonthlyRevenueVO> revenues,
             List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
-            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords) {
+            List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords,
+            String revenueSourceName, String financialSourceName) {
         LowFrequencyDataCache.Entry entry = cacheEntry == null ? new LowFrequencyDataCache.Entry() : cacheEntry;
         entry.code = stock.getCode();
         boolean refreshedLowFrequency = (revenues != null && !revenues.isEmpty())
@@ -4927,10 +5284,12 @@ public class TaiwanStockAnalyzer {
         }
         if (revenues != null && !revenues.isEmpty()) {
             entry.latestRevenuePeriod = emptyIfBlank(revenues.get(0).getPeriod(), entry.latestRevenuePeriod);
+            entry.latestRevenueSource = emptyIfBlank(revenueSourceName, entry.latestRevenueSource);
         }
         String financialPeriod = resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords, cashFlowRecords);
         if (financialPeriod.length() > 0) {
             entry.latestFinancialPeriod = financialPeriod;
+            entry.latestFinancialSource = emptyIfBlank(financialSourceName, entry.latestFinancialSource);
         }
         // sourceUpdatedAt = actual data period for display (revenue period preferred, else financial period)
         if (entry.latestRevenuePeriod.length() > 0) {
@@ -5207,6 +5566,10 @@ public class TaiwanStockAnalyzer {
 
         private static FairValueProfile empty() {
             return new FairValueProfile(0D, 0D, 0D, 0D, "", "");
+        }
+
+        private static FairValueProfile unavailable(String reason) {
+            return new FairValueProfile(0D, 0D, 0D, 0D, "暫不估值", reason);
         }
     }
 

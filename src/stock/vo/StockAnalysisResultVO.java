@@ -139,6 +139,7 @@ public class StockAnalysisResultVO {
     private String sourceUpdatedAt;
     private String primaryTheme;
     private String themeTags;
+    private String launchTags;
     private String newsSummary;
     private String newsDigest;
     private String newsSourceSummary;
@@ -1257,6 +1258,14 @@ public class StockAnalysisResultVO {
 
     public void setThemeTags(String themeTags) {
         this.themeTags = themeTags;
+    }
+
+    public String getLaunchTags() {
+        return launchTags;
+    }
+
+    public void setLaunchTags(String launchTags) {
+        this.launchTags = launchTags;
     }
 
     public String getNewsSummary() {

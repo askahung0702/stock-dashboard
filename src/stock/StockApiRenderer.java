@@ -150,8 +150,7 @@ public class StockApiRenderer {
         for (SnapshotRow row : snapshot.rows) {
             JSONObject rowObj = rowToJson(row);
             SnapshotRow prev = prevRows.get(row.code);
-            rowObj.put("scoreDelta",       Double.valueOf(prev != null ? selectionScoreOf(row) - selectionScoreOf(prev) : 0));
-            rowObj.put("prevPrice",        Double.valueOf(prev != null ? prev.price : 0));
+            applyDailyDeltas(rowObj, row, prev);
             rowObj.put("consecutiveDays",  Long.valueOf(consecutiveDays.getOrDefault(row.code, 1)));
             rows.add(rowObj);
         }
@@ -348,8 +347,7 @@ public class StockApiRenderer {
         for (SnapshotRow row : currentSnapshot.rows) {
             JSONObject rowObj = rowToJson(row);
             SnapshotRow prev = prevRows.get(row.code);
-            rowObj.put("scoreDelta", Double.valueOf(prev != null ? selectionScoreOf(row) - selectionScoreOf(prev) : 0));
-            rowObj.put("prevPrice", Double.valueOf(prev != null ? prev.price : 0));
+            applyDailyDeltas(rowObj, row, prev);
             rowObj.put("consecutiveDays", Long.valueOf(consecutiveDays.getOrDefault(row.code, 1)));
             rows.add(rowObj);
         }
@@ -525,6 +523,7 @@ public class StockApiRenderer {
         obj.put("themeScore",                      Double.valueOf(row.themeScore));
         obj.put("primaryTheme",                    row.primaryTheme);
         obj.put("themeTags",                       row.themeTags);
+        obj.put("launchTags",                      row.launchTags);
         obj.put("trendPersistenceScore",           Double.valueOf(row.trendPersistenceScore));
         obj.put("trendPersistenceDays",            Long.valueOf(row.trendPersistenceDays));
         obj.put("newsScore",                       Double.valueOf(row.newsScore));
@@ -663,6 +662,16 @@ public class StockApiRenderer {
 
     private double selectionScoreOf(SnapshotRow row) {
         return row.selectionScore > 0D ? row.selectionScore : row.score;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void applyDailyDeltas(JSONObject rowObj, SnapshotRow row, SnapshotRow prev) {
+        rowObj.put("scoreDelta", Double.valueOf(prev != null ? selectionScoreOf(row) - selectionScoreOf(prev) : 0D));
+        rowObj.put("prevPrice", Double.valueOf(prev != null ? prev.price : 0D));
+        rowObj.put("priceDelta", Double.valueOf(prev != null ? round1(row.price - prev.price) : 0D));
+        rowObj.put("priceDeltaPct", Double.valueOf(prev != null && prev.price > 0D
+                ? round1((row.price - prev.price) * 100D / prev.price) : 0D));
+        rowObj.put("volumeRatioDelta", Double.valueOf(prev != null ? round1(row.volumeRatio - prev.volumeRatio) : 0D));
     }
 
     private double buyPointScoreOf(SnapshotRow row) {

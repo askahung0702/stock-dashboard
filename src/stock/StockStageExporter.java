@@ -166,7 +166,7 @@ public class StockStageExporter {
         t.scoreReason = s.scoreReason; t.revenueReason = s.revenueReason; t.chipsReason = s.chipsReason;
         t.liquidityReason = s.liquidityReason; t.valuationReason = s.valuationReason; t.technicalReason = s.technicalReason;
         t.financialQualityReason = s.financialQualityReason; t.eventRiskReason = s.eventRiskReason; t.eligibilityReason = s.eligibilityReason;
-        t.primaryTheme = s.primaryTheme; t.themeTags = s.themeTags; t.newsSummary = s.newsSummary; t.newsDigest = s.newsDigest;
+        t.primaryTheme = s.primaryTheme; t.themeTags = s.themeTags; t.launchTags = s.launchTags; t.newsSummary = s.newsSummary; t.newsDigest = s.newsDigest;
         t.newsSourceSummary = s.newsSourceSummary; t.latestNewsPublishedHint = s.latestNewsPublishedHint;
         t.newsSourceCredibilityScore = s.newsSourceCredibilityScore; t.newsFreshnessScore = s.newsFreshnessScore;
         t.newsSourceCount = s.newsSourceCount; t.newsOfficialSourceCount = s.newsOfficialSourceCount; t.newsMediaSourceCount = s.newsMediaSourceCount;

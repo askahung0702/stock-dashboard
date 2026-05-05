@@ -149,6 +149,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-breakout1854.active{color:#a855f7;border-bottom-color:#a855f7}
 .tab.tab-continuation1854.active{color:#eab308;border-bottom-color:#eab308}
 .tab.tab-highwin.active{color:#fb7185;border-bottom-color:#fb7185}
+.tab.tab-prelaunch.active{color:#a78bfa;border-bottom-color:#a78bfa}
 .tab.tab-bear.active{color:#ef4444;border-bottom-color:#ef4444}
 .tcnt{background:var(--surface2);color:var(--muted);border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px}
 .tab.active .tcnt{background:var(--blue);color:#fff}
@@ -160,6 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-breakout1854.active .tcnt{background:#a855f7;color:#fff}
 .tab.tab-continuation1854.active .tcnt{background:#eab308;color:#111827}
 .tab.tab-highwin.active .tcnt{background:#fb7185;color:#fff}
+.tab.tab-prelaunch.active .tcnt{background:#a78bfa;color:#fff}
 .tab.tab-bear.active .tcnt{background:#ef4444;color:#fff}
 
 /* Table */
@@ -463,6 +465,9 @@ td{padding:7px 9px;vertical-align:middle}
     <select id="theme" onchange="go()">
       <option value="">全部題材</option>
     </select>
+    <select id="launchTag" onchange="go()">
+      <option value="">全部起漲Tag</option>
+    </select>
     <label class="flbl">最低分
       <input type="range" id="minscore" min="0" max="100" value="0" oninput="onRange(this)">
       <span id="minscoreval">0</span>
@@ -496,6 +501,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
     <div class="tab tab-highwin" data-t="structure" onclick="tab('structure')">🏗️ 波段優勢 <span class="tcnt" id="tc-structure">0</span></div>
     <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">🏆 highWinMode <span class="tcnt" id="tc-highwin">0</span></div>
+    <div class="tab tab-prelaunch" data-t="prelaunch" onclick="tab('prelaunch')">🌙 起漲前夜 <span class="tcnt" id="tc-prelaunch">0</span></div>
     <div class="tab tab-bear" data-t="bearish" onclick="tab('bearish')">轉弱預警 <span class="tcnt" id="tc-bearish">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
@@ -990,6 +996,93 @@ function getType(s) {
 
 function typeOrder(t) { return t==='both'?3:t==='short'?2:t==='mid'?1:0; }
 
+function numberFromText(text, pattern) {
+  const match = String(text || '').match(pattern);
+  return match ? Number(match[1].replace(/,/g, '')) : 0;
+}
+
+function isPreLaunchMode(s) {
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const ma60 = Number(s.movingAverage60 || 0);
+  const ret20 = Number(s.return20DayPct || 0);
+  const ret60 = Number(s.return60DayPct || 0);
+  const vol = Number(s.volumeRatio || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const dd60 = Number(s.drawdownFromHigh60Pct || 0);
+  const score = Number(s.score || s.selectionScore || 0);
+  const buy = Number(s.buyPointScore || 0);
+  const fin = Number(s.financialQualityScore || 0);
+  const chips = Number(s.chipsScore || 0);
+  const foreign = Number(s.latestForeignNetLots || 0);
+  const structure = String(s.structureLabel || '');
+  const action = String(s.postCloseAction || '');
+  return price > 0 && ma20 > 0 && ma60 > 0 && price >= ma20 && ma20 >= ma60
+    && structure === '整理待確認'
+    && action.includes('優先研究')
+    && score >= 70
+    && buy >= 85
+    && fin >= 14
+    && chips >= 18
+    && foreign > 0
+    && ret20 >= 3 && ret20 <= 15
+    && ret60 >= 20
+    && vol >= 0.8 && vol <= 1.8
+    && rsi >= 45 && rsi <= 60
+    && dd60 >= -16 && dd60 <= -8;
+}
+
+function buildLaunchTags(s) {
+  if (s.launchTags) {
+    const existing = splitTags(s.launchTags);
+    if (isPreLaunchMode(s) && !existing.includes('起漲前夜')) existing.unshift('起漲前夜');
+    return existing.join('、');
+  }
+  const tags = [];
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const ma60 = Number(s.movingAverage60 || 0);
+  const ret20 = Number(s.return20DayPct || 0);
+  const ret60 = Number(s.return60DayPct || 0);
+  const vol = Number(s.volumeRatio || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const dd60 = Number(s.drawdownFromHigh60Pct || 0);
+  const avgRev = Number(s.averageThreeMonthRevenueYoY || 0)
+    || numberFromText(s.revenueReason, /近\s*3\s*月平均年增\s*([+-]?\d+(?:\.\d+)?)/);
+  const posRev = Number(s.positiveRevenueMonths || 0)
+    || numberFromText(s.revenueReason, /正成長\s*(\d+)/);
+  const eps = Number(s.latestQuarterEps || 0)
+    || numberFromText(s.financialQualityReason, /最新季\s*EPS\s*([+-]?\d+(?:\.\d+)?)/i);
+  const epsYoy = Number(s.latestQuarterEpsYoYPct || 0)
+    || numberFromText(s.financialQualityReason, /年增\s*([+-]?\d+(?:\.\d+)?)/);
+  const fin = Number(s.financialQualityScore || 0);
+  const foreign = Number(s.latestForeignNetLots || 0);
+  const broker = Number(s.brokerNetLots || 0);
+  const inst5 = Number(s.fiveDayInstitutionalNetLots || 0);
+  const structure = String(s.structureLabel || '');
+  const aboveTrend = price > 0 && ma20 > 0 && ma60 > 0 && price >= ma20 && ma20 >= ma60;
+  const healthyRsi = rsi >= 50 && rsi <= 70;
+  const healthyVolume = vol >= 0.8 && vol <= 2.0;
+  const earlyReturn = ret20 >= 3 && ret20 <= 30;
+  const notOverheated = healthyRsi && healthyVolume && ret20 <= 30;
+  const healthyPullback = aboveTrend && dd60 <= -2 && dd60 >= -25 && ['回踩承接', '整理待確認'].includes(structure);
+  const fundamentalSupport = avgRev > 5 && posRev >= 2 && fin >= 8 && (eps > 0 || epsYoy > 0);
+  const chipsNotWeak = foreign > 0 || broker > 0 || inst5 > 0;
+  const hot = ret20 > 30 || rsi >= 75 || vol > 2.8 || dd60 > -1;
+  if (isPreLaunchMode(s)) tags.push('起漲前夜');
+  if (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) tags.push('起漲共振');
+  if (healthyPullback) tags.push('健康回踩');
+  if (notOverheated && ret20 >= 3) tags.push('價量未過熱');
+  if (fundamentalSupport) tags.push('營收EPS支撐');
+  if (foreign > 0 && broker > 0) tags.push('外資主力轉買');
+  else if (broker > 0 && foreign <= 0) tags.push('主力先行');
+  else if (foreign > 0 && broker <= 0) tags.push('外資接棒');
+  else if (inst5 > 0) tags.push('法人籌碼未轉弱');
+  if (aboveTrend && ret20 >= 3 && ret20 <= 25 && ret60 > 10 && dd60 >= -6 && dd60 <= 1 && !hot) tags.push('強勢續攻');
+  if (hot) tags.push('已過熱勿追');
+  return tags.join('、');
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 async function init() {
   syncSaved();
@@ -1025,6 +1118,7 @@ async function init() {
         bearishStage: bearish.stage,
         bearishStageLabel: bearish.stageLabel,
         bearishReasons: bearish.reasons,
+        launchTags: buildLaunchTags(normalized),
         type:       ''  // will be set after scores computed
       };
     });
@@ -1046,6 +1140,7 @@ async function init() {
     loadAndRenderStageDiffPanel().catch(() => {});
     fillIndustries();
     fillThemes();
+    fillLaunchTags();
     updateTabCounts();
     go();
     document.getElementById('ld').style.display  = 'none';
@@ -1542,6 +1637,21 @@ function fillThemes() {
   });
 }
 
+function splitTags(text) {
+  return String(text || '').split(/[、,;；]/).map(x => x.trim()).filter(Boolean);
+}
+
+function fillLaunchTags() {
+  const tags = [...new Set(S.all.flatMap(s => splitTags(s.launchTags)))].sort((a, b) => a.localeCompare(b, 'zh-TW'));
+  const el = document.getElementById('launchTag');
+  el.innerHTML = '<option value="">全部起漲Tag</option>';
+  tags.forEach(t => {
+    const o = document.createElement('option');
+    o.value = o.textContent = t;
+    el.appendChild(o);
+  });
+}
+
 function updateTabCounts() {
   document.getElementById('tc-all').textContent    = S.all.length;
   document.getElementById('tc-catalyst').textContent = S.all.filter(isCatalystGrowth).length;
@@ -1551,6 +1661,7 @@ function updateTabCounts() {
   document.getElementById('tc-continuation1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'continuation').length;
   document.getElementById('tc-structure').textContent = S.all.filter(isStructureEdgeMode).length;
   document.getElementById('tc-highwin').textContent = S.all.filter(isHighWinMode).length;
+  document.getElementById('tc-prelaunch').textContent = S.all.filter(isPreLaunchMode).length;
   document.getElementById('tc-bearish').textContent = S.all.filter(isBearishWatch).length;
 }
 
@@ -1564,6 +1675,7 @@ function go() {
   const mkt   = document.getElementById('mkt').value;
   const ind   = document.getElementById('ind').value;
   const theme = document.getElementById('theme').value;
+  const launchTag = document.getElementById('launchTag').value;
   const mins  = parseInt(document.getElementById('minscore').value) || 0;
   const surge = document.getElementById('surge').checked;
   const max300 = document.getElementById('max300').checked;
@@ -1583,13 +1695,15 @@ function go() {
   else if (t === 'continuation1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'continuation');
   else if (t === 'structure') stocks = stocks.filter(isStructureEdgeMode);
   else if (t === 'highwin') stocks = stocks.filter(isHighWinMode);
+  else if (t === 'prelaunch') stocks = stocks.filter(isPreLaunchMode);
   else if (t === 'bearish') stocks = stocks.filter(isBearishWatch);
   else if (t === 'saved') stocks = stocks.filter(s => S.wl.has(s.code));
 
-  if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q));
+  if (q)     stocks = stocks.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q) || (s.primaryTheme||'').toLowerCase().includes(q) || (s.themeTags||'').toLowerCase().includes(q) || (s.launchTags||'').toLowerCase().includes(q));
   if (mkt)   stocks = stocks.filter(s => s.market === mkt);
   if (ind)   stocks = stocks.filter(s => s.industry === ind);
-  if (theme) stocks = stocks.filter(s => (s.primaryTheme || '') === theme || (s.themeTags || '').split(/[、,;；]/).map(x => x.trim()).includes(theme));
+  if (theme) stocks = stocks.filter(s => (s.primaryTheme || '') === theme || splitTags(s.themeTags).includes(theme));
+  if (launchTag) stocks = stocks.filter(s => splitTags(s.launchTags).includes(launchTag));
   if (mins)  stocks = stocks.filter(s => s.score >= mins);
   if (surge) stocks = stocks.filter(s => s.volumeRatio >= 1.8);
   if (max300) stocks = stocks.filter(s => (s.price || 0) > 0 && s.price <= 300);
@@ -1605,6 +1719,7 @@ function go() {
   let defaultKey = S.sortKey;
   if (t === 'structure' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'structureEdgeScore';
   if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
+  if (t === 'prelaunch' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   if (t === 'bearish' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'bearishScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
@@ -1620,7 +1735,7 @@ function go() {
 
 function reset() {
   document.getElementById('q').value = '';
-  ['mkt','ind','theme'].forEach(id => document.getElementById(id).value = '');
+  ['mkt','ind','theme','launchTag'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('minscore').value = 0;
   document.getElementById('minscoreval').textContent = '0';
   ['surge','max300','sup','multi','turnprofit','growthonly','ebonly','wonly'].forEach(id => document.getElementById(id).checked = false);
@@ -1635,6 +1750,9 @@ function tab(t) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
   }
   else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'structureEdgeScore' || S.sortKey === 'bearishScore')) {
+    S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
+  }
+  else if (t === 'prelaunch' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'structureEdgeScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (t === 'structure' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore' || S.sortKey === 'bearishScore')) {

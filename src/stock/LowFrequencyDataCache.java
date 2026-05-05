@@ -23,6 +23,8 @@ public class LowFrequencyDataCache {
         public String cacheRefreshedAt = "";  // last Yahoo fetch date, e.g. "20260421"
         public String latestRevenuePeriod = "";
         public String latestFinancialPeriod = "";
+        public String latestRevenueSource = "";
+        public String latestFinancialSource = "";
         public String industry = "";
         public String marketType = "";
         public String shareholderMeetingDate = "";
@@ -166,6 +168,8 @@ public class LowFrequencyDataCache {
         obj.put("cacheRefreshedAt", safeText(entry.cacheRefreshedAt));
         obj.put("latestRevenuePeriod", safeText(entry.latestRevenuePeriod));
         obj.put("latestFinancialPeriod", safeText(entry.latestFinancialPeriod));
+        obj.put("latestRevenueSource", safeText(entry.latestRevenueSource));
+        obj.put("latestFinancialSource", safeText(entry.latestFinancialSource));
         obj.put("industry", safeText(entry.industry));
         obj.put("marketType", safeText(entry.marketType));
         obj.put("shareholderMeetingDate", safeText(entry.shareholderMeetingDate));
@@ -215,6 +219,8 @@ public class LowFrequencyDataCache {
         entry.cacheRefreshedAt = safeText(obj.get("cacheRefreshedAt"));
         entry.latestRevenuePeriod = safeText(obj.get("latestRevenuePeriod"));
         entry.latestFinancialPeriod = safeText(obj.get("latestFinancialPeriod"));
+        entry.latestRevenueSource = safeText(obj.get("latestRevenueSource"));
+        entry.latestFinancialSource = safeText(obj.get("latestFinancialSource"));
         entry.industry = safeText(obj.get("industry"));
         entry.marketType = safeText(obj.get("marketType"));
         entry.shareholderMeetingDate = safeText(obj.get("shareholderMeetingDate"));
