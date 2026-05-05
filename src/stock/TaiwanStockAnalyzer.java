@@ -114,6 +114,7 @@ public class TaiwanStockAnalyzer {
             scoringConfig.getProfile(activeMarketRegime));
     private String runStage = "full";
     private Map<String, StockHistoryDatabase.SnapshotRow> sameDayCloseRawRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
+    private Map<String, StockHistoryDatabase.SnapshotRow> deferredChipRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
 
     public List<StockAnalysisResultVO> analyze(int maxStocks) throws Exception {
         List<TaiwanStockVO> allStocks = marketProvider.loadAllStocks();
@@ -121,8 +122,13 @@ public class TaiwanStockAnalyzer {
             allStocks = new ArrayList<TaiwanStockVO>(allStocks.subList(0, maxStocks));
         }
         sameDayCloseRawRowsByCode = loadSameDayCloseRawRows();
-        markStageRunStatus("running", 0, sameDayCloseRawRowsByCode.isEmpty() ? "close raw unavailable"
-                : "reusing close raw " + sameDayCloseRawRowsByCode.size());
+        deferredChipRowsByCode = loadDeferredChipRows();
+        String runNote = sameDayCloseRawRowsByCode.isEmpty() ? "close raw unavailable"
+                : "reusing close raw " + sameDayCloseRawRowsByCode.size();
+        if (!deferredChipRowsByCode.isEmpty()) {
+            runNote += "; carrying chip rows " + deferredChipRowsByCode.size();
+        }
+        markStageRunStatus("running", 0, runNote);
 
         List<StockAnalysisResultVO> results = new ArrayList<StockAnalysisResultVO>();
         int index = 0;
@@ -1304,6 +1310,49 @@ public class TaiwanStockAnalyzer {
         return rowsByCode;
     }
 
+    private Map<String, StockHistoryDatabase.SnapshotRow> loadDeferredChipRows() {
+        Map<String, StockHistoryDatabase.SnapshotRow> rowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
+        if (!"intraday-close".equals(runStage) || !parseBooleanProperty("stock.intraday.deferChips", true)) {
+            return rowsByCode;
+        }
+        try {
+            Map<String, StockHistoryDatabase.Snapshot> snapshots = historyDatabase.loadSnapshots();
+            String currentDate = currentDateStamp();
+            String latestPriorDate = "";
+            for (String date : snapshots.keySet()) {
+                if (date != null && date.compareTo(currentDate) < 0 && date.compareTo(latestPriorDate) > 0) {
+                    latestPriorDate = date;
+                }
+            }
+            if (latestPriorDate.length() == 0) {
+                return rowsByCode;
+            }
+            StockHistoryDatabase.Snapshot snapshot = snapshots.get(latestPriorDate);
+            if (snapshot == null || snapshot.rows == null) {
+                return rowsByCode;
+            }
+            for (StockHistoryDatabase.SnapshotRow row : snapshot.rows) {
+                if (hasChipSnapshot(row)) {
+                    rowsByCode.put(row.code, row);
+                }
+            }
+            if (!rowsByCode.isEmpty()) {
+                System.out.println("Carry deferred chip data from " + latestPriorDate + ": " + rowsByCode.size()
+                        + " rows");
+            }
+        } catch (Exception ex) {
+            System.out.println("Cannot load deferred chip cache: " + ex.getMessage());
+        }
+        return rowsByCode;
+    }
+
+    private boolean hasChipSnapshot(StockHistoryDatabase.SnapshotRow row) {
+        return row != null && row.code != null && row.code.length() > 0
+                && (row.institutionalReady || row.brokerReady || row.latestInstitutionalNetLots != 0L
+                        || row.fiveDayInstitutionalNetLots != 0L || row.latestForeignNetLots != 0L
+                        || row.brokerNetLots != 0L || row.brokerNetRatioPct != 0D);
+    }
+
     private void markStageRunStatus(String status, int rowCount, String note) {
         try {
             historyDatabase.upsertDailyRunStatus(currentDateStamp(), runStage, status, rowCount, note);
@@ -1443,6 +1492,7 @@ public class TaiwanStockAnalyzer {
         boolean intradayCloseStage = "intraday-close".equals(runStage);
         boolean closeStage = "close".equals(runStage) || intradayCloseStage;
         boolean deferChips = intradayCloseStage && parseBooleanProperty("stock.intraday.deferChips", true);
+        StockHistoryDatabase.SnapshotRow deferredChipRow = deferChips ? deferredChipRowsByCode.get(stock.getCode()) : null;
         boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
         boolean deferEventRisk = closeStage && CLOSE_DEFER_EVENT_RISK;
         boolean allowFinancialFetch = "full".equals(runStage);
@@ -1558,7 +1608,7 @@ public class TaiwanStockAnalyzer {
         result.setBrokerSummary(brokerSummary);
 
         fillMetrics(result, epsRecords, cashFlowRecords, technical, profile, incomeRecords, balanceRecords, eventRisk,
-                newsSignal, cacheEntry, stagedRawRow, revenueSourceName, financialSourceName);
+                newsSignal, cacheEntry, stagedRawRow, deferredChipRow, revenueSourceName, financialSourceName);
         updateLowFrequencyCache(stock, cacheEntry, result, profile, revenues, epsRecords, incomeRecords, balanceRecords,
                 cashFlowRecords, revenueSourceName, financialSourceName);
         return result;
@@ -1568,11 +1618,13 @@ public class TaiwanStockAnalyzer {
             List<CashFlowRecordVO> cashFlowRecords, TechnicalSnapshotVO technical, ProfileSnapshotVO profile,
             List<IncomeStatementRecordVO> incomeRecords, List<BalanceSheetRecordVO> balanceRecords, EventRiskVO eventRisk,
             NewsSignalVO newsSignal, LowFrequencyDataCache.Entry cacheEntry,
-            StockHistoryDatabase.SnapshotRow stagedRawRow, String revenueSourceName, String financialSourceName) {
+            StockHistoryDatabase.SnapshotRow stagedRawRow, StockHistoryDatabase.SnapshotRow deferredChipRow,
+            String revenueSourceName, String financialSourceName) {
         List<MonthlyRevenueVO> revenues = result.getRevenues();
         List<InstitutionalTradingDailyVO> institutional = result.getInstitutionalDaily();
         BrokerTradingSummaryVO broker = result.getBrokerSummary();
         boolean reusedSameDayCloseRaw = stagedRawRow != null;
+        StockHistoryDatabase.SnapshotRow chipSnapshotRow = reusedSameDayCloseRaw ? stagedRawRow : deferredChipRow;
 
         int revenueWindow = Math.min(3, revenues.size());
         int institutionWindow = Math.min(5, institutional.size());
@@ -1584,9 +1636,9 @@ public class TaiwanStockAnalyzer {
         boolean hasIncomeData = !incomeRecords.isEmpty() || hasFinancialCache(cacheEntry);
         boolean hasBalanceData = !balanceRecords.isEmpty() || hasFinancialCache(cacheEntry);
         boolean hasBrokerData = broker.getDataDate() != null && broker.getDataDate().length() > 0;
-        if (!hasBrokerData && reusedSameDayCloseRaw) {
-            hasBrokerData = stagedRawRow.brokerReady || stagedRawRow.brokerNetLots != 0L
-                    || stagedRawRow.brokerNetRatioPct != 0D;
+        if (!hasBrokerData && chipSnapshotRow != null) {
+            hasBrokerData = chipSnapshotRow.brokerReady || chipSnapshotRow.brokerNetLots != 0L
+                    || chipSnapshotRow.brokerNetRatioPct != 0D;
         }
         boolean hasProfileData = profile.getCurrentPrice() > 0D || profile.getIndustry().length() > 0
                 || profile.getPeerAveragePe() > 0D || profile.getGrossMarginPct() > 0D
@@ -1610,19 +1662,20 @@ public class TaiwanStockAnalyzer {
                 : cacheEntry == null ? 0 : cacheEntry.positiveRevenueMonths;
 
         long latestInstitutionalNetLots = !institutional.isEmpty() ? institutional.get(0).getTotalNetLots()
-                : reusedSameDayCloseRaw ? stagedRawRow.latestInstitutionalNetLots : 0L;
+                : chipSnapshotRow != null ? chipSnapshotRow.latestInstitutionalNetLots : 0L;
         double latestInstitutionalNetRatioPct = !institutional.isEmpty()
                 ? NumberParser.ratioPercent(latestInstitutionalNetLots, institutional.get(0).getVolume())
-                : reusedSameDayCloseRaw ? stagedRawRow.latestInstitutionalNetRatioPct : 0D;
+                : chipSnapshotRow != null ? chipSnapshotRow.latestInstitutionalNetRatioPct : 0D;
         long fiveDayInstitutionalNetLots = !institutional.isEmpty() ? sumInstitutionalNet(institutional, institutionWindow)
-                : reusedSameDayCloseRaw ? stagedRawRow.fiveDayInstitutionalNetLots : 0L;
+                : chipSnapshotRow != null ? chipSnapshotRow.fiveDayInstitutionalNetLots : 0L;
         double fiveDayInstitutionalNetRatioPct = !institutional.isEmpty()
                 ? NumberParser.ratioPercent(fiveDayInstitutionalNetLots, sumVolume(institutional, institutionWindow))
-                : reusedSameDayCloseRaw ? stagedRawRow.fiveDayInstitutionalNetRatioPct : 0D;
+                : chipSnapshotRow != null ? chipSnapshotRow.fiveDayInstitutionalNetRatioPct : 0D;
         long latestForeignNetLots = !institutional.isEmpty() ? institutional.get(0).getForeignNetLots()
-                : reusedSameDayCloseRaw ? stagedRawRow.latestForeignNetLots : 0L;
-        long brokerNetLots = reusedSameDayCloseRaw ? stagedRawRow.brokerNetLots : broker.getNetLots();
-        double brokerNetRatioPct = reusedSameDayCloseRaw ? stagedRawRow.brokerNetRatioPct : broker.getNetVolumeRatioPct();
+                : chipSnapshotRow != null ? chipSnapshotRow.latestForeignNetLots : 0L;
+        long brokerNetLots = chipSnapshotRow != null ? chipSnapshotRow.brokerNetLots : broker.getNetLots();
+        double brokerNetRatioPct = chipSnapshotRow != null ? chipSnapshotRow.brokerNetRatioPct
+                : broker.getNetVolumeRatioPct();
         if (brokerNetLots < 0L && brokerNetRatioPct > 0D) {
             brokerNetRatioPct = -Math.abs(brokerNetRatioPct);
         } else if (brokerNetLots > 0L && brokerNetRatioPct < 0D) {
@@ -1931,7 +1984,7 @@ public class TaiwanStockAnalyzer {
         result.setSnapshotStage(runStage);
         result.setTechReady(technical != null || reusedSameDayCloseRaw);
         result.setMarketReady(true);
-        result.setInstitutionalReady(!institutional.isEmpty() || reusedSameDayCloseRaw);
+        result.setInstitutionalReady(!institutional.isEmpty() || chipSnapshotRow != null);
         result.setBrokerReady(hasBrokerData);
         result.setFinancialReady(hasRevenueData && hasProfileData && hasEpsData && hasCashFlowData && hasIncomeData
                 && hasBalanceData);
