@@ -262,9 +262,11 @@ td{padding:7px 9px;vertical-align:middle}
 
 /* Charts */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.cc-wide{grid-column:1 / -1}
 .cc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px}
 .cc-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
 .cc-wrap{position:relative;height:185px}
+.cc-wrap.tech{height:260px}
 
 /* Reasons */
 .rsn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:8px}
@@ -583,6 +585,12 @@ function latestDataCandidates() {
 
 function stockHistoryUrl(code) {
   return isStaticPagesMode() ? 'data/history.json' : '/api/stock/' + code;
+}
+
+function stockHistoryCandidates(code) {
+  return isStaticPagesMode()
+    ? ['data/history.json']
+    : ['/api/stock/' + code, '/web/data/history.json', 'web/data/history.json', 'data/history.json'];
 }
 
 function btcPageUrl() {
@@ -2263,20 +2271,32 @@ async function openDetail(code) {
   renderDH(s);
   renderDB(s, null);
   try {
-    if (!S.historyMap) {
-      const hr = await fetch(stockHistoryUrl(code));
-      if (!hr.ok) throw new Error('HTTP ' + hr.status);
-      const historyData = await hr.json();
-      if (isStaticPagesMode()) {
-        S.historyMap = {};
-        (historyData.stocks || []).forEach(stock => { S.historyMap[stock.code] = stock.history || []; });
-      } else {
-        S.historyMap = S.historyMap || {};
-        S.historyMap[code] = historyData.history || [];
-      }
+    if (!S.historyMap || !Array.isArray(S.historyMap[code])) {
+      await loadStockHistory(code);
     }
     renderDB(s, S.historyMap[code] || []);
   } catch(e) { /* show without history */ }
+}
+
+async function loadStockHistory(code) {
+  S.historyMap = S.historyMap || {};
+  let lastError = null;
+  for (const url of stockHistoryCandidates(code)) {
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' @ ' + url);
+      const payload = await resp.json();
+      if (Array.isArray(payload.stocks)) {
+        payload.stocks.forEach(stock => { S.historyMap[String(stock.code)] = stock.history || []; });
+      } else if (Array.isArray(payload.history)) {
+        S.historyMap[code] = payload.history || [];
+      }
+      if (Array.isArray(S.historyMap[code])) return S.historyMap[code];
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('history unavailable');
 }
 
 function ovClick(e) { if (e.target === document.getElementById('ov')) closeDetail(); }
@@ -2284,6 +2304,7 @@ function closeDetail() { document.getElementById('ov').classList.remove('open');
 function killCharts() {
   if (S.rc) { S.rc.destroy(); S.rc = null; }
   if (S.hc) { S.hc.destroy(); S.hc = null; }
+  if (S.tc) { S.tc.destroy(); S.tc = null; }
 }
 
 function renderDH(s) {
@@ -2547,14 +2568,20 @@ function renderDB(s, history) {
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">
+      <div class="cc cc-wide"><div class="cc-title">技術線圖（股價 / 均線 / 量比）</div><div class="cc-wrap tech"><canvas id="cv-t"></canvas></div></div>
       <div class="cc"><div class="cc-title">六維雷達圖</div><div class="cc-wrap"><canvas id="cv-r"></canvas></div></div>
       <div class="cc"><div class="cc-title">分數 + 股價趨勢</div><div class="cc-wrap"><canvas id="cv-h"></canvas></div></div>
     </div>
     <div id="rsns">${buildReasons(s)}</div>`;
 
   drawRadar(s);
-  if (history && history.length > 1) drawHistory(history);
-  else document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
+  if (history && history.length > 1) {
+    drawTechnicalChart(s, history);
+    drawHistory(history);
+  } else {
+    document.getElementById('cv-t').closest('.cc').querySelector('.cc-title').textContent = '技術線圖（歷史資料累積中）';
+    document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
+  }
 }
 
 function positionCostKey(code) {
@@ -3058,6 +3085,7 @@ function buildReasons(s) {
 function drawRadar(s) {
   const ctx = document.getElementById('cv-r');
   if (!ctx) return;
+  if (S.rc) { S.rc.destroy(); S.rc = null; }
   S.rc = new Chart(ctx, {
     type: 'radar',
     data: {
@@ -3077,9 +3105,95 @@ function drawRadar(s) {
   });
 }
 
+function techValue(row, key, fallbackKey) {
+  const value = Number(row?.[key] ?? row?.[fallbackKey] ?? 0);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function rollingAverage(values, windowSize) {
+  const out = [];
+  for (let i = 0; i < values.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = Math.max(0, i - windowSize + 1); j <= i; j++) {
+      const value = values[j];
+      if (Number.isFinite(value) && value > 0) {
+        sum += value;
+        count++;
+      }
+    }
+    out.push(count >= Math.min(windowSize, i + 1) ? sum / count : null);
+  }
+  return out;
+}
+
+function mergeLatestMa(series, latest, key) {
+  if (!series.length) return series;
+  const value = Number(latest?.[key] || 0);
+  if (Number.isFinite(value) && value > 0) series[series.length - 1] = value;
+  return series;
+}
+
+function drawTechnicalChart(s, history) {
+  const ctx = document.getElementById('cv-t');
+  if (!ctx) return;
+  if (S.tc) { S.tc.destroy(); S.tc = null; }
+  const rows = (history || []).filter(h => Number(h.price || 0) > 0).slice(-90);
+  if (rows.length <= 1) return;
+  const prices = rows.map(h => Number(h.price || 0));
+  const ma20 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage20', 'ma20')), s, 'movingAverage20');
+  const ma60 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage60', 'ma60')), s, 'movingAverage60');
+  const ma120 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage120', 'ma120')), s, 'movingAverage120');
+  const computedMa20 = rollingAverage(prices, 20);
+  const computedMa60 = rollingAverage(prices, 60);
+  const computedMa120 = rollingAverage(prices, 120);
+  const pickSeries = (primary, computed) => primary.map((v, i) => v || computed[i]);
+  const volumeRatios = rows.map(h => {
+    const value = Number(h.volumeRatio || 0);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  });
+  S.tc = new Chart(ctx, {
+    data: {
+      labels: rows.map(h => fmtDateShort(h.date)),
+      datasets: [
+        {type:'bar',label:'量比',data:volumeRatios,yAxisID:'vol',
+         backgroundColor:'rgba(148,163,184,.22)',borderColor:'rgba(148,163,184,.35)',borderWidth:1,order:5},
+        {type:'line',label:'股價',data:prices,yAxisID:'price',borderColor:'#f97316',backgroundColor:'transparent',
+         tension:.25,pointRadius:2.5,pointHoverRadius:5,borderWidth:2.2,order:1},
+        {type:'line',label:'MA20',data:pickSeries(ma20, computedMa20),yAxisID:'price',borderColor:'#22c55e',
+         backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:2},
+        {type:'line',label:'MA60',data:pickSeries(ma60, computedMa60),yAxisID:'price',borderColor:'#a855f7',
+         backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:3},
+        {type:'line',label:'MA120',data:pickSeries(ma120, computedMa120),yAxisID:'price',borderColor:'#94a3b8',
+         backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.6,borderDash:[5,4],order:4}
+      ]
+    },
+    options: {
+      animation:false,responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{ticks:{color:'#94a3b8',font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:12},
+           grid:{color:'rgba(255,255,255,.05)'}},
+        price:{position:'left',ticks:{color:'#f97316',font:{size:10},callback:v=>'$'+formatMoney(v)},
+               grid:{color:'rgba(255,255,255,.06)'},title:{display:true,text:'股價',color:'#f97316',font:{size:10}}},
+        vol:{position:'right',min:0,ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false},
+             title:{display:true,text:'量比',color:'#94a3b8',font:{size:10}}}
+      },
+      plugins:{
+        legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>{
+          const label = ctx.dataset.label || '';
+          const value = Number(ctx.parsed.y || 0);
+          return label === '量比' ? `${label}：${value.toFixed(2)}` : `${label}：$${formatMoney(value)}`;
+        }}}
+      }
+    }
+  });
+}
+
 function drawHistory(history) {
   const ctx = document.getElementById('cv-h');
   if (!ctx) return;
+  if (S.hc) { S.hc.destroy(); S.hc = null; }
   S.hc = new Chart(ctx, {
     type:'line',
     data:{
