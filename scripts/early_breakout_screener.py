@@ -25,6 +25,7 @@ SNAPSHOTS = ROOT / "daily_snapshots"
 HISTORY = ROOT / "history"
 WEB_ROOT = ROOT / "web"
 WEB_REPORTS = WEB_ROOT / "early_breakout"
+STATIC_DASHBOARD_DIR = ROOT / "static" / "dashboards"
 HISTORY.mkdir(exist_ok=True)
 WEB_ROOT.mkdir(exist_ok=True)
 WEB_REPORTS.mkdir(parents=True, exist_ok=True)
@@ -1431,7 +1432,7 @@ def dashboard_panel_html(screen_date, condition_stats, compared_rows, previous_m
 
 def inject_panel_into_dashboard(panel_html):
     targets = [ROOT / "history_dashboard.html"]
-    dashboards = sorted(ROOT.glob("stock_dashboard_*.html"))
+    dashboards = sorted(list(STATIC_DASHBOARD_DIR.glob("stock_dashboard_*.html")) + list(ROOT.glob("stock_dashboard_*.html")))
     if dashboards:
         targets.append(dashboards[-1])
 
@@ -1675,7 +1676,7 @@ def main():
     print(f"[OK] Screen CSV          -> {report_csv}")
     print(f"[OK] Review summary JSON -> {report_summary_json}")
     print(f"[OK] Screen HTML         -> {html_path}")
-    print("[OK] Dashboard injected  -> history_dashboard.html / latest stock_dashboard_*.html")
+    print("[OK] Dashboard injected  -> history_dashboard.html / latest static/dashboards/stock_dashboard_*.html")
     print("[OK] Also written        -> early_breakout_latest.csv / .html / _summary.json")
 
 

@@ -14,6 +14,8 @@ config/*local*.properties
 /daily_snapshots/
 /history/
 /stock_dashboard_*.html
+/static/dashboards/*.html
+!/static/dashboards/.gitkeep
 
 # Local logs and scratch files
 /logs/

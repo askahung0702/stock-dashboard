@@ -48,13 +48,18 @@ public class StockDashboardWriter {
         HistoryBundle historyBundle = buildHistoryBundle(results);
         DashboardData dashboardData = resolveDashboardData(results, likelyCandidates, watchlistCandidates,
                 likelyVolumeSurgeCandidates, nonLikelyVolumeSurgeCandidates, historyBundle);
+        File outputFile = new File(fileName);
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory != null && !parentDirectory.exists()) {
+            parentDirectory.mkdirs();
+        }
         PrintWriter writer = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8")));
+                new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")));
         writer.print(buildDashboardHtml(dashboardData.results, dashboardData.likelyCandidates,
                 dashboardData.watchlistCandidates, dashboardData.likelyVolumeSurgeCandidates,
                 dashboardData.nonLikelyVolumeSurgeCandidates, historyBundle));
         writer.close();
-        return new File(fileName).getAbsolutePath();
+        return outputFile.getAbsolutePath();
     }
 
     public String writeHistoryDashboard(String fileName) throws Exception {

@@ -22,6 +22,7 @@ public class StockAnalysisResultVO {
     private double brokerNetRatioPct;
     private double currentPrice;
     private double trailingFourQuarterEps;
+    private double fairValueEps;
     private double trailingPe;
     private double latestQuarterEps;
     private double latestQuarterEpsYoYPct;
@@ -51,6 +52,7 @@ public class StockAnalysisResultVO {
     private double operatingMarginPct;
     private double returnOnAssetsPct;
     private double returnOnEquityPct;
+    private double bookValue;
     private double debtRatioPct;
     private double currentRatio;
     private double nonOperatingRatioPct;
@@ -324,6 +326,14 @@ public class StockAnalysisResultVO {
         this.trailingFourQuarterEps = trailingFourQuarterEps;
     }
 
+    public double getFairValueEps() {
+        return fairValueEps;
+    }
+
+    public void setFairValueEps(double fairValueEps) {
+        this.fairValueEps = fairValueEps;
+    }
+
     public double getTrailingPe() {
         return trailingPe;
     }
@@ -554,6 +564,14 @@ public class StockAnalysisResultVO {
 
     public void setReturnOnEquityPct(double returnOnEquityPct) {
         this.returnOnEquityPct = returnOnEquityPct;
+    }
+
+    public double getBookValue() {
+        return bookValue;
+    }
+
+    public void setBookValue(double bookValue) {
+        this.bookValue = bookValue;
     }
 
     public double getDebtRatioPct() {

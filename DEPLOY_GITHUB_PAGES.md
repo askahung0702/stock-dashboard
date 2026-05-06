@@ -5,8 +5,8 @@ This repository is prepared to publish a static stock dashboard with GitHub Page
 ## What gets deployed
 
 - `history_dashboard.html` is used as the preferred homepage when it exists.
-- If `history_dashboard.html` is missing, the newest `stock_dashboard_YYYYMMDD.html` file becomes `index.html`.
-- All dated dashboard pages are copied into `site/daily/`.
+- If `history_dashboard.html` is missing, the newest `static/dashboards/stock_dashboard_YYYYMMDD.html` file becomes `index.html`.
+- All dated dashboard pages from `static/dashboards/` are copied into `site/daily/`.
 
 ## Workflow
 

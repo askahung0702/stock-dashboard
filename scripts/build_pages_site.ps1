@@ -16,7 +16,14 @@ if (Test-Path -LiteralPath $webSourceDir) {
 }
 
 $historyDashboard = Join-Path $repoRoot "history_dashboard.html"
-$datedDashboards = Get-ChildItem -Path $repoRoot -File -Filter "stock_dashboard_*.html" |
+$dashboardArchiveDir = Join-Path $repoRoot "static\dashboards"
+$datedDashboardCandidates = @()
+if (Test-Path -LiteralPath $dashboardArchiveDir) {
+    $datedDashboardCandidates += Get-ChildItem -Path $dashboardArchiveDir -File -Filter "stock_dashboard_*.html"
+}
+$datedDashboardCandidates += Get-ChildItem -Path $repoRoot -File -Filter "stock_dashboard_*.html"
+$datedDashboards = $datedDashboardCandidates |
+    Sort-Object Name, FullName -Unique |
     Sort-Object Name
 
 $selectedDashboard = $null
@@ -30,7 +37,7 @@ if ($null -ne $selectedDashboard) {
     Copy-Item -LiteralPath $selectedDashboard.FullName -Destination (Join-Path $siteDir "index.html")
     Copy-Item -LiteralPath $selectedDashboard.FullName -Destination (Join-Path $siteDir "old.html")
 } else {
-    @"
+    $fallbackIndexHtml = @'
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -50,12 +57,13 @@ if ($null -ne $selectedDashboard) {
   <main>
     <div class="card">
       <h1>Stock Dashboard</h1>
-      <p>目前 repo 內還沒有可發佈的 dashboard HTML。先執行 <code>run_stock_analysis.bat</code>，產生 <code>history_dashboard.html</code> 或最新的 <code>stock_dashboard_YYYYMMDD.html</code> 之後，再重新觸發 Pages workflow。</p>
+      <p>目前 repo 內還沒有可發佈的 dashboard HTML。先執行 <code>run_stock_analysis.bat</code>，產生 <code>history_dashboard.html</code> 或最新的 <code>static/dashboards/stock_dashboard_YYYYMMDD.html</code> 之後，再重新觸發 Pages workflow。</p>
     </div>
   </main>
 </body>
 </html>
-"@ | Set-Content -LiteralPath (Join-Path $siteDir "index.html") -Encoding UTF8
+'@
+    Set-Content -LiteralPath (Join-Path $siteDir "index.html") -Value $fallbackIndexHtml -Encoding UTF8
     Copy-Item -LiteralPath (Join-Path $siteDir "index.html") -Destination (Join-Path $siteDir "old.html")
 }
 
@@ -67,7 +75,7 @@ if (Test-Path -LiteralPath $historyDashboard) {
     Copy-Item -LiteralPath $historyDashboard -Destination (Join-Path $siteDir "history_dashboard.html")
 }
 
-@"
+$notFoundHtml = @'
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -79,15 +87,17 @@ if (Test-Path -LiteralPath $historyDashboard) {
   <p>Redirecting to dashboard...</p>
 </body>
 </html>
-"@ | Set-Content -LiteralPath (Join-Path $siteDir "404.html") -Encoding UTF8
+'@
+Set-Content -LiteralPath (Join-Path $siteDir "404.html") -Value $notFoundHtml -Encoding UTF8
 
 New-Item -ItemType File -Path (Join-Path $siteDir ".nojekyll") | Out-Null
 
-@"
+$siteReadme = @'
 # Stock Dashboard Pages Output
 
 - `index.html`: latest dashboard page
 - `old.html`: alias to the same dashboard page for compatibility
 - `history_dashboard.html`: included when available
-- `daily/`: dated dashboard archives copied from repo root
-"@ | Set-Content -LiteralPath (Join-Path $siteDir "README.md") -Encoding UTF8
+- `daily/`: dated dashboard archives copied from `static/dashboards`
+'@
+Set-Content -LiteralPath (Join-Path $siteDir "README.md") -Value $siteReadme -Encoding UTF8

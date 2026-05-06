@@ -20,11 +20,13 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
 
 $trackedPaths = @(
     "history_dashboard.html",
+    "web/index.html",
     "web/data/latest.json",
     "web/data/history.json",
     "web/data/snapshot_status.json",
     "web/data/close_full_diff_summary.json",
     "web/early_breakout",
+    "web/performance",
     "config/theme_baskets_auto.csv"
 )
 

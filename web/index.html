@@ -475,6 +475,7 @@ td{padding:7px 9px;vertical-align:middle}
     </label>
     <label class="flbl"><input type="checkbox" id="surge" onchange="go()"> 爆量≥1.8x</label>
     <label class="flbl"><input type="checkbox" id="max300" onchange="go()"> 股價≤300元</label>
+    <label class="flbl"><input type="checkbox" id="fairgap40" onchange="go()"> 合理價差≥40%</label>
     <label class="flbl"><input type="checkbox" id="sup" onchange="go()"> 分數上漲</label>
     <label class="flbl"><input type="checkbox" id="multi" onchange="go()"> 連續≥2天</label>
     <label class="flbl"><input type="checkbox" id="turnprofit" onchange="go()"> 轉虧為盈</label>
@@ -1000,6 +1001,13 @@ function getType(s) {
 }
 
 function typeOrder(t) { return t==='both'?3:t==='short'?2:t==='mid'?1:0; }
+
+function fairValueGapPct(s) {
+  const price = Number(s.price || s.currentPrice || 0);
+  const fairBase = Number(s.fairValueBase || 0);
+  if (price <= 0 || fairBase <= 0) return null;
+  return (fairBase - price) / price * 100;
+}
 
 function numberFromText(text, pattern) {
   const match = String(text || '').match(pattern);
@@ -1684,6 +1692,7 @@ function go() {
   const mins  = parseInt(document.getElementById('minscore').value) || 0;
   const surge = document.getElementById('surge').checked;
   const max300 = document.getElementById('max300').checked;
+  const fairgap40 = document.getElementById('fairgap40').checked;
   const sup   = document.getElementById('sup').checked;
   const multi = document.getElementById('multi').checked;
   const turnprofit = document.getElementById('turnprofit').checked;
@@ -1712,6 +1721,10 @@ function go() {
   if (mins)  stocks = stocks.filter(s => s.score >= mins);
   if (surge) stocks = stocks.filter(s => s.volumeRatio >= 1.8);
   if (max300) stocks = stocks.filter(s => (s.price || 0) > 0 && s.price <= 300);
+  if (fairgap40) stocks = stocks.filter(s => {
+    const gap = fairValueGapPct(s);
+    return gap !== null && gap >= 40;
+  });
   if (sup)   stocks = stocks.filter(s => (s.scoreDelta || 0) > 0);
   if (multi) stocks = stocks.filter(s => (Number.isFinite(s.consecutiveDays) ? s.consecutiveDays : 0) >= 2);
   if (turnprofit || growthonly) {
@@ -1743,7 +1756,7 @@ function reset() {
   ['mkt','ind','theme','launchTag'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('minscore').value = 0;
   document.getElementById('minscoreval').textContent = '0';
-  ['surge','max300','sup','multi','turnprofit','growthonly','ebonly','wonly'].forEach(id => document.getElementById(id).checked = false);
+  ['surge','max300','fairgap40','sup','multi','turnprofit','growthonly','ebonly','wonly'].forEach(id => document.getElementById(id).checked = false);
   go();
 }
 
@@ -2376,7 +2389,7 @@ function renderDB(s, history) {
   const fairGapPct = fairReady && Number(s.price || 0) > 0 ? ((fairBase - Number(s.price || 0)) / Number(s.price || 0) * 100) : 0;
   const valuationRich = fairReady && Number(s.price || 0) > fairHigh;
   const fairGapText = fairReady ? `${fairGapPct >= 0 ? '+' : ''}${fairGapPct.toFixed(1)}% vs 現價` : '待財報齊備';
-  const fairRangeText = fairReady ? `$${formatMoney(fairLow)} ~ $${formatMoney(fairHigh)}` : '—';
+  const fairRangeText = fairReady ? `保守 $${formatMoney(fairLow)} / 樂觀 $${formatMoney(fairHigh)}` : '—';
   const fairBaseText = fairReady ? `$${formatMoney(fairBase)}` : '—';
   const fairMethodText = s.fairValueMethod || '混合估值';
   const holdDays   = ss >= 65 && ms < 65 ? '5～15 個交易日（短線）' : ss >= 65 && ms >= 65 ? '20～60 個交易日（彈性）' : '20～60 個交易日（中線）';
@@ -2416,12 +2429,12 @@ function renderDB(s, history) {
           <div class="sl-item-sub">超過未動考慮換股</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--yellow)">
-          <div class="sl-item-lbl">🧭 合理價中位</div>
+          <div class="sl-item-lbl">🧭 基準合理價</div>
           <div class="sl-item-val" style="color:var(--yellow)">${fairBaseText}</div>
           <div class="sl-item-sub">${fairReady ? fairGapText : '待 full 財報補齊後估值'}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--green)">
-          <div class="sl-item-lbl">🧮 合理價區間</div>
+          <div class="sl-item-lbl">🧮 三情境估值</div>
           <div class="sl-item-val" style="color:var(--green);font-size:13px">${fairRangeText}</div>
           <div class="sl-item-sub">${fairReady ? `${fairMethodText}｜信心 ${fairConf.toFixed(0)} 分` : '尚未建立估值區間'}</div>
         </div>
@@ -2513,7 +2526,7 @@ function renderDB(s, history) {
       <div class="met"><div class="met-lbl">風報比</div><div class="met-val" style="color:${rrRatio>=2?'var(--green)':rrRatio>=1.2?'var(--yellow)':'var(--muted)'}">${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}</div></div>
       <div class="met"><div class="met-lbl">資料信心</div><div class="met-val" style="color:${confidenceColorValue}">${confidenceReady ? confidence.toFixed(1) : '未刷新'}</div></div>
       ${fairReady ? `<div class="met"><div class="met-lbl">合理價</div><div class="met-val" style="color:${fairGapPct>=8?'var(--green)':fairGapPct<=-8?'var(--red)':'var(--yellow)'}">$${formatMoney(fairBase)}</div></div>` : ''}
-      ${fairReady ? `<div class="met"><div class="met-lbl">合理區間</div><div class="met-val" style="font-size:13px;color:var(--muted)">$${formatMoney(fairLow)} ~ $${formatMoney(fairHigh)}</div></div>` : ''}
+      ${fairReady ? `<div class="met"><div class="met-lbl">估值情境</div><div class="met-val" style="font-size:13px;color:var(--muted)">$${formatMoney(fairLow)} / $${formatMoney(fairBase)} / $${formatMoney(fairHigh)}</div></div>` : ''}
       <div class="met"><div class="met-lbl">日變化</div><div class="met-val ${dv>0?'dp':dv<0?'dn':'dz'}">${dv>0?'+':''}${dv.toFixed(1)}</div></div>
       <div class="met"><div class="met-lbl">連續高分</div><div class="met-val">${cd>=3?'<span class="db3">'+cd+'天</span>':cd>=2?'<span class="db2">'+cd+'天</span>':'<span style="color:var(--muted)">'+cd+'天</span>'}</div></div>
       <div class="met"><div class="met-lbl">20日漲跌</div><div class="met-val ${ret>0?'rp':ret<0?'rn':''}">${ret>0?'+':''}${ret.toFixed(2)}%</div></div>

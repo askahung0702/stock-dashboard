@@ -1,47 +1,124 @@
 # 台股選股系統規格總整理
 
-這份文件整理目前 repo 內真正有在跑的 6 個層次：
+更新日期：2026-05-05
 
-- 每日資料流與輸出
-- 原始特徵欄位
-- 分數與分類邏輯
-- 大盤狀態機 / 產業相對化 / ATR 風控 / 回測優化
-- 本地「新聞與公司摘要器」
-- 前端 tab / tag / 篩選條件
+這份文件整理目前 repo 內真正有在跑的選股、評分、估值、分階段更新與前端篩選規則。它是工程規格文件，不是投資建議。
 
 主要程式位置：
 
+- `run_stock_analysis.bat`
+- `run_stock_1400_intraday.bat`
+- `run_stock_1700_close.bat`
+- `run_stock_2300_full.bat`
+- `src/stock/StockAnalysis.java`
 - `src/stock/TaiwanStockAnalyzer.java`
 - `src/stock/ConfiguredScoringStrategy.java`
 - `src/stock/MarketRegimeResolver.java`
-- `src/stock/IndustryMetricsSnapshot.java`
-- `src/stock/NewsCompanySummarizer.java`
+- `src/stock/StockStageExporter.java`
 - `src/stock/StockHistoryDatabase.java`
 - `src/stock/StockApiRenderer.java`
 - `src/stock/StockDashboardWriter.java`
+- `src/stock/FinMindFinancialProvider.java`
 - `config/scoring_profiles.json`
 - `scripts/early_breakout_screener.py`
 - `web/index.html`
 
 ## 1. 每日資料流
 
-`run_stock_analysis.bat` 的核心流程是：
+目前系統不是單一批次，而是分階段產出。
 
-1. 編譯並執行 `stock.StockAnalysis`
-2. 後端抓每檔基本面、籌碼、技術、新聞、事件
-3. `TaiwanStockAnalyzer` 完成所有打分、分類、風控與摘要
-4. 寫出：
-   - `history/stock_candidates_YYYYMMDD.csv`
-   - `history/stock_history_db.json / sqlite`
-   - `web/data/latest.json`
-   - `web/data/history.json`
-   - dashboard / site 靜態頁資料
-5. 再跑：
-   - `scripts/early_breakout_screener.py`
-   - `scripts/early_breakout_forward_returns.py`
-   - `scripts/early_breakout_portfolio_tracker.py`
+### 1.1 14:00 `intraday-close`
 
-本次新增的「新聞與公司摘要器」已直接整合在 `TaiwanStockAnalyzer` 內，所以每天正常跑 `bat` 時就會自動產生，不需要額外加一段腳本。
+入口：`run_stock_1400_intraday.bat`
+
+流程：
+
+1. 執行 `run_stock_analysis.bat intraday-close`
+2. 寫入 `daily_stock_raw / daily_stock_analysis` 的 `intraday-close` stage
+3. 執行 `run_stock_analysis.bat market-futures`
+4. 由 `StockStageExporter` 選擇 `intraday-close` 匯出到前端
+5. 跑 `early_breakout_screener.py`
+6. 自動推送 site 更新到 GitHub
+
+14:00 模式會設定：
+
+```text
+stock.analysis.stageOnly=true
+stock.analyzer.perStockPauseMs=150
+stock.intraday.deferChips=true
+stock.close.deferNews=true
+stock.close.deferEventRisk=true
+```
+
+重點：
+
+- 14:00 先跑收盤行情初版，不抓完整新聞與事件風險。
+- `stock.intraday.deferChips=true` 表示不即時抓 Yahoo 法人/主力頁。
+- 若不抓籌碼，系統會沿用前一個有效快照的法人、外資、主力資料，避免籌碼欄位被錯誤歸零。
+
+### 1.2 17:00 `close`
+
+入口：`run_stock_1700_close.bat`
+
+流程：
+
+1. 先跑 `futures-position`
+2. 再跑 `run_stock_analysis.bat close`
+3. 寫入 `close` stage
+4. 匯出正式盤後資料
+5. 自動推送 site 更新
+
+17:00 模式會設定：
+
+```text
+stock.analysis.stageOnly=true
+stock.analyzer.perStockPauseMs=150
+stock.close.deferNews=true
+stock.close.deferEventRisk=true
+```
+
+重點：
+
+- 17:00 會抓盤後籌碼與主力。
+- 新聞、事件風險仍延後，避免盤後初版太慢或不穩。
+
+### 1.3 23:00 `full`
+
+入口：`run_stock_2300_full.bat`
+
+流程：
+
+1. 先跑 `futures-position`
+2. 再跑 `run_stock_analysis.bat full`
+3. 補完整新聞、事件風險、低頻財報資料、回測與報表
+4. 匯出前端資料並推送 GitHub
+
+23:00 是每天最完整版本。
+
+### 1.4 stage 匯出優先順序
+
+`StockStageExporter` 依 request mode 選擇資料：
+
+- `intraday-close` / `market-futures`：優先 `intraday-close`，再退回 `close`，再退回 `full`
+- `close`：優先 `close`，再退回 `full`
+- `full`：優先 `full`，再退回 `close+news-event`
+- `news-event`：合併 `close + news-event`
+- 手動匯出：優先最完整的 `full`
+
+輸出檔：
+
+- `web/data/latest.json`
+- `web/data/history.json`
+- `web/data/snapshot_status.json`
+- `history_dashboard.html`
+- `static/dashboards/stock_dashboard_YYYYMMDD.html`
+- `history/stock_history_db.sqlite`
+
+### 1.5 日期判定
+
+`TaiwanStockAnalyzer.currentDateStamp()` 使用台北時間。
+
+若執行時間早於 `05:00`，系統會視為前一個交易日，並且週末會回推到最近的星期五。這是為了避免 23:00 任務跨過午夜後，把前一交易日資料錯寫成隔天日期。
 
 ## 2. 原始特徵欄位
 
@@ -52,6 +129,15 @@
 - `market`
 - `industry`
 - `note`
+- `sourceUpdatedAt`
+- `analysisVersion`
+- `snapshotStage`
+- `techReady`
+- `marketReady`
+- `institutionalReady`
+- `brokerReady`
+- `financialReady`
+- `newsReady`
 
 ### 2.2 營收
 
@@ -59,6 +145,13 @@
 - `avg_3m_revenue_yoy_pct`
 - `accumulated_revenue_yoy_pct`
 - `positive_revenue_months`
+
+資料來源：
+
+- Yahoo
+- LowFrequencyDataCache
+- FinMind supplement，需有 token
+- MOPS provider 目前保留介面，預設未啟用
 
 ### 2.3 籌碼
 
@@ -69,6 +162,8 @@
 - `latest_foreign_net_lots`
 - `broker_net_lots`
 - `broker_net_ratio_pct`
+
+14:00 初版若 deferred chips，會沿用前一個有效籌碼快照。17:00 / 23:00 會重新抓 Yahoo 籌碼資料。
 
 ### 2.4 財報 / 估值
 
@@ -91,6 +186,12 @@
 - `debt_ratio_pct`
 - `current_ratio`
 - `non_operating_ratio_pct`
+- `fair_value_low`
+- `fair_value_base`
+- `fair_value_high`
+- `fair_value_confidence`
+- `fair_value_method`
+- `fair_value_reason`
 
 ### 2.5 技術
 
@@ -108,8 +209,8 @@
 
 `drawdown_from_high60_pct` 的意義：
 
-- `0%`：幾乎就在最近 60 日高點
-- `-5%`：比最近 60 日高點低 5%
+- `0%`：接近最近 60 日高點
+- `-5%`：低於最近 60 日高點 5%
 - `+1%`：略微突破最近 60 日高點
 
 ### 2.6 新聞 / 題材 / 事件
@@ -123,6 +224,7 @@
 - `news_summary`
 - `news_digest`
 - `news_source_summary`
+- `latest_news_published_hint`
 - `news_source_credibility_score`
 - `news_freshness_score`
 - `news_source_count`
@@ -131,10 +233,12 @@
 - `theme_score`
 - `primary_theme`
 - `theme_tags`
+- `theme_reference_score`
+- `market_theme_reference_score`
 
-### 2.7 新增的本地摘要欄位
+### 2.7 摘要欄位
 
-這五個欄位是每天分析最後由 `NewsCompanySummarizer` 產生：
+由 `NewsCompanySummarizer` 產生：
 
 - `company_summary`
 - `recent_news_brief`
@@ -142,35 +246,82 @@
 - `practical_advice`
 - `advice_confidence`
 
-定位是：
+這些欄位是解釋層與人工複核層，不是第一層硬篩選條件。
 
-- 解釋層
-- 人工複核層
-- 實際操作建議層
+## 3. 六大基礎分數
 
-不是第一層硬篩選條件。
+### 3.1 `revenueScore`，滿分 30
 
-## 3. 分數與核心判斷
+組成：
 
-### 3.1 畫面上的分數是什麼
+- 最新月營收年增，最高 11
+- 近 3 月平均營收年增，最高 12
+- 累計營收年增，最高 5
+- 近 3 月正成長月數，最高 2
+
+### 3.2 `chipsScore`，滿分 30
+
+組成：
+
+- 5 日法人買賣超比率，最高 12
+- 最新日法人占比，最高 5
+- 外資方向，最高 6
+- 主力比率，最高 6
+- 主力張數方向，最高 1
+
+### 3.3 `liquidityScore`，滿分 15
+
+組成：
+
+- 20 日平均成交金額，最高 8
+- 20 日平均成交張數，最高 4
+- 市值，最高 3
+
+### 3.4 `valuationScore`，滿分 20
+
+前提：近四季 EPS 必須大於 0，否則為 0。
+
+組成：
+
+- 相對同業 PE 或絕對 PE，最高 12
+- PEG，最高 4
+- EPS 加速，最高 4
+- 非營業依賴扣分
+
+### 3.5 `technicalScore`，滿分 20
+
+組成：
+
+- 均線多頭排列，最高 9
+- MA20 斜率，最高 2
+- 20 日 / 60 日報酬，最高 3
+- 量比，最高 1
+- 接近 60 日高點且有量，最高 3
+- RSI14，最高 3，嚴重過熱扣分
+- KD，最高 3，超買扣分
+- 波動度健康，最高 1
+
+### 3.6 `financialQualityScore`，滿分 20
+
+組成：
+
+- EPS 獲利能力，最高 5
+- EPS 加速，最高 3
+- 正 EPS 季數，最高 2
+- 現金流，最高 4
+- 毛利率、營益率、ROA、ROE，最高 4
+- 負債比、流動比、非營業依賴，最高 3
+
+## 4. 主分數
+
+### 4.1 前端看到的分數
 
 - 前端 `總分` = `selectionScore`
 - 前端 `買點` = `buyPointScore`
-- 前端 `信心` = `dataConfidence`
+- 前端 `資料信心` = `dataConfidence`
 - `legacyScore` 才是舊版 `score`
 
-### 3.2 舊版總分 `legacyScore`
-
-先計算六大子分數：
-
-- `revenueScore`
-- `chipsScore`
-- `liquidityScore`
-- `valuationScore`
-- `technicalScore`
-- `financialQualityScore`
-
-公式：
+### 4.2 舊版總分 `legacyScore`
 
 ```text
 rawScore =
@@ -185,9 +336,9 @@ rawScore =
 legacyScore = clamp(rawScore, 0, 100)
 ```
 
-這層仍保留，但現在主要作為中繼分，不是前端主排序。
+這層仍保留，但現在主要作為中繼分數。
 
-### 3.3 `qualityScore`
+### 4.3 `qualityScore`
 
 ```text
 qualityScore =
@@ -197,21 +348,17 @@ qualityScore =
   + (liquidityScore / 15) * 10
 ```
 
-### 3.4 `momentumScore`
+### 4.4 `momentumScore`
 
-主要由：
+主要看：
 
 - `chipsScore`
 - `technicalScore`
-- 量比
-- 20 日漲幅位置
+- `volumeRatio`
+- 20 日報酬位置
 - RSI / KD
 
-組成。
-
-### 3.5 `selectionQualified`
-
-現在已不是只有兩個硬門檻，而是交給 `ScoringStrategy` 依大盤狀態判斷。
+### 4.5 `selectionQualified`
 
 共同底線來自 `config/scoring_profiles.json`：
 
@@ -221,45 +368,37 @@ qualityScore =
 - `healthyVolumeMax = 2.5`
 - `minDataConfidence = 65`
 
-目前邏輯：
+規則：
 
-- `liquidityScore < 4` → 不合格
-- `financialQualityScore < 8` → 不合格
-- 若 `dataConfidence > 0` 且 `< 65` → 不合格
-- 在 `BEAR_CORRECTION / PANIC_SELLOFF` 時，量比過低或過高也更容易失去資格
+- `liquidityScore < 4` 不合格
+- `financialQualityScore < 8` 不合格
+- `dataConfidence > 0 且 < 65` 不合格
+- 在 `BEAR_CORRECTION` 或 `PANIC_SELLOFF` 時，`volumeRatio < 0.8` 或 `volumeRatio > 3.0` 不合格
 
-### 3.6 大盤狀態機 `MarketRegime`
+## 5. 大盤狀態與動態權重
 
-目前四種狀態：
+目前四種 `MarketRegime`：
 
-- `BULL_TREND`：多頭趨勢
-- `RANGE_BOUND`：區間整理
-- `BEAR_CORRECTION`：空頭修正
-- `PANIC_SELLOFF`：恐慌殺盤
+- `BULL_TREND`
+- `RANGE_BOUND`
+- `BEAR_CORRECTION`
+- `PANIC_SELLOFF`
 
 來源：`MarketRegimeResolver`
 
-主要用這些統計推斷：
+主要輸入：
 
-- `breadthPct`
-- `likelyPct`
-- `buyReadyPct`
-- `scoreUpPct`
-- `avgSelection`
-- `avgNewsRisk`
+- 市場寬度
+- likely 比率
+- buy-ready 比率
+- 分數上升比率
+- 平均 selection score
+- 平均 news risk
+- 歷史快照變化
 
-大致規則：
+### 5.1 `selectionScore`
 
-- 寬度很差、分數上升率太低 → `PANIC_SELLOFF`
-- 寬度偏弱、平均分偏弱 → `BEAR_CORRECTION`
-- 寬度強、Likely 夠多、平均分高 → `BULL_TREND`
-- 其餘 → `RANGE_BOUND`
-
-### 3.7 `selectionScore` 的動態權重
-
-`selectionScore` 分成兩段：
-
-#### 3.7.1 `baseSelectionScore`
+第一段：
 
 ```text
 baseSelectionScore =
@@ -270,7 +409,7 @@ baseSelectionScore =
   - 資格與量比罰分
 ```
 
-#### 3.7.2 `selectionScore`
+第二段：
 
 ```text
 selectionScore =
@@ -278,84 +417,34 @@ selectionScore =
   + trendPersistenceScore * trendWeight
   + sectorScore * sectorWeight
   + constant
-  - newsRisk penalty
+  - newsRiskPenalty
 ```
 
-各 regime 權重：
+目前權重：
 
-| Regime | quality | momentum | raw | composite base | trend | sector | constant |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `BULL_TREND` | 0.34 | 0.46 | 0.20 | 0.78 | 0.12 | 0.07 | 5 |
-| `RANGE_BOUND` | 0.45 | 0.35 | 0.20 | 0.82 | 0.08 | 0.06 | 5 |
-| `BEAR_CORRECTION` | 0.56 | 0.22 | 0.22 | 0.86 | 0.07 | 0.05 | 4 |
-| `PANIC_SELLOFF` | 0.60 | 0.16 | 0.24 | 0.90 | 0.05 | 0.03 | 2 |
+| Regime | quality | momentum | raw | composite base | trend | sector | constant | likely |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `BULL_TREND` | 0.34 | 0.46 | 0.20 | 0.78 | 0.12 | 0.07 | 5 | 78 |
+| `RANGE_BOUND` | 0.45 | 0.35 | 0.20 | 0.82 | 0.08 | 0.06 | 5 | 78 |
+| `BEAR_CORRECTION` | 0.56 | 0.22 | 0.22 | 0.86 | 0.07 | 0.05 | 4 | 78 |
+| `PANIC_SELLOFF` | 0.60 | 0.16 | 0.24 | 0.90 | 0.05 | 0.03 | 2 | 80 |
 
-解讀：
+`newsRiskScore > 60` 時，selection composite 會扣分。
 
-- 多頭放大動能權重
-- 空頭拉高品質與 raw score 權重
-- 越差的盤勢，越不鼓勵太多進攻訊號
+### 5.2 `Likely`
 
-### 3.8 `Likely`
+目前 `activeLikelyThreshold()` 由 regime profile 決定：
 
-`Likely` 也是動態 regime 門檻。
-
-`config/scoring_profiles.json` 目前設定：
-
-| Regime | likely selection threshold | likely financial quality |
-| --- | ---: | ---: |
-| `BULL_TREND` | 72 | 12 |
-| `RANGE_BOUND` | 72 | 12 |
-| `BEAR_CORRECTION` | 76 | 13 |
-| `PANIC_SELLOFF` | 80 | 14 |
+- 多頭、區間、空頭修正：`selectionScore >= 78`
+- 恐慌殺盤：`selectionScore >= 80`
 
 另外仍需：
 
 - `selectionQualified = true`
-- `0.8 <= volumeRatio <= 2.5`
+- `financialQualityScore >= 14`
+- 量比在健康區間
 
-### 3.9 產業相對標準化
-
-`IndustryMetricsSnapshot` 會把每檔股票和同產業比較，算 percentile。
-
-目前有：
-
-- `grossMarginIndustryPercentile`
-- `operatingMarginIndustryPercentile`
-- `roaIndustryPercentile`
-- `roeIndustryPercentile`
-- `pegIndustryPercentile`
-- `relativePeIndustryPercentile`
-- `nonOperatingIndustryPercentile`
-- `valuationIndustryPercentile`
-- `financialQualityIndustryPercentile`
-
-回灌方式：
-
-```text
-valuationScore =
-  valuationScore * 0.65
-  + valuationIndustryPercentile * 0.07
-
-financialQualityScore =
-  financialQualityScore * 0.65
-  + financialQualityIndustryPercentile * 0.07
-```
-
-然後再重算：
-
-- `qualityScore`
-- `rawScore`
-- `legacyScore`
-
-這層的目的是：
-
-- 不只看絕對數值
-- 改成看「同產業相對位置」
-
-### 3.10 `buyPointScore`
-
-先算 `baseBuyPointScore`，再做動態 composite。
+### 5.3 `buyPointScore`
 
 ```text
 buyPointScore =
@@ -365,21 +454,144 @@ buyPointScore =
   + riskRewardScore * buyRiskRewardWeight
   + sectorScore * buySectorWeight
   + newsScore * buyNewsWeight
-  - newsRisk penalty
+  - newsRiskPenalty
 ```
 
-各 regime 權重：
+目前權重：
 
-| Regime | base | structure | trend | risk/reward | sector | news | news risk penalty |
+| Regime | base | structure | trend | risk/reward | sector | news | risk penalty |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `BULL_TREND` | 0.50 | 0.18 | 0.11 | 0.09 | 0.04 | 0.08 | 0.15 |
 | `RANGE_BOUND` | 0.54 | 0.16 | 0.10 | 0.08 | 0.04 | 0.08 | 0.18 |
 | `BEAR_CORRECTION` | 0.56 | 0.16 | 0.08 | 0.10 | 0.05 | 0.05 | 0.22 |
 | `PANIC_SELLOFF` | 0.58 | 0.14 | 0.06 | 0.12 | 0.05 | 0.05 | 0.26 |
 
-### 3.11 `structureScore` / `structureLabel`
+`buyPointThreshold` 目前各 regime 都是 `82`。
 
-常見型態：
+## 6. 估值與合理價
+
+合理價先由 `buildFairValueProfile()` 建立，再由同業比較後處理校準。前端將三個價格視為三情境：
+
+- `fairValueLow`：保守價
+- `fairValueBase`：基準合理價
+- `fairValueHigh`：樂觀價
+- `fairValueConfidence`
+- `fairValueMethod`
+- `fairValueReason`
+
+### 6.1 估值 EPS
+
+```text
+twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2
+fairValueEps = trailingFourQuarterEps * 0.40 + twoQuarterAnnualizedEps * 0.60
+```
+
+因此，剛轉盈或單季爆發的股票，合理價會快速上修；近四季 EPS 很低但股價已經大漲的股票，合理價會很低。
+
+### 6.2 估值風格
+
+`resolveFairValueStyle()` 會判斷：
+
+- `growth`：半導體、電子零組件、電腦週邊、光電、通信網路、其他電子，或 EPS / 營收成長強
+- `stable`：book value 與 ROE 足夠
+- `balanced`：其他
+
+### 6.3 多模型混合
+
+可能使用：
+
+- 同業 PE，target PE clamp 在 `8 到 36`
+- PEG 推估，target PE clamp 在 `10 到 40`
+- PB / ROE 資產面估值
+- 復甦期市場定價，當 EPS 還不足但營收或 EPS 年增轉正時使用
+
+若現金流、負債、非營業依賴等品質風險偏多，系統會再限制 PE 上限：
+
+- 風險項目 2 個以上：PE 上限約 `28` 倍
+- 風險項目 3 個以上：PE 上限約 `24` 倍
+- 風險項目 5 個以上、負債很高、非營業依賴很高，或營業 / 自由現金流皆為負：PE 上限可降到 `20~24` 倍
+
+### 6.4 品質折價
+
+合理價會把以下風險折價進去：
+
+- `latestOperatingCashFlow < 0`：營業現金流為負
+- `latestFreeCashFlow < 0`：自由現金流為負
+- `positiveOperatingCashFlowQuarters <= 1`：營業現金流季數偏少
+- `positiveFreeCashFlowQuarters <= 1`：自由現金流季數偏少
+- `debtRatioPct >= 60`：負債比偏高
+- `currentRatio < 1.2`：流動比偏低
+- `nonOperatingRatioPct > 25`：非營業依賴偏高
+
+折價會同時影響：
+
+- PE / PEG / PB 估值倍數
+- 復甦期市場定價
+- 合理價信心分數
+
+### 6.5 大盤折價
+
+大盤折價：
+
+- `RANGE_BOUND`：0.97
+- `BEAR_CORRECTION`：0.94
+- `PANIC_SELLOFF`：0.88
+- `BULL_TREND`：1.00
+
+信心分數會吃：
+
+- 模型數量
+- `dataConfidence`
+- `financialQualityScore`
+- `valuationScore`
+- `selectionQualified`
+- 非營業依賴
+- EPS 年增方向
+
+### 6.6 同業比較校準
+
+`finalizeCompositeScores()` 會在所有股票都分析完成後建立同業估值樣本，讓合理價不只依賴單檔的 Yahoo 同業平均 PE。
+
+同業樣本規則：
+
+- 優先用 `產業 + 題材` 分組，例如 `光電/AUTO:AI`
+- 若細分樣本不足 5 檔，退回同產業分組；櫃買產業名稱會移除開頭的 `櫃` 後再歸類
+- PE 有效樣本：`3 到 80` 倍，至少 5 檔才啟用
+- PB 有效樣本：`0.2 到 10` 倍，至少 5 檔才啟用
+- 使用 PE 中位數與 10% 修剪平均建立同業 PE 錨
+- 使用 PB 中位數與 10% 修剪平均建立同業 PB 錨，並依個股 ROE 相對同業 ROE 做 `0.75 到 1.25` 倍調整
+
+同業校準會產生：
+
+- 估值 EPS 估值：`fairValueEps * 同業 PE 錨`
+- PB / ROE 估值：`bookValue * 同業 PB 錨 * ROE 相對因子`
+- 若 PB 樣本足夠，同業錨為 `70% PE 估值 + 30% PB/ROE 估值`
+- 同業錨再以 `22% 到 62%` 權重併入原本合理價；當原估值與同業錨差距很大時，權重會提高並限制極端估值
+- 若公司品質風險偏高，且 EPS 估值遠高於 PB / ROE 估值，基準價會套用 PB / ROE 天花板
+- 成長 / 復甦型股票若原估值與同業錨差距未達極端，校準權重最高約 `32%`，避免剛轉強的 EPS 被同業落後估值過度壓低
+- `fairValueMethod` 會加上 `+同業比較`
+- `fairValueReason` 會列出同業分組、有效樣本數、PE 中位數、PE 修剪平均、估值 EPS 估值；若 PB 可用，也會列出 PB 中位數與 PB / ROE 估值
+- `fairValueReason` 也會列出三情境：保守 / 基準 / 樂觀
+
+### 6.7 績效校準
+
+估值完成後，系統會用既有回測欄位校準 `fairValueConfidence`：
+
+- `expectedReturnScore >= 60`：信心加分
+- `expectedReturnScore < 45`：信心扣分
+- `winratePriorityScore >= 60`：信心加分
+- `winratePriorityScore < 45`：信心扣分
+- `maxDrawdownPenalty >= 10`：信心扣分
+
+績效校準不直接改合理價，避免短期回測把基本面估值扭曲；它只調整「這個估值差值目前值不值得相信」。
+
+合理價是基本面估值，不是短線目標價。題材股、籌碼股可能長時間偏離合理價。
+
+## 7. 結構、風控與出場
+
+### 7.1 `structureLabel`
+
+常見標籤：
 
 - `平台突破`
 - `回踩承接`
@@ -387,17 +599,19 @@ buyPointScore =
 - `結構未完成`
 - `整理待確認`
 
-### 3.12 ATR 風控 / `riskRewardScore`
+### 7.2 ATR 風控
 
-現在 `riskRewardScore` 已不是固定 % 停損，而是會吃：
+輸出：
 
-- `supportPrice`
-- `volatility20Pct`
-- `atr20`
-- regime 的 `stopAtrMultiplier`
-- regime 的 `trailingAtrMultiplier`
+- `suggestedStopPrice`
+- `suggestedStopPct`
+- `suggestedTrailingStopPrice`
+- `suggestedTargetPrice`
+- `riskRewardRatio`
+- `riskRewardScore`
+- `reducePositionSize`
 
-目前 ATR 倍數：
+ATR 倍數：
 
 | Regime | stop ATR | trailing ATR |
 | --- | ---: | ---: |
@@ -406,60 +620,37 @@ buyPointScore =
 | `BEAR_CORRECTION` | 1.45 | 2.1 |
 | `PANIC_SELLOFF` | 1.25 | 1.9 |
 
-輸出欄位：
+### 7.3 `sellSignalScore`
 
-- `suggestedStopPrice`
-- `suggestedStopPct`
-- `suggestedTrailingStopPrice`
-- `suggestedTargetPrice`
-- `upsidePotentialPct`
-- `riskRewardRatio`
-- `reducePositionSize`
+主要看：
 
-### 3.13 `sellSignalScore`
+- 跌破 MA20 / MA60 / MA120
+- 跌破 trailing stop
+- 距 60 日高點回落過深
+- 20 日趨勢轉弱
+- 量價破線
+- 籌碼轉弱
 
-轉弱 / 出場訊號主要看：
-
-- `price < MA20`
-- `price <= trailing stop`
-- `drawdown_from_high60_pct < -12`
-- 停損距離是否過大
-- ATR 相對價格是否偏大
-
-輸出：
-
-- `sellSignalScore`
-- `sellSignalLabel`
-
-目前標籤：
+輸出標籤：
 
 - `續抱觀察`
 - `保守續抱`
 - `轉弱出場`
 
-### 3.14 `dataConfidence`
+## 8. 翻轉與資料信心
 
-本質是資料完整度，不是勝率。
+### 8.1 `turnaroundScore`
 
-基礎 40 分，再依資料可用性加分：
+```text
+turnaroundScore =
+  revenueGrowthSignalScore * 0.28
+  + earningsTurnaroundSignalScore * 0.32
+  + profitabilityTurnaroundSignalScore * 0.30
+  - oneOffRiskScore * 0.22
+  + 12
+```
 
-- profile：`+15`
-- EPS：`+15`
-- cash flow：`+10`
-- income：`+8`
-- balance：`+8`
-- broker：`+4`
-
-### 3.15 `turnaroundScore`
-
-由這些子訊號組成：
-
-- `revenueGrowthSignalScore`
-- `earningsTurnaroundSignalScore`
-- `profitabilityTurnaroundSignalScore`
-- `oneOffRiskScore`
-
-輸出常見標籤：
+常見標籤：
 
 - `高品質翻轉`
 - `轉虧為盈`
@@ -469,9 +660,31 @@ buyPointScore =
 - `一次性轉盈風險`
 - `尚未明確`
 
-### 3.16 收盤後分類 `postCloseCategory`
+### 8.2 `dataConfidence`
 
-目前主要分類：
+資料完整度分，不等於勝率。
+
+基礎 40 分，再加：
+
+- profile：`+15`
+- EPS：`+15`
+- cash flow：`+10`
+- income statement：`+8`
+- balance sheet：`+8`
+- broker：`+4`
+
+等級：
+
+- `A`：`>= 85`
+- `B`：`>= 70`
+- `C`：`>= 55`
+- `D`：`< 55`
+
+## 9. 收盤後分類
+
+分類由 `applyPostCloseDecisionProfile()` 決定。
+
+目前類別：
 
 - `高勝率候選`
 - `短線主攻`
@@ -480,208 +693,336 @@ buyPointScore =
 - `一般觀察`
 - `暫不出手`
 
-並搭配：
+對應 action：
 
-- `postCloseAction`
-- `postCloseReason`
-- `signalType`
-- `signalHorizonDays`
+| category | action | signal | horizon |
+| --- | --- | --- | ---: |
+| `高勝率候選` | `優先研究` | `3-5日延續` | 3 |
+| `短線主攻` | `隔日觀察` | `隔日延續` | 1 |
+| `波段布局` | `可分批布局` | `5-10日波段` | 10 |
+| `催化觀察` | `只觀察不追` | `3-5日延續` | 5 |
+| `一般觀察` | `放進觀察名單` | `待確認` | 3 |
+| `暫不出手` | `暫不出手` | `待確認` | 0 |
 
-## 4. 回測與參數優化
+### 9.1 主名單硬降級
 
-目前系統已接上：
+主名單包含：
 
-- `StockBacktestReport`
-- `BacktestCalibrationService`
-- `WalkForwardOptimizationService`
+- `高勝率候選`
+- `短線主攻`
+- `波段布局`
 
-目前每日分析後會輸出：
+若觸發以下條件，會被降級：
 
-- `history/backtest_summary.csv`
-- `history/walk_forward_optimization.csv`
-- `history/scoring_parameter_recommendations.json`
+- 核心條件不足 `8/9`
+- 財報品質低於主名單門檻
+- 資料品質 C / D
+- 資料信心低於 70
+- `追高風險`
+- 新聞風險偏高
+- 非營業依賴過高
+- 高負債且現金流為負
+- 量比過低或過熱
+- 股價跌破 MA20
+- 事件偏負向
+- 短線催化不夠新
 
-這層用來：
+### 9.2 核心條件 `coreConditionCount`
 
-- 檢查既有權重表現
-- 做 walk-forward 規則掃描
-- 產出推薦門檻組合
+共 9 項：
 
-## 5. 本地新聞與公司摘要器
+1. 20 日漲幅未過熱、量比未過熱、回檔未失控、RSI 未過熱
+2. 5 日法人未明顯轉弱或主力比率為正
+3. EPS 季數或 EPS 年增轉正
+4. 近 3 月營收轉正且正成長月數至少 2
+5. MA60 > MA120
+6. 60 日報酬為正
+7. 最新月營收年增為正
+8. MA20 > MA60
+9. PE 合理，低於同業 1.15 倍或低於 35 倍
 
-### 5.1 目的
+## 10. 起漲與 launch tags
 
-這一層不是外部 LLM，也不需額外 API 費。
+後端會輸出 `launchTags`，前端也會在舊資料缺欄位時 fallback 計算。
 
-它會用現成欄位整理：
+目前 tag：
 
-- `industry`
-- `primaryTheme / themeTags`
-- `newsDigest / newsSummary`
-- `eventDirection / eventTypeSummary`
-- `turnaroundLabel / turnaroundReason`
-- `buyPointScore / structureLabel / postCloseCategory`
-- `dataConfidence / qualityScore / riskRewardScore`
+- `起漲前夜`
+- `起漲共振`
+- `健康回踩`
+- `價量未過熱`
+- `營收EPS支撐`
+- `外資主力轉買`
+- `主力先行`
+- `外資接棒`
+- `法人籌碼未轉弱`
+- `強勢續攻`
+- `已過熱勿追`
 
-### 5.2 輸出欄位
+### 10.1 `起漲前夜`
 
-- `companySummary`
-  - 用產業、主題、營收與獲利狀態，整理出這家公司目前在市場上的「定位」
-- `recentNewsBrief`
-  - 用新聞摘要、事件方向、事件類型，整理出近期最值得看的消息
-- `transformationHint`
-  - 判斷比較像真正轉型、產品升級，還是單純題材 / 一次性事件
-- `practicalAdvice`
-  - 根據 `buyPointScore / structure / postClose / sellSignal / marketRegime` 給出實際建議
-- `adviceConfidence`
-  - 依 `dataConfidence + 結構 + 風險報酬 + 新聞來源品質` 計算
+這是用 6197、8064 起漲確認前一天的共同特徵建立，定位類似 `highWinMode` 的可篩選模式。
 
-### 5.3 定位
+條件：
 
-這一層比較適合：
+- 現價站上 MA20，且 MA20 >= MA60
+- `structureLabel = 整理待確認`
+- `postCloseAction` 包含 `優先研究`
+- `selectionScore >= 70`
+- `buyPointScore >= 85`
+- `financialQualityScore >= 14`
+- `chipsScore >= 18`
+- 外資買超
+- `return20DayPct` 介於 `3 到 15`
+- `return60DayPct >= 20`
+- `volumeRatio` 介於 `0.8 到 1.8`
+- `RSI14` 介於 `45 到 60`
+- `drawdownFromHigh60Pct` 介於 `-16 到 -8`
 
-- 顯示給前端看
-- 幫助人工複核
-- 提升「建議」的可讀性
+這個 tag 找的是「起漲前一日樣貌」，不是已經噴出後的追價段。
 
-不建議直接當成第一層硬篩選門檻。
-
-## 6. 前端 tag / tab / 篩選
-
-### 6.1 前端衍生分數
-
-前端仍有：
-
-- `shortScore`
-- `midScore`
-
-它們目前主要用在輔助比較，不再是主要 tab。
-
-### 6.2 轉空警示
-
-目前前端追蹤 4 種轉空特徵：
-
-- `structureLabel === 結構未完成`
-- `postCloseCategory === 暫不出手`
-- `return20DayPct <= -8`
-- `price < movingAverage20`
-
-畫面會顯示 `轉空警示 X/4`。
-
-### 6.3 `催化成長`
+### 10.2 `起漲共振`
 
 大致條件：
 
-- `revenueScore >= 20`
-- `chipsScore >= 24`
+- 現價站上 MA20 / MA60
+- 20 日漲幅早期但未過熱
+- RSI、量比健康
+- 營收與 EPS 有支撐
+- 外資、主力或法人籌碼不弱
+
+### 10.3 `已過熱勿追`
+
+任一過熱特徵可能觸發：
+
+- 20 日漲幅 > 30
+- RSI >= 75
+- 量比 > 2.8
+- 幾乎貼近 60 日高點但風險報酬不足
+
+## 11. 早期起漲 screener
+
+`scripts/early_breakout_screener.py` 是另一層研究工具，不等同於 analyzer 的 `buyPointScore`。
+
+### 11.1 MA20/60 早期起漲
+
+主要條件：
+
+- 營收近 3 月年增 > 5
+- 近 3 月正成長 >= 2
+- MA20 > MA60
+- 20 日漲幅介於 3 到 30
+- 60 日漲幅 > 0
+- 距 60 日高點回檔介於 -25 到 -2
+- 主力比率或法人籌碼未明顯轉弱
+
+### 11.2 MA20/60 強勢續攻
+
+主要條件：
+
+- 現價 > MA20 > MA60
+- 20 日漲幅介於 3 到 25
+- 60 日漲幅 > 10
+- 距 60 日高點介於 -6 到 +1
+- 營收與籌碼有支撐
+
+### 11.3 MA18/54 版本
+
+邏輯相同，但改看：
+
+- MA18 / MA54
+- 18 日 / 54 日報酬
+
+## 12. 前端 tab 與篩選
+
+目前 `web/index.html` 首頁 tab：
+
+- `全部`
+- `催化成長`
+- `早期起漲`
+- `強勢續攻`
+- `早期起漲 18/54`
+- `強勢續攻 18/54`
+- `波段優勢`
+- `highWinMode`
+- `起漲前夜`
+- `轉弱預警`
+- `自選清單`
+
+前端 select：
+
+- 市場
+- 產業
+- 題材
+- `全部起漲Tag`
+
+checkbox：
+
+- 爆量 >= 1.8x
+- 股價 <= 300
+- 分數上漲
+- 連續 >= 2 天
+- 轉虧為盈
+- 業績成長
+- 早期起漲
+- 僅目前群組自選
+
+### 12.1 `highWinMode`
+
+保留條件：
+
 - `selectionQualified = true`
-- `selectionScore >= 65`
-- `65 <= buyPointScore <= 92`
-- 有翻轉 / 成長訊號
-- 籌碼有支撐
-- 文字理由含催化關鍵字
-
-### 6.4 `早期起漲 / 強勢續攻`
-
-這一組來自 `scripts/early_breakout_screener.py`，不是主 analyzer 本體裡的 `buyPoint` 規則。
-
-#### MA20/60 `早期起漲`
-
-- `avg_3m_revenue_yoy_pct > 5`
-- `positive_revenue_months >= 2`
-- `ma20 > ma60`
-- `return_20d_pct 介於 3% ~ 30%`
-- `return_60d_pct > 0`
-- `drawdown_from_high60_pct 介於 -25% ~ -2%`
-- `broker_net_ratio_pct > 0`
-
-#### MA20/60 `強勢續攻`
-
-- `avg_3m_revenue_yoy_pct > 5`
-- `positive_revenue_months >= 2`
-- `current_price > ma20 > ma60`
-- `return_20d_pct 介於 3% ~ 25%`
-- `return_60d_pct > 10`
-- `drawdown_from_high60_pct 介於 -6% ~ +1%`
-- `broker_net_ratio_pct > 0`
-
-#### MA18/54 版本
-
-邏輯相同，只是改看：
-
-- `ma18 / ma54`
-- `return_18d_pct / return_54d_pct`
-
-### 6.5 `highWinMode`
-
-這是目前前端最嚴的高勝率名單。
-
-#### 保留條件
-
-- `selectionQualified = true`
+- 有資料信心欄位
 - `dataConfidence >= 75`
 - `financialQualityScore >= 12`
 - `selectionScore >= 75`
 - `buyPointScore >= 78`
 - `structureScore >= 70`
 - `riskRewardScore >= 45`
-- `0.9 <= volumeRatio <= 2.2`
-- `drawdown_from_high60_pct 介於 -8% ~ 0%`
-- `RSI 介於 50 ~ 68`
+- `volumeRatio` 介於 `0.9 到 2.2`
+- `drawdownFromHigh60Pct` 介於 `-8 到 0`
+- `RSI14` 介於 `50 到 68`
 - `newsRiskScore <= 60`
 
-#### 淘汰條件
+排除條件：
 
-符合任一就排除：
-
-- `selectionQualified = false`
 - `financialQualityScore < 12`
 - `dataConfidence < 70`
 - `newsRiskScore > 65`
-- `volumeRatio > 2.8`
-- `volumeRatio < 0.8`
-- `return_20d_pct > 25`
-- `RSI >= 75`
+- `volumeRatio > 2.8` 或 `< 0.8`
+- `return20DayPct > 25`
+- `RSI14 >= 75`
 - `structureLabel = 追高風險`
-- `price < MA20`
-- `drawdown_from_high60_pct < -12`
+- 股價跌破 MA20
+- `drawdownFromHigh60Pct < -12`
 
-### 6.6 前端 checkbox
+### 12.2 `波段優勢`
 
-- `爆量≥1.8x`
-- `股價≤300元`
-- `分數上漲`
-- `連續≥2天`
-- `轉虧為盈`
-- `業績成長`
-- `早期起漲`
-- `僅目前群組自選`
+前端 `isStructureEdgeMode()` 條件：
 
-### 6.7 目前前端 tab
+- `selectionQualified = true`
+- 非恐慌盤
+- 空頭修正時 `qualityScore >= 75`，其他盤勢 `>= 70`
+- 空頭修正時 `buyPointScore >= 82`，其他盤勢 `>= 78`
+- `selectionScore >= 72`
+- `financialQualityScore >= 14`
+- `volumeRatio` 介於 `0.8 到 2.5`
+- 20 日與 60 日報酬為正
+- RSI 未過熱
+- `newsRiskScore < 60`
+- 非負向事件
+- 結構不是 `追高風險` 或 `結構未完成`
 
-現在首頁 tab 是：
+### 12.3 `催化成長`
 
-- `全部`
-- `🚀 催化成長`
-- `🌱 早期起漲`
-- `🔥 強勢續攻`
-- `🌿 早期起漲 18/54`
-- `⚡ 強勢續攻 18/54`
-- `🏆 highWinMode`
-- `⭐ 自選清單`
+前端 `isCatalystGrowth()` 條件：
 
-注意：
+- `revenueScore >= 20`
+- `chipsScore >= 24`
+- `selectionQualified = true`
+- `selectionScore >= 65`
+- `buyPointScore` 介於 `65 到 92`
+- 有翻轉或成長訊號
+- 法人、主力或籌碼方向為正
+- 新聞、買點理由或分數理由包含催化關鍵字
 
-- `比較有可能 / 觀察名單` 仍保留在上方統計卡
-- 但已不是 tab
-- `短線精選 / 中線精選 / 買點佳` 目前也不是首頁 tab
+### 12.4 `轉弱預警`
 
-## 7. 一句話總結
+前端 `calcBearishProfile()` 會把以下訊號加總：
 
-- `selectionScore`：目前主策略分，代表值不值得看
-- `buyPointScore`：現在的位置能不能買、好不好買
-- `MarketRegime`：大盤是進攻還是防守
-- `Industry percentile`：看的是同業相對優勢，不只看絕對值
-- `ATR / sellSignal`：把出場與部位風險接回系統
-- `NewsCompanySummarizer`：把數字轉成可讀的公司定位、消息重點、轉型判讀與實際建議
-- `早期起漲 / 強勢續攻 / highWinMode`：是不同用途的候選池，不應混成同一件事
+- 賣出訊號偏高
+- 跌破 MA20 / MA60 / MA120
+- MA20 下彎到 MA60 下方
+- MA60 低於 MA120
+- 20 日或 60 日趨勢轉弱
+- 距 60 日高點回落過深
+- RSI、KD 轉弱
+- 跌破 MA20 且放量
+- 分數快速下修
+- 買點分不足
+- 5 日法人或主力賣壓
+- 新聞風險偏高
+- 估值偏貴後轉弱
+
+輸出 stage：
+
+- `剛轉弱`
+- `反彈減碼`
+- `走空確認`
+
+## 13. 績效驗證
+
+績效驗證由 `scripts/signal_performance_report.py` 產生，資料源優先使用 `history/stock_history_db.sqlite` 的 `daily_stock_analysis`，因此能依照 `trade_date + stage + code` 分開保存與驗證。
+
+納入 stage：
+
+- `intraday-close`：前端標示 `14:00`
+- `close`：前端標示 `17:00`
+- `full`：前端標示 `23:00`
+
+不納入 `news-event`，避免新聞補跑資料干擾 14:00 / 17:00 / 23:00 的績效口徑。
+
+每日保存輸出：
+
+- `history/signal_snapshot_detail_YYYYMMDD.csv`
+  - 每日、每階段、每檔股票一列
+  - 保存股價、分數、買點、盤後分類、操作建議、原始 `launchTags`、衍生訊號 tag
+- `history/signal_forward_returns_YYYYMMDD.csv`
+  - 每個 tag / mode / flag / category / signal 形成一筆訊號事件
+  - 追蹤後續 1、3、5、10、20、40 個交易日報酬
+  - 同時計算各天期內最大不利回撤
+- `history/signal_performance_summary_YYYYMMDD.csv`
+  - 依 tag 與 stage 統計事件數、可驗證樣本數、勝率、平均報酬、中位數報酬、平均回撤、最差回撤
+  - 另外包含 `全部階段` 合併統計
+- `history/signal_performance_by_date_YYYYMMDD.csv`
+  - 依日期 + tag + stage 拆開，方便觀察訊號是否只在特定期間有效
+- `web/performance/signal_performance_latest.json`
+  - 前端績效頁使用的最新資料
+
+目前驗證的訊號來源：
+
+- `launchTags`
+  - 例如 `起漲前夜`、`起漲共振`、`健康回踩`、`價量未過熱`、`營收EPS支撐`、`外資主力轉買`、`強勢續攻`、`已過熱勿追`
+- 前端模式
+  - `highWinMode`
+  - `波段優勢`
+  - `催化成長`
+- 布林旗標
+  - `Likely`
+  - `觀察門檻`
+- 盤後分類
+  - `postCloseCategory`
+- 訊號型態
+  - `signalType`
+
+績效前端：
+
+- `web/performance/performance_latest.html`
+- 主頁 `web/index.html` header 會顯示 `績效驗證` 按鈕
+- 可用階段、tag 類型、天期、最低樣本數篩選
+- 可直接比較 14:00 / 17:00 / 23:00 與 `全部階段`
+
+排程整合：
+
+- `run_stock_analysis.bat full` 會在早期起漲報表與 portfolio tracker 後執行績效驗證
+- `run_stock_analysis.bat export-now` 也會重建績效驗證 JSON
+- `scripts/auto_git_push.ps1` 已納入 `web/performance`
+
+限制：
+
+- 長天期 20 / 40 日需要足夠歷史交易日才會有樣本
+- 目前以既有 snapshot 收盤價做 close-to-close 驗證，尚未加入手續費、證交稅、滑價、部位大小與重疊持倉限制
+- `起漲前夜` 是新 tag，樣本數累積前應以「待驗證訊號」看待
+
+## 14. 一句話總結
+
+- `selectionScore`：主策略分，代表值不值得研究
+- `buyPointScore`：位置分，代表現在好不好切入
+- `fairValueBase`：基本面估值中位，不是短線目標價
+- `MarketRegime`：決定權重、防守程度與 ATR 風控
+- `postCloseCategory`：盤後操作分類
+- `launchTags`：起漲型態與風險提示
+- `起漲前夜`：用已驗證樣本萃取的起漲前一日模式
+- `highWinMode`：前端最嚴格的高勝率篩選
+- `StockStageExporter`：決定前端目前吃 14:00、17:00 還是 23:00 的資料
+- `signal_performance_report.py`：把 tag / mode 的真實後續表現量化成績效頁

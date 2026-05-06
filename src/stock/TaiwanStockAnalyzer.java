@@ -883,6 +883,7 @@ public class TaiwanStockAnalyzer {
         Map<String, List<StockHistoryDatabase.SnapshotRow>> recentHistoryByCode = buildRecentHistoryByCode(historicalSnapshots,
                 6);
         IndustryMetricsSnapshot industryMetrics = IndustryMetricsSnapshot.build(results);
+        PeerFairValueSnapshot peerFairValues = PeerFairValueSnapshot.build(results);
         MarketRegime resolvedRegime = MarketRegimeResolver.resolve(results, historicalSnapshots, currentDateStamp(),
                 WATCHLIST_THRESHOLD, activeLikelyThreshold());
         activeMarketRegime = resolvedRegime;
@@ -891,6 +892,7 @@ public class TaiwanStockAnalyzer {
 
         for (StockAnalysisResultVO result : results) {
             applyIndustryRelativeScoring(result, industryMetrics);
+            applyPeerFairValueComparison(result, peerFairValues);
             boolean selectionQualified = isSelectionQualified(result.getLiquidityScore(),
                     result.getFinancialQualityScore(), result.getVolumeRatio(), result.getDataConfidence());
             result.setSelectionQualified(selectionQualified);
@@ -960,6 +962,7 @@ public class TaiwanStockAnalyzer {
                     riskRewardProfile));
             applyPostCloseDecisionProfile(result);
             applyBacktestCalibration(result, backtestSummaryByHorizon);
+            applyFairValueBacktestCalibration(result);
             result.setPostCloseReason(buildPostCloseReason(result, result.getPostCloseCategory()));
             result.setAnalysisNote(buildAnalysisNote(result));
             result.setScoreReason(buildScoreReason(result));
@@ -1854,7 +1857,8 @@ public class TaiwanStockAnalyzer {
         FairValueProfile fairValueProfile = buildFairValueProfile(currentPrice, industry, fairValueEps,
                 trailingFourQuarterEps, twoQuarterAnnualizedEps, peerAveragePe, latestQuarterEpsYoYPct,
                 averageThreeMonthRevenueYoY, returnOnEquityPct, bookValue, financialQualityScore, valuationScore, peg,
-                nonOperatingRatioPct, selectionQualified, dataConfidence);
+                nonOperatingRatioPct, latestOperatingCashFlow, latestFreeCashFlow, positiveOperatingCashFlowQuarters,
+                positiveFreeCashFlowQuarters, debtRatioPct, currentRatio, selectionQualified, dataConfidence);
         double buyPointScore = scoreBuyPointComposite(scoreBuyPointProfile(selectionScore, momentumScore, qualityScore, currentPrice,
                 movingAverage20, movingAverage60, movingAverage120, return20DayPct, volumeRatio, drawdownFromHigh60Pct,
                 rsi14, stochasticK, stochasticD, eventRisk.getPenalty(), selectionQualified,
@@ -1886,6 +1890,7 @@ public class TaiwanStockAnalyzer {
         result.setBrokerNetLots(brokerNetLots);
         result.setBrokerNetRatioPct(brokerNetRatioPct);
         result.setTrailingFourQuarterEps(trailingFourQuarterEps);
+        result.setFairValueEps(fairValueEps);
         result.setTrailingPe(trailingPe);
         result.setPeerAveragePe(peerAveragePe);
         result.setLatestQuarterEps(latestQuarterEps);
@@ -1914,6 +1919,7 @@ public class TaiwanStockAnalyzer {
         result.setOperatingMarginPct(operatingMarginPct);
         result.setReturnOnAssetsPct(returnOnAssetsPct);
         result.setReturnOnEquityPct(returnOnEquityPct);
+        result.setBookValue(bookValue);
         result.setDebtRatioPct(debtRatioPct);
         result.setCurrentRatio(currentRatio);
         result.setNonOperatingRatioPct(nonOperatingRatioPct);
@@ -2730,7 +2736,9 @@ public class TaiwanStockAnalyzer {
             double trailingEps, double twoQuarterAnnualizedEps, double peerAveragePe, double latestQuarterEpsYoYPct,
             double averageThreeMonthRevenueYoY, double returnOnEquityPct, double bookValue,
             double financialQualityScore, double valuationScore, double peg, double nonOperatingRatioPct,
-            boolean selectionQualified, double dataConfidence) {
+            long latestOperatingCashFlow, long latestFreeCashFlow, int positiveOperatingCashFlowQuarters,
+            int positiveFreeCashFlowQuarters, double debtRatioPct, double currentRatio, boolean selectionQualified,
+            double dataConfidence) {
         if (currentPrice <= 0D) {
             return FairValueProfile.empty();
         }
@@ -2742,6 +2750,12 @@ public class TaiwanStockAnalyzer {
 
         String style = resolveFairValueStyle(industry, latestQuarterEpsYoYPct, averageThreeMonthRevenueYoY, peg,
                 returnOnEquityPct, bookValue);
+        List<String> discountNotes = new ArrayList<String>();
+        double qualityDiscount = computeFairValueQualityDiscount(latestOperatingCashFlow, latestFreeCashFlow,
+                positiveOperatingCashFlowQuarters, positiveFreeCashFlowQuarters, debtRatioPct, currentRatio,
+                nonOperatingRatioPct, style, discountNotes);
+        double qualityPeCap = computeFairValuePeCap(style, discountNotes.size(), debtRatioPct, nonOperatingRatioPct,
+                latestOperatingCashFlow, latestFreeCashFlow);
         double regimeDiscount = 1D;
         if (activeMarketRegime == MarketRegime.BEAR_CORRECTION) {
             regimeDiscount = 0.94D;
@@ -2751,11 +2765,9 @@ public class TaiwanStockAnalyzer {
             regimeDiscount = 0.97D;
         }
 
-        double peerWeight = "growth".equals(style) ? 0.50D : "stable".equals(style) ? 0.40D : "cyclical".equals(style) ? 0.55D
-                : 0.4D;
-        double pegWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.20D : "cyclical".equals(style) ? 0.1D
-                : 0.25D;
-        double pbWeight = "stable".equals(style) ? 0.40D : "cyclical".equals(style) ? 0.35D : 0.25D;
+        double peerWeight = "growth".equals(style) ? 0.50D : "stable".equals(style) ? 0.40D : 0.40D;
+        double pegWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.20D : 0.25D;
+        double pbWeight = "stable".equals(style) ? 0.40D : 0.25D;
 
         if (fairValueEps > 0D && peerAveragePe > 0D) {
             double peerFactor = 1D;
@@ -2772,7 +2784,10 @@ public class TaiwanStockAnalyzer {
             if (nonOperatingRatioPct > 25D) {
                 peerFactor -= 0.06D;
             }
-            double targetPe = NumberParser.clamp(peerAveragePe * peerFactor * regimeDiscount, 8D, 36D);
+            double peFloor = 8D;
+            double peCap = Math.min(36D, qualityPeCap);
+            double targetPe = NumberParser.clamp(peerAveragePe * peerFactor * regimeDiscount * qualityDiscount,
+                    peFloor, peCap);
             double peerValue = fairValueEps * targetPe;
             coreValues.add(Double.valueOf(peerValue));
             coreWeights.add(Double.valueOf(peerWeight));
@@ -2784,9 +2799,13 @@ public class TaiwanStockAnalyzer {
             if (financialQualityScore >= 15D) {
                 targetPeg += 0.05D;
             }
-            targetPeg *= regimeDiscount;
-            targetPeg = NumberParser.clamp(targetPeg, 0.6D, 1.05D);
-            double targetPe = NumberParser.clamp(latestQuarterEpsYoYPct * targetPeg, 10D, 40D);
+            targetPeg *= regimeDiscount * qualityDiscount;
+            double pegFloor = 0.6D;
+            double pegCap = 1.05D;
+            targetPeg = NumberParser.clamp(targetPeg, pegFloor, pegCap);
+            double peFloor = 10D;
+            double peCap = Math.min(40D, qualityPeCap + 2D);
+            double targetPe = NumberParser.clamp(latestQuarterEpsYoYPct * targetPeg, peFloor, peCap);
             double pegValue = fairValueEps * targetPe;
             coreValues.add(Double.valueOf(pegValue));
             coreWeights.add(Double.valueOf(pegWeight));
@@ -2795,7 +2814,8 @@ public class TaiwanStockAnalyzer {
 
         if (bookValue > 0D && returnOnEquityPct > 0D) {
             double requiredReturn = financialQualityScore >= 15D ? 11D : financialQualityScore >= 10D ? 12D : 14D;
-            double justifiedPb = NumberParser.clamp(returnOnEquityPct / requiredReturn, 0.6D, 3.8D) * regimeDiscount;
+            double justifiedPb = NumberParser.clamp(returnOnEquityPct / requiredReturn, 0.6D, 3.8D) * regimeDiscount
+                    * qualityDiscount;
             if (nonOperatingRatioPct > 25D) {
                 justifiedPb *= 0.94D;
             }
@@ -2831,7 +2851,7 @@ public class TaiwanStockAnalyzer {
             if (nonOperatingRatioPct > 25D) {
                 recoveryFactor -= 0.04D;
             }
-            recoveryFactor *= regimeDiscount;
+            recoveryFactor *= regimeDiscount * qualityDiscount;
             recoveryFactor = NumberParser.clamp(recoveryFactor, 0.72D, 1.08D);
             coreValues.add(Double.valueOf(currentPrice * recoveryFactor));
             coreWeights.add(Double.valueOf(0.65D));
@@ -2894,6 +2914,12 @@ public class TaiwanStockAnalyzer {
         if (latestQuarterEpsYoYPct < -10D) {
             confidence -= 5D;
         }
+        if (!discountNotes.isEmpty()) {
+            confidence -= Math.min(14D, discountNotes.size() * 3D);
+        }
+        if (qualityPeCap < 32D) {
+            supportNotes.add("品質風險限制PE上限至 " + format(qualityPeCap) + "倍");
+        }
         confidence = NumberParser.clamp(confidence, 35D, 92D);
 
         double bandPct = Math.max(8D, Math.min(24D, 22D - confidence * 0.12D + (3 - coreValues.size()) * 2.5D));
@@ -2908,14 +2934,86 @@ public class TaiwanStockAnalyzer {
         String method = fairValueEps <= 0D && !methodNotes.isEmpty() && methodNotes.get(0).indexOf("復甦期市場定價") >= 0
                 ? "復甦期參考估值"
                 : "growth".equals(style) ? "成長混合估值" : "stable".equals(style) ? "品質資產混合估值"
-                : "cyclical".equals(style) ? "循環股混合估值" : "均衡混合估值";
+                : "均衡混合估值";
         String supportText = supportNotes.isEmpty() ? "" : "；" + joinReasonNotes(supportNotes);
+        String discountText = discountNotes.isEmpty() ? "" : "；折價：" + joinReasonNotes(discountNotes);
         String epsText = "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
                 + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
         String reason = epsText + "；以 " + joinReasonNotes(methodNotes) + " 綜合估算" + supportText
-                + "，合理價中位 " + format(basePrice) + "，相對現價 " + formatSigned(gapPct) + "%，信心 "
-                + format(confidence) + " 分";
+                + discountText + "，合理價中位 " + format(basePrice) + "，相對現價 " + formatSigned(gapPct)
+                + "%，信心 " + format(confidence) + " 分";
         return new FairValueProfile(lowPrice, basePrice, highPrice, confidence, method, reason);
+    }
+
+    private double computeFairValuePeCap(String style, int discountRiskCount, double debtRatioPct,
+            double nonOperatingRatioPct, long latestOperatingCashFlow, long latestFreeCashFlow) {
+        double cap = "growth".equals(style) ? 36D : "stable".equals(style) ? 30D : 32D;
+        if (discountRiskCount >= 5) {
+            cap = Math.min(cap, 20D);
+        } else if (discountRiskCount >= 3) {
+            cap = Math.min(cap, 24D);
+        } else if (discountRiskCount >= 2) {
+            cap = Math.min(cap, 28D);
+        }
+        if (debtRatioPct >= 70D) {
+            cap = Math.min(cap, 22D);
+        } else if (debtRatioPct >= 60D) {
+            cap = Math.min(cap, 26D);
+        }
+        if (nonOperatingRatioPct > 35D) {
+            cap = Math.min(cap, 22D);
+        } else if (nonOperatingRatioPct > 25D) {
+            cap = Math.min(cap, 26D);
+        }
+        if (latestOperatingCashFlow < 0L && latestFreeCashFlow < 0L) {
+            cap = Math.min(cap, 24D);
+        }
+        return NumberParser.clamp(cap, 14D, 40D);
+    }
+
+    private double computeFairValueQualityDiscount(long latestOperatingCashFlow, long latestFreeCashFlow,
+            int positiveOperatingCashFlowQuarters, int positiveFreeCashFlowQuarters, double debtRatioPct,
+            double currentRatio, double nonOperatingRatioPct, String style, List<String> discountNotes) {
+        double discount = 1D;
+        if (latestOperatingCashFlow < 0L) {
+            discount *= 0.93D;
+            discountNotes.add("營業現金流為負");
+        }
+        if (latestFreeCashFlow < 0L) {
+            discount *= 0.94D;
+            discountNotes.add("自由現金流為負");
+        }
+        if (positiveOperatingCashFlowQuarters > 0 && positiveOperatingCashFlowQuarters <= 1) {
+            discount *= 0.96D;
+            discountNotes.add("營業現金流季數偏少");
+        }
+        if (positiveFreeCashFlowQuarters > 0 && positiveFreeCashFlowQuarters <= 1) {
+            discount *= 0.97D;
+            discountNotes.add("自由現金流季數偏少");
+        }
+        if (hasValue(debtRatioPct)) {
+            if (debtRatioPct >= 70D) {
+                discount *= 0.88D;
+                discountNotes.add("負債比偏高");
+            } else if (debtRatioPct >= 60D) {
+                discount *= 0.93D;
+                discountNotes.add("負債比偏高");
+            }
+        }
+        if (hasValue(currentRatio) && currentRatio > 0D && currentRatio < 1.2D) {
+            discount *= 0.95D;
+            discountNotes.add("流動比偏低");
+        }
+        if (hasValue(nonOperatingRatioPct)) {
+            if (nonOperatingRatioPct > 35D) {
+                discount *= 0.90D;
+                discountNotes.add("非營業依賴偏高");
+            } else if (nonOperatingRatioPct > 25D) {
+                discount *= 0.95D;
+                discountNotes.add("非營業依賴偏高");
+            }
+        }
+        return NumberParser.clamp(discount, 0.45D, 1D);
     }
 
     private double computeFairValueEps(double trailingFourQuarterEps, double latestQuarterEps,
@@ -2933,9 +3031,6 @@ public class TaiwanStockAnalyzer {
         if (containsAnyKeyword(normalized, "半導體", "電子零組件", "電腦及週邊", "光電", "通信網路", "其他電子")
                 || latestQuarterEpsYoYPct >= 20D || averageThreeMonthRevenueYoY >= 12D || (peg > 0D && peg <= 1.2D)) {
             return "growth";
-        }
-        if (containsAnyKeyword(normalized, "鋼鐵", "塑膠", "玻璃", "造紙", "橡膠", "航運", "油電燃氣", "化學", "紡織")) {
-            return "cyclical";
         }
         if (bookValue > 0D && returnOnEquityPct >= 8D) {
             return "stable";
@@ -3721,6 +3816,166 @@ public class TaiwanStockAnalyzer {
                 RAW_SCORE_MAX);
         result.setRawScore(rawScore);
         result.setScore(NumberParser.clamp(rawScore, 0D, 100D));
+    }
+
+    private void applyPeerFairValueComparison(StockAnalysisResultVO result, PeerFairValueSnapshot snapshot) {
+        if (result == null || snapshot == null || result.getFairValueBase() <= 0D
+                || result.getTrailingFourQuarterEps() <= 0D || result.getCurrentPrice() <= 0D) {
+            return;
+        }
+        PeerFairValueStats stats = snapshot.statsFor(result);
+        if (stats == null || stats.peCount < 5 || stats.anchorPe <= 0D) {
+            return;
+        }
+
+        double earningsBase = result.getFairValueEps() > 0D
+                ? result.getFairValueEps() : result.getTrailingFourQuarterEps();
+        double peerPeValue = earningsBase * stats.anchorPe;
+        double peerPbValue = 0D;
+        if (result.getBookValue() > 0D && stats.pbCount >= 5 && stats.anchorPb > 0D) {
+            double roeFactor = 1D;
+            if (result.getReturnOnEquityPct() > 0D && stats.medianRoe > 0D) {
+                roeFactor = NumberParser.clamp(result.getReturnOnEquityPct() / stats.medianRoe, 0.75D, 1.25D);
+            }
+            peerPbValue = result.getBookValue() * stats.anchorPb * roeFactor;
+        }
+        double peerValue = peerPbValue > 0D ? peerPeValue * 0.70D + peerPbValue * 0.30D : peerPeValue;
+        if (peerValue <= 0D || Double.isNaN(peerValue) || Double.isInfinite(peerValue)) {
+            return;
+        }
+
+        double oldBase = result.getFairValueBase();
+        double divergence = oldBase > 0D && peerValue > 0D
+                ? Math.max(oldBase / peerValue, peerValue / oldBase) : 1D;
+        double peerWeight = stats.peCount >= 20 ? 0.45D : stats.peCount >= 10 ? 0.38D : 0.30D;
+        boolean growthLike = isGrowthLikeFairValue(result);
+        if (growthLike && divergence < 2.5D) {
+            peerWeight = Math.min(peerWeight, 0.32D);
+        }
+        if (divergence >= 2.5D) {
+            peerWeight += 0.15D;
+        }
+        if (result.getDataConfidence() < 70D) {
+            peerWeight -= 0.08D;
+        }
+        peerWeight = NumberParser.clamp(peerWeight, 0.22D, 0.62D);
+
+        boolean weakQuality = result.getLatestOperatingCashFlow() < 0L || result.getLatestFreeCashFlow() < 0L
+                || result.getDebtRatioPct() >= 60D || result.getNonOperatingRatioPct() > 25D;
+        double adjustedBase = oldBase * (1D - peerWeight) + peerValue * peerWeight;
+        if (oldBase > peerValue * 3D) {
+            double upperMultiple = result.getLatestQuarterEpsYoYPct() >= 80D ? 2.8D
+                    : result.getLatestQuarterEpsYoYPct() >= 30D ? 2.4D : 2.0D;
+            adjustedBase = Math.min(adjustedBase, peerValue * upperMultiple);
+        } else if (peerValue > oldBase * 3D) {
+            adjustedBase = Math.max(adjustedBase, peerValue * 0.45D);
+        }
+        boolean assetCapApplied = false;
+        if (weakQuality && peerPbValue > 0D && adjustedBase > peerPbValue * 2.8D) {
+            adjustedBase = peerPbValue * 2.8D;
+            assetCapApplied = true;
+        }
+
+        double oldBandPct = 0.16D;
+        if (oldBase > 0D && result.getFairValueLow() > 0D && result.getFairValueHigh() > 0D) {
+            oldBandPct = Math.max((oldBase - result.getFairValueLow()) / oldBase,
+                    (result.getFairValueHigh() - oldBase) / oldBase);
+        }
+        oldBandPct = NumberParser.clamp(oldBandPct, 0.08D, 0.24D);
+        double conservative = Math.min(adjustedBase * (1D - oldBandPct), peerValue * 0.95D);
+        conservative = NumberParser.clamp(conservative, adjustedBase * 0.68D, adjustedBase);
+        double bull = Math.max(adjustedBase * (1D + oldBandPct), adjustedBase);
+        if (weakQuality) {
+            bull = Math.min(bull, adjustedBase * 1.12D);
+        } else if (growthLike && result.getLatestQuarterEpsYoYPct() >= 30D) {
+            bull = Math.max(bull, Math.min(oldBase, adjustedBase * 1.22D));
+        }
+        double low = NumberParser.clamp(conservative, 0D, adjustedBase);
+        double high = Math.max(adjustedBase, bull);
+        double confidence = result.getFairValueConfidence();
+        confidence += stats.peCount >= 10 ? 3D : 1D;
+        if (divergence >= 3D) {
+            confidence -= 4D;
+        }
+        confidence = NumberParser.clamp(confidence, 35D, 92D);
+        double gapPct = (adjustedBase - result.getCurrentPrice()) * 100D / result.getCurrentPrice();
+
+        result.setFairValueLow(low);
+        result.setFairValueBase(NumberParser.clamp(adjustedBase, low, high));
+        result.setFairValueHigh(high);
+        result.setFairValueConfidence(confidence);
+        String method = result.getFairValueMethod();
+        if (method == null || method.trim().length() == 0) {
+            method = "同業比較估值";
+        } else if (!method.contains("同業比較")) {
+            method = method + "+同業比較";
+        }
+        result.setFairValueMethod(method);
+
+        String reason = result.getFairValueReason();
+        if (reason == null) {
+            reason = "";
+        }
+        reason = reason.replaceAll("合理價中位 [-+0-9.]+，相對現價 [-+0-9.]+%",
+                "合理價中位 " + format(adjustedBase) + "，相對現價 " + formatSigned(gapPct) + "%");
+        reason = reason.replaceAll("信心 [-+0-9.]+ 分", "信心 " + format(confidence) + " 分");
+        reason += "；同業比較(" + stats.groupLabel + ")：有效樣本 " + stats.peCount + " 檔，PE中位 " + format(stats.medianPe)
+                + "倍、修剪平均 " + format(stats.trimmedMeanPe) + "倍，估值EPS估值 " + format(peerPeValue);
+        if (peerPbValue > 0D) {
+            reason += "，PB中位 " + format(stats.medianPb) + "倍、PB/ROE估值 " + format(peerPbValue);
+        }
+        if (assetCapApplied) {
+            reason += "，品質風險套用PB/ROE天花板";
+        }
+        reason += "，納入權重 " + format(peerWeight * 100D) + "%；三情境：保守 "
+                + format(low) + " / 基準 " + format(adjustedBase) + " / 樂觀 " + format(high);
+        result.setFairValueReason(reason);
+    }
+
+    private boolean isGrowthLikeFairValue(StockAnalysisResultVO result) {
+        String industry = result.getIndustry() == null ? "" : result.getIndustry();
+        return containsAnyKeyword(industry, "半導體", "電子零組件", "電腦及週邊", "電腦週邊", "光電", "通信網路", "通訊網路", "其他電子")
+                || result.getLatestQuarterEpsYoYPct() >= 20D
+                || result.getAverageThreeMonthRevenueYoY() >= 12D
+                || (result.getPeg() > 0D && result.getPeg() <= 1.2D);
+    }
+
+    private void applyFairValueBacktestCalibration(StockAnalysisResultVO result) {
+        if (result == null || result.getFairValueBase() <= 0D || result.getFairValueConfidence() <= 0D
+                || result.getBacktestCohort() == null || result.getBacktestCohort().length() == 0
+                || "N/A".equals(result.getBacktestCohort())) {
+            return;
+        }
+        double adjustment = 0D;
+        List<String> notes = new ArrayList<String>();
+        if (result.getExpectedReturnScore() >= 60D) {
+            adjustment += 3D;
+            notes.add("報酬回測佳");
+        } else if (result.getExpectedReturnScore() > 0D && result.getExpectedReturnScore() < 45D) {
+            adjustment -= 3D;
+            notes.add("報酬回測偏弱");
+        }
+        if (result.getWinratePriorityScore() >= 60D) {
+            adjustment += 2D;
+            notes.add("勝率回測佳");
+        } else if (result.getWinratePriorityScore() > 0D && result.getWinratePriorityScore() < 45D) {
+            adjustment -= 2D;
+            notes.add("勝率回測偏弱");
+        }
+        if (result.getMaxDrawdownPenalty() >= 10D) {
+            adjustment -= 3D;
+            notes.add("回測回撤偏大");
+        }
+        if (notes.isEmpty()) {
+            return;
+        }
+        double confidence = NumberParser.clamp(result.getFairValueConfidence() + adjustment, 35D, 92D);
+        result.setFairValueConfidence(confidence);
+        String reason = result.getFairValueReason() == null ? "" : result.getFairValueReason();
+        reason = reason.replaceAll("信心 [-+0-9.]+ 分", "信心 " + format(confidence) + " 分");
+        reason += "；績效校準(" + result.getBacktestCohort() + ")：" + joinReasonNotes(notes)
+                + "，信心調整 " + formatSigned(adjustment) + " 分";
+        result.setFairValueReason(reason);
     }
 
     private double averagePercentiles(double... values) {
@@ -5596,6 +5851,200 @@ public class TaiwanStockAnalyzer {
             this.sellSignalScore = sellSignalScore;
             this.sellSignalLabel = sellSignalLabel;
             this.reducePositionSize = reducePositionSize;
+        }
+    }
+
+    private static class PeerFairValueSnapshot {
+        private final Map<String, PeerFairValueStats> statsByIndustry;
+
+        private PeerFairValueSnapshot(Map<String, PeerFairValueStats> statsByIndustry) {
+            this.statsByIndustry = statsByIndustry;
+        }
+
+        private static PeerFairValueSnapshot build(List<StockAnalysisResultVO> results) {
+            Map<String, List<Double>> peValues = new HashMap<String, List<Double>>();
+            Map<String, List<Double>> pbValues = new HashMap<String, List<Double>>();
+            Map<String, List<Double>> roeValues = new HashMap<String, List<Double>>();
+            Map<String, String> labels = new HashMap<String, String>();
+            if (results != null) {
+                for (StockAnalysisResultVO result : results) {
+                    if (result == null) {
+                        continue;
+                    }
+                    String industryKey = industryKey(result);
+                    String refinedKey = refinedKey(result);
+                    double trailingPe = result.getTrailingPe();
+                    if (trailingPe >= 3D && trailingPe <= 80D && !Double.isNaN(trailingPe)
+                            && !Double.isInfinite(trailingPe)) {
+                        addMetric(peValues, labels, industryKey, industryLabel(result), trailingPe);
+                        if (!refinedKey.equals(industryKey)) {
+                            addMetric(peValues, labels, refinedKey, refinedLabel(result), trailingPe);
+                        }
+                    }
+                    if (result.getCurrentPrice() > 0D && result.getBookValue() > 0D) {
+                        double pb = result.getCurrentPrice() / result.getBookValue();
+                        if (pb >= 0.2D && pb <= 10D && !Double.isNaN(pb) && !Double.isInfinite(pb)) {
+                            addMetric(pbValues, labels, industryKey, industryLabel(result), pb);
+                            if (!refinedKey.equals(industryKey)) {
+                                addMetric(pbValues, labels, refinedKey, refinedLabel(result), pb);
+                            }
+                        }
+                    }
+                    if (result.getReturnOnEquityPct() > 0D && result.getReturnOnEquityPct() <= 80D) {
+                        addMetric(roeValues, labels, industryKey, industryLabel(result), result.getReturnOnEquityPct());
+                        if (!refinedKey.equals(industryKey)) {
+                            addMetric(roeValues, labels, refinedKey, refinedLabel(result), result.getReturnOnEquityPct());
+                        }
+                    }
+                }
+            }
+
+            Map<String, PeerFairValueStats> stats = new HashMap<String, PeerFairValueStats>();
+            for (Map.Entry<String, List<Double>> entry : peValues.entrySet()) {
+                List<Double> sorted = new ArrayList<Double>(entry.getValue());
+                Collections.sort(sorted);
+                if (sorted.size() < 5) {
+                    continue;
+                }
+                double median = median(sorted);
+                double trimmedMean = trimmedMean(sorted);
+                double anchorPe = NumberParser.clamp(median * 0.65D + trimmedMean * 0.35D, 6D, 45D);
+                List<Double> sortedPb = sortedCopy(pbValues.get(entry.getKey()));
+                double medianPb = sortedPb.size() >= 5 ? median(sortedPb) : 0D;
+                double trimmedMeanPb = sortedPb.size() >= 5 ? trimmedMean(sortedPb) : 0D;
+                double anchorPb = sortedPb.size() >= 5
+                        ? NumberParser.clamp(medianPb * 0.70D + trimmedMeanPb * 0.30D, 0.4D, 5.5D) : 0D;
+                List<Double> sortedRoe = sortedCopy(roeValues.get(entry.getKey()));
+                double medianRoe = sortedRoe.size() >= 5 ? median(sortedRoe) : 0D;
+                stats.put(entry.getKey(), new PeerFairValueStats(sorted.size(), median, trimmedMean, anchorPe,
+                        sortedPb.size(), medianPb, trimmedMeanPb, anchorPb, medianRoe,
+                        labels.get(entry.getKey()) == null ? entry.getKey() : labels.get(entry.getKey())));
+            }
+            return new PeerFairValueSnapshot(stats);
+        }
+
+        private PeerFairValueStats statsFor(StockAnalysisResultVO result) {
+            PeerFairValueStats refined = statsByIndustry.get(refinedKey(result));
+            if (refined != null && refined.peCount >= 5) {
+                return refined;
+            }
+            return statsByIndustry.get(industryKey(result));
+        }
+
+        private static void addMetric(Map<String, List<Double>> valuesByKey, Map<String, String> labels,
+                String key, String label, double value) {
+            List<Double> values = valuesByKey.get(key);
+            if (values == null) {
+                values = new ArrayList<Double>();
+                valuesByKey.put(key, values);
+            }
+            values.add(Double.valueOf(value));
+            labels.put(key, label);
+        }
+
+        private static String industryKey(StockAnalysisResultVO result) {
+            return "I:" + normalizeIndustry(result == null ? "" : result.getIndustry());
+        }
+
+        private static String refinedKey(StockAnalysisResultVO result) {
+            String industry = normalizeIndustry(result == null ? "" : result.getIndustry());
+            String theme = normalizeTheme(result == null ? "" : result.getPrimaryTheme());
+            return theme.length() == 0 ? "I:" + industry : "T:" + industry + "|" + theme;
+        }
+
+        private static String industryLabel(StockAnalysisResultVO result) {
+            return normalizeIndustry(result == null ? "" : result.getIndustry());
+        }
+
+        private static String refinedLabel(StockAnalysisResultVO result) {
+            String industry = normalizeIndustry(result == null ? "" : result.getIndustry());
+            String theme = normalizeTheme(result == null ? "" : result.getPrimaryTheme());
+            return theme.length() == 0 ? industry : industry + "/" + theme;
+        }
+
+        private static String normalizeIndustry(String industry) {
+            String normalized = industry == null ? "" : industry.trim();
+            if (normalized.length() == 0) {
+                return "其他";
+            }
+            if (normalized.startsWith("櫃") && normalized.length() > 1) {
+                normalized = normalized.substring(1);
+            }
+            return normalized;
+        }
+
+        private static String normalizeTheme(String theme) {
+            String normalized = theme == null ? "" : theme.trim();
+            if (normalized.length() == 0 || "一般".equals(normalized) || "其他".equals(normalized)) {
+                return "";
+            }
+            return normalized;
+        }
+
+        private static double median(List<Double> sorted) {
+            int size = sorted.size();
+            if (size == 0) {
+                return 0D;
+            }
+            int mid = size / 2;
+            if (size % 2 == 1) {
+                return sorted.get(mid).doubleValue();
+            }
+            return (sorted.get(mid - 1).doubleValue() + sorted.get(mid).doubleValue()) / 2D;
+        }
+
+        private static List<Double> sortedCopy(List<Double> input) {
+            List<Double> sorted = input == null ? new ArrayList<Double>() : new ArrayList<Double>(input);
+            Collections.sort(sorted);
+            return sorted;
+        }
+
+        private static double trimmedMean(List<Double> sorted) {
+            if (sorted.isEmpty()) {
+                return 0D;
+            }
+            int trim = Math.max(0, sorted.size() / 10);
+            int start = trim;
+            int end = sorted.size() - trim;
+            if (start >= end) {
+                start = 0;
+                end = sorted.size();
+            }
+            double sum = 0D;
+            int count = 0;
+            for (int i = start; i < end; i++) {
+                sum += sorted.get(i).doubleValue();
+                count++;
+            }
+            return count == 0 ? 0D : sum / count;
+        }
+    }
+
+    private static class PeerFairValueStats {
+        private final int peCount;
+        private final double medianPe;
+        private final double trimmedMeanPe;
+        private final double anchorPe;
+        private final int pbCount;
+        private final double medianPb;
+        private final double trimmedMeanPb;
+        private final double anchorPb;
+        private final double medianRoe;
+        private final String groupLabel;
+
+        private PeerFairValueStats(int peCount, double medianPe, double trimmedMeanPe, double anchorPe,
+                int pbCount, double medianPb, double trimmedMeanPb, double anchorPb, double medianRoe,
+                String groupLabel) {
+            this.peCount = peCount;
+            this.medianPe = medianPe;
+            this.trimmedMeanPe = trimmedMeanPe;
+            this.anchorPe = anchorPe;
+            this.pbCount = pbCount;
+            this.medianPb = medianPb;
+            this.trimmedMeanPb = trimmedMeanPb;
+            this.anchorPb = anchorPb;
+            this.medianRoe = medianRoe;
+            this.groupLabel = groupLabel;
         }
     }
 

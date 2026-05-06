@@ -20,6 +20,7 @@ public class StockAnalysis {
     private static final String STAGE_FULL = "full";
     private static final String STAGE_CLOSE = "close";
     private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
+    private static final String STATIC_DASHBOARD_DIR = "static" + File.separator + "dashboards";
 
     public static void main(String[] args) throws Exception {
         RunContext context = new RunContext();
@@ -51,7 +52,8 @@ public class StockAnalysis {
         String themeReferenceFileName = analyzer.buildDatedFileName("stock_theme_reference");
         String themeMarketReferenceFileName = analyzer.buildDatedFileName("theme_market_reference");
         String themeMarketCandidatesFileName = analyzer.buildDatedFileName("theme_market_candidates");
-        String dashboardFileName = analyzer.buildDatedHtmlFileName("stock_dashboard");
+        String dashboardFileName = new File(STATIC_DASHBOARD_DIR,
+                analyzer.buildDatedHtmlFileName("stock_dashboard")).getPath();
         String latestHistoryDashboardFileName = "history_dashboard.html";
 
         List<StockAnalysisResultVO> results = analyzer.analyze(maxStocks);
