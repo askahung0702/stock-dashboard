@@ -2,7 +2,7 @@
   "snapshot_start": "20260317",
   "snapshot_end": "20260506",
   "snapshot_count": 42,
-  "candidate_rows": 3711,
+  "candidate_rows": 3756,
   "weeks": [
     1,
     2,
@@ -18,30 +18,30 @@
       "screen_style_label": "早期起漲",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 2475,
+      "sample_count_max": 2506,
       "1w": {
-        "count": 2475,
-        "avg_return_pct": 5.23,
+        "count": 2506,
+        "avg_return_pct": 5.17,
         "median_return_pct": 2.08,
-        "win_rate_pct": 60.16
+        "win_rate_pct": 60.22
       },
       "2w": {
-        "count": 2344,
-        "avg_return_pct": 10.34,
-        "median_return_pct": 5.12,
-        "win_rate_pct": 63.87
+        "count": 2375,
+        "avg_return_pct": 10.2,
+        "median_return_pct": 4.99,
+        "win_rate_pct": 63.66
       },
       "3w": {
-        "count": 2132,
-        "avg_return_pct": 15.36,
-        "median_return_pct": 8.93,
-        "win_rate_pct": 68.86
+        "count": 2163,
+        "avg_return_pct": 15.21,
+        "median_return_pct": 8.86,
+        "win_rate_pct": 68.56
       },
       "4w": {
-        "count": 1579,
-        "avg_return_pct": 22.48,
-        "median_return_pct": 14.77,
-        "win_rate_pct": 74.16
+        "count": 1605,
+        "avg_return_pct": 22.23,
+        "median_return_pct": 14.47,
+        "win_rate_pct": 73.96
       }
     },
     "ma2060_early_focus": {
@@ -51,30 +51,30 @@
       "screen_style_label": "早期起漲",
       "scope": "focus",
       "scope_label": "Focus",
-      "sample_count_max": 1954,
+      "sample_count_max": 1969,
       "1w": {
-        "count": 1954,
-        "avg_return_pct": 5.6,
-        "median_return_pct": 2.8,
-        "win_rate_pct": 63.87
+        "count": 1969,
+        "avg_return_pct": 5.58,
+        "median_return_pct": 2.92,
+        "win_rate_pct": 64.04
       },
       "2w": {
-        "count": 1860,
-        "avg_return_pct": 11.04,
-        "median_return_pct": 6.48,
+        "count": 1875,
+        "avg_return_pct": 10.98,
+        "median_return_pct": 6.45,
         "win_rate_pct": 66.83
       },
       "3w": {
-        "count": 1721,
-        "avg_return_pct": 16.03,
+        "count": 1736,
+        "avg_return_pct": 15.96,
         "median_return_pct": 10.56,
-        "win_rate_pct": 71.88
+        "win_rate_pct": 71.83
       },
       "4w": {
-        "count": 1245,
-        "avg_return_pct": 23.89,
+        "count": 1258,
+        "avg_return_pct": 23.77,
         "median_return_pct": 17.4,
-        "win_rate_pct": 77.19
+        "win_rate_pct": 77.11
       }
     },
     "ma2060_continuation_all": {
@@ -84,30 +84,30 @@
       "screen_style_label": "強勢續攻",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 986,
+      "sample_count_max": 989,
       "1w": {
-        "count": 986,
-        "avg_return_pct": 3.91,
+        "count": 989,
+        "avg_return_pct": 3.9,
         "median_return_pct": 1.43,
-        "win_rate_pct": 56.39
+        "win_rate_pct": 56.32
       },
       "2w": {
-        "count": 937,
-        "avg_return_pct": 8.01,
-        "median_return_pct": 3.71,
-        "win_rate_pct": 63.07
+        "count": 940,
+        "avg_return_pct": 8.02,
+        "median_return_pct": 3.7,
+        "win_rate_pct": 63.19
       },
       "3w": {
-        "count": 734,
-        "avg_return_pct": 14.37,
-        "median_return_pct": 9.38,
-        "win_rate_pct": 70.03
+        "count": 737,
+        "avg_return_pct": 14.29,
+        "median_return_pct": 9.37,
+        "win_rate_pct": 70.42
       },
       "4w": {
-        "count": 436,
+        "count": 439,
         "avg_return_pct": 16.82,
-        "median_return_pct": 10.77,
-        "win_rate_pct": 66.28
+        "median_return_pct": 10.7,
+        "win_rate_pct": 66.51
       }
     },
     "ma2060_continuation_focus": {
@@ -117,30 +117,30 @@
       "screen_style_label": "強勢續攻",
       "scope": "focus",
       "scope_label": "Focus",
-      "sample_count_max": 847,
+      "sample_count_max": 849,
       "1w": {
-        "count": 847,
-        "avg_return_pct": 4.32,
+        "count": 849,
+        "avg_return_pct": 4.31,
         "median_return_pct": 1.71,
-        "win_rate_pct": 57.62
+        "win_rate_pct": 57.6
       },
       "2w": {
-        "count": 808,
-        "avg_return_pct": 8.61,
-        "median_return_pct": 4.08,
-        "win_rate_pct": 65.1
+        "count": 810,
+        "avg_return_pct": 8.62,
+        "median_return_pct": 4.01,
+        "win_rate_pct": 65.19
       },
       "3w": {
-        "count": 658,
-        "avg_return_pct": 14.81,
-        "median_return_pct": 9.76,
-        "win_rate_pct": 71.58
+        "count": 660,
+        "avg_return_pct": 14.77,
+        "median_return_pct": 9.81,
+        "win_rate_pct": 71.82
       },
       "4w": {
-        "count": 390,
+        "count": 392,
         "avg_return_pct": 17.98,
-        "median_return_pct": 11.75,
-        "win_rate_pct": 68.46
+        "median_return_pct": 12.0,
+        "win_rate_pct": 68.62
       }
     },
     "ma1854_early_all": {
@@ -153,20 +153,20 @@
       "sample_count_max": 222,
       "1w": {
         "count": 222,
-        "avg_return_pct": 5.67,
-        "median_return_pct": -0.5,
-        "win_rate_pct": 45.95
+        "avg_return_pct": 5.75,
+        "median_return_pct": -0.46,
+        "win_rate_pct": 47.3
       },
       "2w": {
         "count": 90,
-        "avg_return_pct": 16.66,
-        "median_return_pct": 0.16,
-        "win_rate_pct": 51.11
+        "avg_return_pct": 17.01,
+        "median_return_pct": 0.05,
+        "win_rate_pct": 50.0
       },
       "3w": {
         "count": 2,
-        "avg_return_pct": 11.68,
-        "median_return_pct": 11.68,
+        "avg_return_pct": 6.98,
+        "median_return_pct": 6.98,
         "win_rate_pct": 50.0
       },
       "4w": {
@@ -186,20 +186,20 @@
       "sample_count_max": 163,
       "1w": {
         "count": 163,
-        "avg_return_pct": 1.39,
-        "median_return_pct": -0.73,
-        "win_rate_pct": 45.4
+        "avg_return_pct": 1.43,
+        "median_return_pct": -0.55,
+        "win_rate_pct": 46.01
       },
       "2w": {
         "count": 66,
-        "avg_return_pct": 4.29,
+        "avg_return_pct": 4.1,
         "median_return_pct": 0.0,
-        "win_rate_pct": 48.48
+        "win_rate_pct": 46.97
       },
       "3w": {
         "count": 1,
-        "avg_return_pct": -2.59,
-        "median_return_pct": -2.59,
+        "avg_return_pct": -6.9,
+        "median_return_pct": -6.9,
         "win_rate_pct": 0.0
       },
       "4w": {
@@ -219,15 +219,15 @@
       "sample_count_max": 140,
       "1w": {
         "count": 140,
-        "avg_return_pct": 0.06,
+        "avg_return_pct": 0.11,
         "median_return_pct": -0.55,
         "win_rate_pct": 47.14
       },
       "2w": {
         "count": 88,
-        "avg_return_pct": 3.3,
-        "median_return_pct": 1.96,
-        "win_rate_pct": 53.41
+        "avg_return_pct": 3.65,
+        "median_return_pct": 1.99,
+        "win_rate_pct": 54.55
       },
       "3w": {
         "count": 1,
@@ -252,15 +252,15 @@
       "sample_count_max": 98,
       "1w": {
         "count": 98,
-        "avg_return_pct": 0.68,
+        "avg_return_pct": 0.76,
         "median_return_pct": -0.13,
         "win_rate_pct": 48.98
       },
       "2w": {
         "count": 60,
-        "avg_return_pct": 3.01,
-        "median_return_pct": 0.44,
-        "win_rate_pct": 51.67
+        "avg_return_pct": 3.53,
+        "median_return_pct": 1.23,
+        "win_rate_pct": 53.33
       },
       "3w": {
         "count": 1,
