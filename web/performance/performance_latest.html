@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>績效驗證</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f172a;--surface:#1e293b;--surface2:#263245;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--blue:#3b82f6;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--orange:#f97316;--purple:#a855f7}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;font-size:13px;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:20}
+.title{font-size:18px;font-weight:800;color:#fff}.title span{color:var(--purple)}.meta{font-size:12px;color:var(--muted)}.actions{margin-left:auto;display:flex;gap:8px}
+.btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit}.btn:hover{background:var(--border)}
+.main{max-width:1800px;margin:0 auto;padding:14px 16px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px}.lbl{font-size:11px;color:var(--muted)}.val{font-size:22px;font-weight:800;margin-top:4px}
+.bar{background:linear-gradient(135deg,rgba(168,85,247,.09),rgba(59,130,246,.07));border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.bar h2{font-size:15px;margin-bottom:5px}.bar p{color:var(--muted);line-height:1.7}
+.filters{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 9px;font-family:inherit;font-size:13px}input{width:220px}
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:auto;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:8px 9px;border-bottom:1px solid var(--border);text-align:left}th{background:var(--surface2);font-size:11px;color:var(--muted);position:sticky;top:0;z-index:1;cursor:pointer}tbody tr:hover{background:rgba(148,163,184,.06)}
+.pos{color:var(--green);font-weight:700}.neg{color:var(--red);font-weight:700}.neu{color:var(--muted)}.tag{display:inline-flex;padding:2px 8px;border-radius:999px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.22);color:#bfdbfe;font-size:11px}.stage{display:inline-flex;padding:2px 8px;border-radius:999px;background:rgba(168,85,247,.13);border:1px solid rgba(168,85,247,.22);color:#e9d5ff;font-size:11px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.section-title{font-size:14px;font-weight:800;margin:0 0 8px;color:#fff}.small{font-size:12px;color:var(--muted);line-height:1.7}.empty{padding:40px;text-align:center;color:var(--muted)}
+@media(max-width:900px){.stats,.grid{grid-template-columns:1fr 1fr}.hdr{align-items:flex-start}.actions{margin-left:0}}@media(max-width:620px){.stats,.grid{grid-template-columns:1fr}.hdr{flex-wrap:wrap}input{width:100%}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="title">台股 <span>績效驗證</span></div>
+  <div class="meta" id="meta">載入中...</div>
+  <div class="actions">
+    <a class="btn" href="../index.html">選股系統</a>
+    <button class="btn" onclick="location.reload()">重新整理</button>
+  </div>
+</header>
+<main class="main">
+  <section class="stats">
+    <div class="stat"><div class="lbl">驗證區間</div><div class="val" id="st-range">—</div></div>
+    <div class="stat"><div class="lbl">股票階段列</div><div class="val" id="st-snapshots">—</div></div>
+    <div class="stat"><div class="lbl">訊號事件</div><div class="val" id="st-events">—</div></div>
+    <div class="stat"><div class="lbl">最新日期</div><div class="val" id="st-latest">—</div></div>
+    <div class="stat"><div class="lbl">天期</div><div class="val" id="st-horizons">—</div></div>
+  </section>
+  <section class="bar">
+    <h2>Tag / 模式績效</h2>
+    <p>每一列代表某個 tag 在指定階段出現後的後續報酬。14:00 來自 intraday-close，17:00 來自 close，23:00 來自 full；「全部階段」是三個階段合併統計。</p>
+  </section>
+  <section class="filters">
+    <input id="q" placeholder="搜尋 tag / 類型" oninput="render()">
+    <select id="stage" onchange="render()"><option value="">全部階段</option></select>
+    <select id="type" onchange="render()"><option value="">全部類型</option></select>
+    <select id="horizon" onchange="render()"></select>
+    <select id="minCount" onchange="render()">
+      <option value="0">不限樣本數</option>
+      <option value="5">樣本 ≥ 5</option>
+      <option value="10">樣本 ≥ 10</option>
+      <option value="30">樣本 ≥ 30</option>
+      <option value="100">樣本 ≥ 100</option>
+    </select>
+  </section>
+  <div class="tw">
+    <table>
+      <thead><tr>
+        <th onclick="sortBy('tag')">Tag</th>
+        <th onclick="sortBy('tag_type')">類型</th>
+        <th onclick="sortBy('stage_label')">階段</th>
+        <th onclick="sortBy('event_count')">事件</th>
+        <th onclick="sortMetric('count')">可驗證</th>
+        <th onclick="sortMetric('win_rate_pct')">勝率</th>
+        <th onclick="sortMetric('avg_return_pct')">平均</th>
+        <th onclick="sortMetric('median_return_pct')">中位</th>
+        <th onclick="sortMetric('avg_max_drawdown_pct')">平均回撤</th>
+        <th onclick="sortMetric('worst_max_drawdown_pct')">最差回撤</th>
+      </tr></thead>
+      <tbody id="summary-body"><tr><td colspan="10" class="empty">載入中...</td></tr></tbody>
+    </table>
+  </div>
+  <section class="grid">
+    <div>
+      <div class="section-title">最新訊號保存狀態</div>
+      <div class="tw"><table><thead><tr><th>日期</th><th>階段</th><th>代碼</th><th>名稱</th><th>分數</th><th>買點</th><th>Tags</th></tr></thead><tbody id="latest-body"></tbody></table></div>
+    </div>
+    <div>
+      <div class="section-title">每日樣本摘要</div>
+      <div class="tw"><table><thead><tr><th>日期</th><th>階段</th><th>Tag</th><th>事件</th><th>3日勝率</th><th>3日平均</th></tr></thead><tbody id="date-body"></tbody></table></div>
+    </div>
+  </section>
+</main>
+<script>
+const DATA_URLS=['signal_performance_latest.json','performance/signal_performance_latest.json','/web/performance/signal_performance_latest.json'];
+const S={data:null,sortKey:'sample_count_max',sortDir:-1,metricSort:null};
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function fmtDate(d){return String(d||'').replace(/^(\d{4})(\d{2})(\d{2})$/,'$1/$2/$3')}
+function fmt(v,suffix=''){if(v===''||v==null)return '—';return Number(v).toLocaleString(undefined,{maximumFractionDigits:2})+suffix}
+function tone(v){const n=num(v);return n>0?'pos':n<0?'neg':'neu'}
+async function loadJson(){let last;for(const url of DATA_URLS){try{const r=await fetch(url,{cache:'no-store'});if(r.ok)return await r.json();last='HTTP '+r.status}catch(e){last=e.message}}throw new Error(last||'找不到績效資料')}
+function fillFilters(){
+  const d=S.data;
+  document.getElementById('horizon').innerHTML=(d.horizons||[]).map(h=>`<option value="${h}">${h}日</option>`).join('');
+  const stages=[...new Set((d.summary||[]).map(r=>r.stage_label).filter(Boolean))].sort();
+  document.getElementById('stage').innerHTML='<option value="">全部階段</option>'+stages.map(x=>`<option>${x}</option>`).join('');
+  const types=[...new Set((d.summary||[]).map(r=>r.tag_type).filter(Boolean))].sort();
+  document.getElementById('type').innerHTML='<option value="">全部類型</option>'+types.map(x=>`<option>${x}</option>`).join('');
+}
+function sortBy(key){S.metricSort=null;S.sortKey=key;S.sortDir=S.sortKey===key?-S.sortDir:-1;render()}
+function sortMetric(field){S.metricSort=field;S.sortDir=-S.sortDir;render()}
+function metric(row,field){const h=document.getElementById('horizon').value||'3';return row[`${h}d_${field}`]}
+function render(){
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  const stage=document.getElementById('stage').value;
+  const type=document.getElementById('type').value;
+  const minCount=num(document.getElementById('minCount').value);
+  let rows=(S.data.summary||[]).filter(r=>{
+    const h=document.getElementById('horizon').value||'3';
+    const count=num(r[`${h}d_count`]);
+    return (!q||String(r.tag+' '+r.tag_type).toLowerCase().includes(q))
+      && (!stage||r.stage_label===stage)
+      && (!type||r.tag_type===type)
+      && count>=minCount;
+  });
+  rows.sort((a,b)=>{
+    if(S.metricSort){return (num(metric(a,S.metricSort))-num(metric(b,S.metricSort)))*S.sortDir}
+    const av=typeof a[S.sortKey]==='number'?a[S.sortKey]:String(a[S.sortKey]||'');
+    const bv=typeof b[S.sortKey]==='number'?b[S.sortKey]:String(b[S.sortKey]||'');
+    if(typeof av==='number')return (av-bv)*S.sortDir;
+    return av.localeCompare(bv,'zh-TW')*S.sortDir;
+  });
+  const h=document.getElementById('horizon').value||'3';
+  document.getElementById('summary-body').innerHTML=rows.slice(0,300).map(r=>`
+    <tr>
+      <td><span class="tag">${r.tag}</span></td>
+      <td>${r.tag_type}</td>
+      <td><span class="stage">${r.stage_label}</span></td>
+      <td>${fmt(r.event_count)}</td>
+      <td>${fmt(r[`${h}d_count`])}</td>
+      <td class="${tone(r[`${h}d_win_rate_pct`]-50)}">${fmt(r[`${h}d_win_rate_pct`],'%')}</td>
+      <td class="${tone(r[`${h}d_avg_return_pct`])}">${fmt(r[`${h}d_avg_return_pct`],'%')}</td>
+      <td class="${tone(r[`${h}d_median_return_pct`])}">${fmt(r[`${h}d_median_return_pct`],'%')}</td>
+      <td class="${tone(r[`${h}d_avg_max_drawdown_pct`])}">${fmt(r[`${h}d_avg_max_drawdown_pct`],'%')}</td>
+      <td class="${tone(r[`${h}d_worst_max_drawdown_pct`])}">${fmt(r[`${h}d_worst_max_drawdown_pct`],'%')}</td>
+    </tr>`).join('')||'<tr><td colspan="10" class="empty">沒有符合條件的績效資料</td></tr>';
+}
+function renderLatest(){
+  const rows=(S.data.latest_signals||[]).filter(r=>num(r.tag_count)>0).slice(0,120);
+  document.getElementById('latest-body').innerHTML=rows.map(r=>`
+    <tr><td>${fmtDate(r.signal_date)}</td><td>${r.stage_label}</td><td>${r.code}</td><td>${r.name}</td><td>${fmt(r.selection_score)}</td><td>${fmt(r.buy_point_score)}</td><td>${String(r.signal_tags||'').split('、').slice(0,4).map(t=>`<span class="tag">${t}</span>`).join(' ')}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">最新日期尚無訊號</td></tr>';
+  const dateRows=(S.data.by_date||[]).filter(r=>num(r['3d_count'])>0).slice(-160).reverse();
+  document.getElementById('date-body').innerHTML=dateRows.map(r=>`
+    <tr><td>${fmtDate(r.signal_date)}</td><td>${r.stage_label}</td><td>${r.tag}</td><td>${fmt(r.event_count)}</td><td class="${tone(r['3d_win_rate_pct']-50)}">${fmt(r['3d_win_rate_pct'],'%')}</td><td class="${tone(r['3d_avg_return_pct'])}">${fmt(r['3d_avg_return_pct'],'%')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">歷史天期還在累積</td></tr>';
+}
+async function init(){
+  try{
+    S.data=await loadJson();
+    document.getElementById('meta').textContent=`產生時間：${S.data.generated_at||'—'}`;
+    document.getElementById('st-range').textContent=`${fmtDate(S.data.snapshot_start)}-${fmtDate(S.data.snapshot_end)}`;
+    document.getElementById('st-snapshots').textContent=fmt(S.data.snapshot_rows);
+    document.getElementById('st-events').textContent=fmt(S.data.signal_events);
+    document.getElementById('st-latest').textContent=fmtDate(S.data.latest_snapshot_date);
+    document.getElementById('st-horizons').textContent=(S.data.horizons||[]).join('/');
+    fillFilters();render();renderLatest();
+  }catch(e){document.getElementById('summary-body').innerHTML=`<tr><td colspan="10" class="empty">載入失敗：${e.message}</td></tr>`}
+}
+init();
+</script>
+</body>
+</html>

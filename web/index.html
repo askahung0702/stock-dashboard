@@ -363,6 +363,7 @@ td{padding:7px 9px;vertical-align:middle}
   <div class="hdr-meta" id="hdr-meta">載入中...</div>
   <div class="hdr-actions">
     <button class="btn" onclick="location.href=btcPageUrl()">BTC 儀表板</button>
+    <button class="btn" onclick="location.href=performancePageUrl()">績效驗證</button>
     <button class="btn" onclick="window.open(oldDashboardUrl(),'_blank')">舊版</button>
   </div>
 </header>
@@ -585,6 +586,10 @@ function stockHistoryUrl(code) {
 
 function btcPageUrl() {
   return isStaticPagesMode() ? 'btc.html' : '/btc';
+}
+
+function performancePageUrl() {
+  return isStaticPagesMode() ? 'performance/performance_latest.html' : '/web/performance/performance_latest.html';
 }
 
 function oldDashboardUrl() {
