@@ -542,6 +542,7 @@ td{padding:7px 9px;vertical-align:middle}
         <th onclick="srt('fiveDayInstitutionalNetRatioPct')">5日法人%<span class="sa" id="sa-fiveDayInstitutionalNetRatioPct"></span></th>
         <th onclick="srt('brokerNetLots')">單日主力<span class="sa" id="sa-brokerNetLots"></span></th>
         <th onclick="srt('brokerNetRatioPct')">主力比率<span class="sa" id="sa-brokerNetRatioPct"></span></th>
+        <th onclick="srt('marginUsagePct')">融資率<span class="sa" id="sa-marginUsagePct"></span></th>
         <th onclick="srt('shortScore')" title="短線適性分">短分<span class="sa" id="sa-shortScore"></span></th>
         <th onclick="srt('midScore')" title="中線適性分">中分<span class="sa" id="sa-midScore"></span></th>
       </tr></thead>
@@ -1125,7 +1126,12 @@ async function init() {
         fiveDayInstitutionalNetLots: resolvedNumber(s.fiveDayInstitutionalNetLots, chipsFallback.fiveDayInstitutionalNetLots),
         fiveDayInstitutionalNetRatioPct: resolvedNumber(s.fiveDayInstitutionalNetRatioPct, chipsFallback.fiveDayInstitutionalNetRatioPct),
         brokerNetLots: resolvedNumber(s.brokerNetLots, chipsFallback.brokerNetLots),
-        brokerNetRatioPct: resolvedNumber(s.brokerNetRatioPct, chipsFallback.brokerNetRatioPct)
+        brokerNetRatioPct: resolvedNumber(s.brokerNetRatioPct, chipsFallback.brokerNetRatioPct),
+        marginUsagePct: resolvedNumber(s.marginUsagePct, 0),
+        marginBalance: resolvedNumber(s.marginBalance, 0),
+        marginBalanceDelta: resolvedNumber(s.marginBalanceDelta, 0),
+        shortBalance: resolvedNumber(s.shortBalance, 0),
+        shortMarginRatioPct: resolvedNumber(s.shortMarginRatioPct, 0)
       };
       const bearish = calcBearishProfile(normalized);
       return {
@@ -1914,7 +1920,7 @@ function mkRow(s) {
     `<td class="${rc}">${ret !== 0 ? (ret>0?'+':'') + ret.toFixed(1) + '%' : '—'}</td>` +
     `<td>${s.volumeRatio > 0 ? s.volumeRatio.toFixed(2) : '—'}</td>` +
     fmtPctCell(s.latestInstitutionalNetRatioPct) + fmtPctCell(s.fiveDayInstitutionalNetRatioPct) +
-    fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) +
+    fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) + fmtMarginUsageCell(s.marginUsagePct) +
     `<td style="color:${ssColor};font-weight:600;background:linear-gradient(90deg,rgba(59,130,246,.12) ${s.shortScore}%,transparent ${s.shortScore}%)">${s.shortScore}</td>` +
     `<td style="color:${msColor};font-weight:600;background:linear-gradient(90deg,rgba(34,197,94,.12) ${s.midScore}%,transparent ${s.midScore}%)">${s.midScore}</td>`;
   return tr;
@@ -1936,6 +1942,11 @@ function fmtPctCell(v) {
   if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
   if (v === 0) return '<td style="color:var(--muted)">0.00%</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${v.toFixed(2)}%</td>`;
+}
+function fmtMarginUsageCell(v) {
+  if (!Number.isFinite(v) || v <= 0) return '<td style="color:var(--muted)">—</td>';
+  const color = v >= 60 ? 'var(--red)' : v >= 45 ? 'var(--yellow)' : 'var(--muted)';
+  return `<td style="color:${color};font-weight:600">${v.toFixed(2)}%</td>`;
 }
 function fmtLotsCell(v) {
   if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
@@ -2343,6 +2354,10 @@ function renderDB(s, history) {
   const inst5 = Number.isFinite(s.fiveDayInstitutionalNetRatioPct) ? s.fiveDayInstitutionalNetRatioPct : 0;
   const brokerLots = Number.isFinite(s.brokerNetLots) ? s.brokerNetLots : 0;
   const brokerRatio = Number.isFinite(s.brokerNetRatioPct) ? s.brokerNetRatioPct : 0;
+  const marginUsage = Number.isFinite(s.marginUsagePct) ? s.marginUsagePct : 0;
+  const marginDelta = Number.isFinite(s.marginBalanceDelta) ? s.marginBalanceDelta : 0;
+  const marginBalance = Number.isFinite(s.marginBalance) ? s.marginBalance : 0;
+  const shortMarginRatio = Number.isFinite(s.shortMarginRatioPct) ? s.shortMarginRatioPct : 0;
   const ss   = s.shortScore, ms = s.midScore;
   const buyScore = s.buyPointScore || 0;
   const confidenceReady = hasConfidenceData(s);
@@ -2556,6 +2571,9 @@ function renderDB(s, history) {
       <div class="met"><div class="met-lbl">5日法人%</div><div class="met-val ${inst5>0?'rp':inst5<0?'rn':'dz'}">${inst5>0?'+':''}${inst5.toFixed(2)}%</div></div>
       <div class="met"><div class="met-lbl">單日主力</div><div class="met-val ${brokerLots>0?'rp':brokerLots<0?'rn':'dz'}">${brokerLots>0?'+':''}${brokerLots.toLocaleString()}</div></div>
       <div class="met"><div class="met-lbl">主力比率</div><div class="met-val ${brokerRatio>0?'rp':brokerRatio<0?'rn':'dz'}">${brokerRatio>0?'+':''}${brokerRatio.toFixed(2)}%</div></div>
+      <div class="met"><div class="met-lbl">融資使用率</div><div class="met-val" style="color:${marginUsage>=60?'var(--red)':marginUsage>=45?'var(--yellow)':marginUsage>0?'var(--muted)':'var(--muted)'}">${marginUsage>0?marginUsage.toFixed(2)+'%':'—'}</div></div>
+      <div class="met"><div class="met-lbl">融資增減</div><div class="met-val ${marginDelta>0?'rn':marginDelta<0?'rp':'dz'}">${marginBalance>0?(marginDelta>0?'+':'')+marginDelta.toLocaleString():'—'}</div></div>
+      <div class="met"><div class="met-lbl">資券比</div><div class="met-val" style="color:${shortMarginRatio>=20?'var(--yellow)':'var(--muted)'}">${shortMarginRatio>0?shortMarginRatio.toFixed(2)+'%':'—'}</div></div>
       ${s.rsi14 > 0 ? `<div class="met"><div class="met-lbl">RSI14</div><div class="met-val" style="color:${s.rsi14>=80?'var(--red)':s.rsi14>=50&&s.rsi14<70?'var(--green)':s.rsi14<30?'var(--red)':'var(--yellow)'}">${s.rsi14.toFixed(1)}</div></div>` : ''}
       ${s.stochasticK > 0 ? `<div class="met"><div class="met-lbl">KD (K/D)</div><div class="met-val" style="color:${s.stochasticK>=80?'var(--red)':s.stochasticK>s.stochasticD?'var(--green)':'var(--muted)'}">${s.stochasticK.toFixed(1)}/${s.stochasticD.toFixed(1)}</div></div>` : ''}
       ${s.peg > 0 ? `<div class="met"><div class="met-lbl">PEG</div><div class="met-val" style="color:${s.peg<=1?'var(--green)':s.peg<=2?'var(--yellow)':'var(--red)'}">${s.peg.toFixed(2)}</div></div>` : ''}

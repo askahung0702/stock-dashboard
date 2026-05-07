@@ -37,7 +37,7 @@ public class StockStaticApiExporter {
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
         StockDashboardWriter writer = new StockDashboardWriter(analyzer.currentDateStamp(), analyzer.getLikelyThreshold(),
                 analyzer.getWatchlistThreshold(), analyzer.getVolumeSurgeThreshold());
-        writeUtf8(historyPath, writer.renderHistoryDataJson());
+        writeUtf8(historyPath, writer.renderHistoryDataJson(results));
     }
 
     private void writeUtf8(String path, String content) throws Exception {

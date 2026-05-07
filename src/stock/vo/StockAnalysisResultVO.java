@@ -20,6 +20,21 @@ public class StockAnalysisResultVO {
     private long latestForeignNetLots;
     private long brokerNetLots;
     private double brokerNetRatioPct;
+    private String marginDataDate = "";
+    private long marginBalance;
+    private long previousMarginBalance;
+    private long marginBalanceDelta;
+    private long marginBuy;
+    private long marginSell;
+    private long marginCashRepay;
+    private long marginLimit;
+    private double marginUsagePct;
+    private long shortBalance;
+    private long previousShortBalance;
+    private long shortBalanceDelta;
+    private double shortMarginRatioPct;
+    private double shortUsagePct;
+    private String marginTradingNote = "";
     private double currentPrice;
     private double trailingFourQuarterEps;
     private double fairValueEps;
@@ -308,6 +323,126 @@ public class StockAnalysisResultVO {
 
     public void setBrokerNetRatioPct(double brokerNetRatioPct) {
         this.brokerNetRatioPct = brokerNetRatioPct;
+    }
+
+    public String getMarginDataDate() {
+        return marginDataDate;
+    }
+
+    public void setMarginDataDate(String marginDataDate) {
+        this.marginDataDate = marginDataDate;
+    }
+
+    public long getMarginBalance() {
+        return marginBalance;
+    }
+
+    public void setMarginBalance(long marginBalance) {
+        this.marginBalance = marginBalance;
+    }
+
+    public long getPreviousMarginBalance() {
+        return previousMarginBalance;
+    }
+
+    public void setPreviousMarginBalance(long previousMarginBalance) {
+        this.previousMarginBalance = previousMarginBalance;
+    }
+
+    public long getMarginBalanceDelta() {
+        return marginBalanceDelta;
+    }
+
+    public void setMarginBalanceDelta(long marginBalanceDelta) {
+        this.marginBalanceDelta = marginBalanceDelta;
+    }
+
+    public long getMarginBuy() {
+        return marginBuy;
+    }
+
+    public void setMarginBuy(long marginBuy) {
+        this.marginBuy = marginBuy;
+    }
+
+    public long getMarginSell() {
+        return marginSell;
+    }
+
+    public void setMarginSell(long marginSell) {
+        this.marginSell = marginSell;
+    }
+
+    public long getMarginCashRepay() {
+        return marginCashRepay;
+    }
+
+    public void setMarginCashRepay(long marginCashRepay) {
+        this.marginCashRepay = marginCashRepay;
+    }
+
+    public long getMarginLimit() {
+        return marginLimit;
+    }
+
+    public void setMarginLimit(long marginLimit) {
+        this.marginLimit = marginLimit;
+    }
+
+    public double getMarginUsagePct() {
+        return marginUsagePct;
+    }
+
+    public void setMarginUsagePct(double marginUsagePct) {
+        this.marginUsagePct = marginUsagePct;
+    }
+
+    public long getShortBalance() {
+        return shortBalance;
+    }
+
+    public void setShortBalance(long shortBalance) {
+        this.shortBalance = shortBalance;
+    }
+
+    public long getPreviousShortBalance() {
+        return previousShortBalance;
+    }
+
+    public void setPreviousShortBalance(long previousShortBalance) {
+        this.previousShortBalance = previousShortBalance;
+    }
+
+    public long getShortBalanceDelta() {
+        return shortBalanceDelta;
+    }
+
+    public void setShortBalanceDelta(long shortBalanceDelta) {
+        this.shortBalanceDelta = shortBalanceDelta;
+    }
+
+    public double getShortMarginRatioPct() {
+        return shortMarginRatioPct;
+    }
+
+    public void setShortMarginRatioPct(double shortMarginRatioPct) {
+        this.shortMarginRatioPct = shortMarginRatioPct;
+    }
+
+    public double getShortUsagePct() {
+        return shortUsagePct;
+    }
+
+    public void setShortUsagePct(double shortUsagePct) {
+        this.shortUsagePct = shortUsagePct;
+    }
+
+    public String getMarginTradingNote() {
+        return marginTradingNote;
+    }
+
+    public void setMarginTradingNote(String marginTradingNote) {
+        this.marginTradingNote = marginTradingNote;
     }
 
     public double getCurrentPrice() {

@@ -6,6 +6,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.json.simple.JSONObject;
@@ -40,6 +42,7 @@ public class StockStageExporter {
         StockHistoryDatabase.Snapshot exportSnapshot = selection.snapshot;
         String exportStage = selection.stage;
         exportSnapshot.date = date;
+        applyOfficialClosePrices(exportSnapshot, date);
         database.upsertSnapshot(exportSnapshot);
         new StockStaticApiExporter().writeDefaultOutputs(new File("web\\data", "latest.json").getPath(),
                 new File("web\\data", "history.json").getPath());
@@ -96,6 +99,89 @@ public class StockStageExporter {
             return new ExportSelection(intradayClose, STAGE_INTRADAY_CLOSE);
         }
         return null;
+    }
+
+    private static void applyOfficialClosePrices(StockHistoryDatabase.Snapshot snapshot, String date) {
+        if (snapshot == null || snapshot.rows == null || snapshot.rows.isEmpty()) {
+            return;
+        }
+        try {
+            List<stock.vo.TaiwanStockVO> stocks = new TaiwanStockMarketProvider().loadAllStocks();
+            Map<String, Double> closePrices = new OfficialDailyCloseService().loadClosePrices(stocks, date);
+            int corrected = 0;
+            int logged = 0;
+            for (StockHistoryDatabase.SnapshotRow row : snapshot.rows) {
+                Double close = closePrices.get(row.code);
+                if (close == null || close.doubleValue() <= 0D) {
+                    continue;
+                }
+                double oldPrice = row.price;
+                row.analysisVersion = appendTag(row.analysisVersion, "official-close");
+                if (Math.abs(close.doubleValue() - row.price) >= 0.01D) {
+                    row.price = close.doubleValue();
+                    row.return18DayPct = recomputePctFromOriginalPrice(row.return18DayPct, oldPrice, row.price);
+                    row.return20DayPct = recomputePctFromOriginalPrice(row.return20DayPct, oldPrice, row.price);
+                    row.return54DayPct = recomputePctFromOriginalPrice(row.return54DayPct, oldPrice, row.price);
+                    row.return60DayPct = recomputePctFromOriginalPrice(row.return60DayPct, oldPrice, row.price);
+                    row.drawdownFromHigh60Pct = recomputePctFromOriginalPrice(row.drawdownFromHigh60Pct, oldPrice,
+                            row.price);
+                    row.technicalReason = buildTechnicalReason(row);
+                    corrected++;
+                    if (logged < 30) {
+                        System.out.println("Export official close override " + row.code + " " + format(oldPrice)
+                                + " -> " + format(row.price));
+                        logged++;
+                    }
+                }
+            }
+            if (corrected > 0) {
+                System.out.println("Export official close overrides applied: " + corrected);
+            }
+        } catch (Exception ex) {
+            System.out.println("Export official close override unavailable: " + ex.getMessage());
+        }
+    }
+
+    private static String appendTag(String value, String tag) {
+        String text = value == null ? "" : value;
+        return text.contains(tag) ? text : text + "-" + tag;
+    }
+
+    private static String replaceCurrentPriceText(String value, double price) {
+        if (value == null || value.length() == 0) {
+            return value;
+        }
+        return value.replaceFirst("現價 [-+0-9.]+", "現價 " + format(price));
+    }
+
+    private static String buildTechnicalReason(StockHistoryDatabase.SnapshotRow row) {
+        return "現價 " + format(row.price)
+                + "，MA20 " + format(row.movingAverage20)
+                + "，MA60 " + format(row.movingAverage60)
+                + "，MA120 " + format(row.movingAverage120)
+                + "，20 日報酬 " + format(row.return20DayPct) + "%"
+                + "，60 日報酬 " + format(row.return60DayPct) + "%"
+                + "，量比 " + format(row.volumeRatio)
+                + "，波動度 " + format(row.volatility20Pct) + "%"
+                + "，距 60 日高點 " + format(row.drawdownFromHigh60Pct) + "%"
+                + "，RSI14 " + format(row.rsi14)
+                + "，K " + format(row.stochasticK)
+                + "，D " + format(row.stochasticD);
+    }
+
+    private static double recomputePctFromOriginalPrice(double originalPct, double originalPrice, double newPrice) {
+        if (originalPrice <= 0D || newPrice <= 0D || originalPct <= -99.9D) {
+            return originalPct;
+        }
+        double basePrice = originalPrice / (1D + originalPct / 100D);
+        if (basePrice <= 0D) {
+            return originalPct;
+        }
+        return (newPrice - basePrice) * 100D / basePrice;
+    }
+
+    private static String format(double value) {
+        return String.format(Locale.US, "%.2f", Double.valueOf(value));
     }
 
     private static StockHistoryDatabase.Snapshot mergeCloseAndNewsEvent(StockHistoryDatabase.Snapshot close,

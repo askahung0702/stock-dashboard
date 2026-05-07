@@ -85,6 +85,11 @@ public class StockDashboardWriter {
         return buildHistoryDataJson(historyBundle);
     }
 
+    public String renderHistoryDataJson(List<StockAnalysisResultVO> currentResults) throws Exception {
+        HistoryBundle historyBundle = buildHistoryBundle(currentResults);
+        return buildHistoryDataJson(historyBundle);
+    }
+
     private String buildDashboardHtml(List<StockAnalysisResultVO> results, List<StockAnalysisResultVO> likelyCandidates,
             List<StockAnalysisResultVO> watchlistCandidates, List<StockAnalysisResultVO> likelyVolumeSurgeCandidates,
             List<StockAnalysisResultVO> nonLikelyVolumeSurgeCandidates, HistoryBundle historyBundle) {

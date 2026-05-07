@@ -28,6 +28,7 @@ import stock.vo.EpsRecordVO;
 import stock.vo.EventRiskVO;
 import stock.vo.IncomeStatementRecordVO;
 import stock.vo.InstitutionalTradingDailyVO;
+import stock.vo.MarginTradingVO;
 import stock.vo.MonthlyRevenueVO;
 import stock.vo.NewsSignalVO;
 import stock.vo.ProfileSnapshotVO;
@@ -97,6 +98,8 @@ public class TaiwanStockAnalyzer {
 
     private final TaiwanStockMarketProvider marketProvider = new TaiwanStockMarketProvider();
     private final YahooTaiwanStockService yahooService = new YahooTaiwanStockService();
+    private final OfficialDailyCloseService officialDailyCloseService = new OfficialDailyCloseService();
+    private final MarginTradingService marginTradingService = new MarginTradingService();
     private final StockHistoryDatabase historyDatabase = new StockHistoryDatabase();
     private final ThemeBasketRepository themeBasketRepository = new ThemeBasketRepository();
     private final NewsThemeReferenceAnalyzer newsThemeReferenceAnalyzer = new NewsThemeReferenceAnalyzer();
@@ -115,6 +118,8 @@ public class TaiwanStockAnalyzer {
     private String runStage = "full";
     private Map<String, StockHistoryDatabase.SnapshotRow> sameDayCloseRawRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
     private Map<String, StockHistoryDatabase.SnapshotRow> deferredChipRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
+    private Map<String, Double> officialClosePricesByCode = new HashMap<String, Double>();
+    private Map<String, MarginTradingVO> marginTradingRowsByCode = new HashMap<String, MarginTradingVO>();
 
     public List<StockAnalysisResultVO> analyze(int maxStocks) throws Exception {
         List<TaiwanStockVO> allStocks = marketProvider.loadAllStocks();
@@ -123,10 +128,20 @@ public class TaiwanStockAnalyzer {
         }
         sameDayCloseRawRowsByCode = loadSameDayCloseRawRows();
         deferredChipRowsByCode = loadDeferredChipRows();
+        officialClosePricesByCode = shouldUseOfficialClosePrices()
+                ? officialDailyCloseService.loadClosePrices(allStocks, currentDateStamp())
+                : new HashMap<String, Double>();
+        marginTradingRowsByCode = marginTradingService.loadMarginTrading(currentDateStamp());
         String runNote = sameDayCloseRawRowsByCode.isEmpty() ? "close raw unavailable"
                 : "reusing close raw " + sameDayCloseRawRowsByCode.size();
         if (!deferredChipRowsByCode.isEmpty()) {
             runNote += "; carrying chip rows " + deferredChipRowsByCode.size();
+        }
+        if (!officialClosePricesByCode.isEmpty()) {
+            runNote += "; official closes " + officialClosePricesByCode.size();
+        }
+        if (!marginTradingRowsByCode.isEmpty()) {
+            runNote += "; margin rows " + marginTradingRowsByCode.size();
         }
         markStageRunStatus("running", 0, runNote);
 
@@ -1313,6 +1328,16 @@ public class TaiwanStockAnalyzer {
         return rowsByCode;
     }
 
+    private boolean shouldUseOfficialClosePrices() {
+        if ("close".equals(runStage)) {
+            return true;
+        }
+        if ("intraday-close".equals(runStage)) {
+            return !LocalTime.now(TAIPEI_ZONE).isBefore(LocalTime.of(13, 45));
+        }
+        return "full".equals(runStage) && !LocalTime.now(TAIPEI_ZONE).isBefore(LocalTime.of(13, 45));
+    }
+
     private Map<String, StockHistoryDatabase.SnapshotRow> loadDeferredChipRows() {
         Map<String, StockHistoryDatabase.SnapshotRow> rowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
         if (!"intraday-close".equals(runStage) || !parseBooleanProperty("stock.intraday.deferChips", true)) {
@@ -1684,10 +1709,52 @@ public class TaiwanStockAnalyzer {
         } else if (brokerNetLots > 0L && brokerNetRatioPct < 0D) {
             brokerNetRatioPct = Math.abs(brokerNetRatioPct);
         }
+        MarginTradingVO marginTrading = marginTradingRowsByCode.get(result.getStock().getCode());
+        String marginDataDate = marginTrading != null ? marginTrading.getDataDate()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginDataDate : "";
+        long previousMarginBalance = marginTrading != null ? marginTrading.getPreviousMarginBalance()
+                : chipSnapshotRow != null ? chipSnapshotRow.previousMarginBalance : 0L;
+        long marginBalance = marginTrading != null ? marginTrading.getMarginBalance()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginBalance : 0L;
+        long marginBalanceDelta = marginTrading != null ? marginTrading.getMarginBalanceDelta()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginBalanceDelta : 0L;
+        long marginBuy = marginTrading != null ? marginTrading.getMarginBuy()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginBuy : 0L;
+        long marginSell = marginTrading != null ? marginTrading.getMarginSell()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginSell : 0L;
+        long marginCashRepay = marginTrading != null ? marginTrading.getMarginCashRepay()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginCashRepay : 0L;
+        long marginLimit = marginTrading != null ? marginTrading.getMarginLimit()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginLimit : 0L;
+        double marginUsagePct = marginTrading != null ? marginTrading.getMarginUsagePct()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginUsagePct : 0D;
+        long previousShortBalance = marginTrading != null ? marginTrading.getPreviousShortBalance()
+                : chipSnapshotRow != null ? chipSnapshotRow.previousShortBalance : 0L;
+        long shortBalance = marginTrading != null ? marginTrading.getShortBalance()
+                : chipSnapshotRow != null ? chipSnapshotRow.shortBalance : 0L;
+        long shortBalanceDelta = marginTrading != null ? marginTrading.getShortBalanceDelta()
+                : chipSnapshotRow != null ? chipSnapshotRow.shortBalanceDelta : 0L;
+        double shortMarginRatioPct = marginTrading != null ? marginTrading.getShortMarginRatioPct()
+                : chipSnapshotRow != null ? chipSnapshotRow.shortMarginRatioPct : 0D;
+        double shortUsagePct = marginTrading != null ? marginTrading.getShortUsagePct()
+                : chipSnapshotRow != null ? chipSnapshotRow.shortUsagePct : 0D;
+        String marginTradingNote = marginTrading != null ? marginTrading.getNote()
+                : chipSnapshotRow != null ? chipSnapshotRow.marginTradingNote : "";
 
         double currentPrice = reusedSameDayCloseRaw ? stagedRawRow.price
                 : profile.getCurrentPrice() > 0D ? profile.getCurrentPrice()
                         : technical != null ? technical.getCurrentPrice() : 0D;
+        double priceBeforeOfficialCloseOverride = currentPrice;
+        String stockCode = result.getStock() == null ? "" : result.getStock().getCode();
+        Double officialClosePrice = officialClosePricesByCode.get(stockCode);
+        boolean officialCloseConfirmed = officialClosePrice != null && officialClosePrice.doubleValue() > 0D;
+        boolean officialCloseApplied = officialCloseConfirmed
+                && Math.abs(officialClosePrice.doubleValue() - currentPrice) >= 0.01D;
+        if (officialCloseApplied) {
+            System.out.println("Official close override " + stockCode + " " + format(currentPrice)
+                    + " -> " + format(officialClosePrice.doubleValue()));
+            currentPrice = officialClosePrice.doubleValue();
+        }
         double movingAverage18 = technical != null ? technical.getMovingAverage18()
                 : reusedSameDayCloseRaw ? stagedRawRow.movingAverage18 : 0D;
         double movingAverage20 = technical != null ? technical.getMovingAverage20()
@@ -1718,6 +1785,18 @@ public class TaiwanStockAnalyzer {
         double atr20 = technical != null ? technical.getAtr20() : reusedSameDayCloseRaw ? stagedRawRow.atr20 : 0D;
         double drawdownFromHigh60Pct = technical != null ? technical.getDrawdownFromHigh60Pct()
                 : reusedSameDayCloseRaw ? stagedRawRow.drawdownFromHigh60Pct : 0D;
+        if (officialCloseApplied) {
+            return18DayPct = recomputePctFromOriginalPrice(return18DayPct, priceBeforeOfficialCloseOverride,
+                    currentPrice);
+            return20DayPct = recomputePctFromOriginalPrice(return20DayPct, priceBeforeOfficialCloseOverride,
+                    currentPrice);
+            return54DayPct = recomputePctFromOriginalPrice(return54DayPct, priceBeforeOfficialCloseOverride,
+                    currentPrice);
+            return60DayPct = recomputePctFromOriginalPrice(return60DayPct, priceBeforeOfficialCloseOverride,
+                    currentPrice);
+            drawdownFromHigh60Pct = recomputePctFromOriginalPrice(drawdownFromHigh60Pct,
+                    priceBeforeOfficialCloseOverride, currentPrice);
+        }
         double ma20Slope = technical != null ? technical.getMa20Slope()
                 : reusedSameDayCloseRaw ? stagedRawRow.ma20Slope : 0D;
 
@@ -1818,7 +1897,8 @@ public class TaiwanStockAnalyzer {
         double revenueScore = scoreRevenue(latestRevenueYoY, averageThreeMonthRevenueYoY, accumulatedRevenueYoY,
                 positiveRevenueMonths);
         double chipsScore = scoreChips(fiveDayInstitutionalNetRatioPct, latestInstitutionalNetRatioPct,
-                latestForeignNetLots, brokerNetRatioPct, brokerNetLots);
+                latestForeignNetLots, brokerNetRatioPct, brokerNetLots, marginUsagePct, marginBalanceDelta,
+                shortMarginRatioPct);
         double liquidityScore = scoreLiquidity(averageTradeValue20Billion, averageLots20, profile.getMarketCapMillions());
         double valuationScore = scoreValuation(trailingPe, trailingFourQuarterEps, peerAveragePe, nonOperatingRatioPct,
                 epsAccelerationPct, peg);
@@ -1889,6 +1969,21 @@ public class TaiwanStockAnalyzer {
         result.setLatestForeignNetLots(latestForeignNetLots);
         result.setBrokerNetLots(brokerNetLots);
         result.setBrokerNetRatioPct(brokerNetRatioPct);
+        result.setMarginDataDate(marginDataDate);
+        result.setPreviousMarginBalance(previousMarginBalance);
+        result.setMarginBalance(marginBalance);
+        result.setMarginBalanceDelta(marginBalanceDelta);
+        result.setMarginBuy(marginBuy);
+        result.setMarginSell(marginSell);
+        result.setMarginCashRepay(marginCashRepay);
+        result.setMarginLimit(marginLimit);
+        result.setMarginUsagePct(marginUsagePct);
+        result.setPreviousShortBalance(previousShortBalance);
+        result.setShortBalance(shortBalance);
+        result.setShortBalanceDelta(shortBalanceDelta);
+        result.setShortMarginRatioPct(shortMarginRatioPct);
+        result.setShortUsagePct(shortUsagePct);
+        result.setMarginTradingNote(marginTradingNote);
         result.setTrailingFourQuarterEps(trailingFourQuarterEps);
         result.setFairValueEps(fairValueEps);
         result.setTrailingPe(trailingPe);
@@ -2000,6 +2095,9 @@ public class TaiwanStockAnalyzer {
         String analysisVersion = usedLowFrequencyCache ? ANALYSIS_VERSION + "-cached" : ANALYSIS_VERSION + "-fresh";
         if (reusedSameDayCloseRaw) {
             analysisVersion += "-reused-close";
+        }
+        if (officialCloseConfirmed) {
+            analysisVersion += "-official-close";
         }
         result.setAnalysisVersion(analysisVersion);
         String sourceUpdatedAt = usedLowFrequencyCache && cacheEntry != null
@@ -2506,7 +2604,8 @@ public class TaiwanStockAnalyzer {
     }
 
     private double scoreChips(double fiveDayInstitutionalNetRatioPct, double latestInstitutionalNetRatioPct,
-            long latestForeignNetLots, double brokerNetRatioPct, long brokerNetLots) {
+            long latestForeignNetLots, double brokerNetRatioPct, long brokerNetLots, double marginUsagePct,
+            long marginBalanceDelta, double shortMarginRatioPct) {
         double score = 0D;
 
         // 5日法人買賣超比率（最高 12 分）
@@ -2541,6 +2640,22 @@ public class TaiwanStockAnalyzer {
 
         // 主力張數方向（最高 1 分）
         if (brokerNetLots > 0L) {
+            score += 1D;
+        }
+
+        if (marginUsagePct >= 60D) {
+            score -= 5D;
+        } else if (marginUsagePct >= 45D) {
+            score -= 3D;
+        } else if (marginUsagePct >= 30D) {
+            score -= 1D;
+        }
+        if (marginBalanceDelta > 0L && latestInstitutionalNetRatioPct <= 0D && brokerNetRatioPct <= 0D) {
+            score -= 2D;
+        } else if (marginBalanceDelta < 0L && (latestInstitutionalNetRatioPct > 0D || brokerNetRatioPct > 0D)) {
+            score += 1D;
+        }
+        if (shortMarginRatioPct >= 20D && (latestInstitutionalNetRatioPct > 0D || brokerNetRatioPct > 0D)) {
             score += 1D;
         }
 
@@ -2768,7 +2883,6 @@ public class TaiwanStockAnalyzer {
         double peerWeight = "growth".equals(style) ? 0.50D : "stable".equals(style) ? 0.40D : 0.40D;
         double pegWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.20D : 0.25D;
         double pbWeight = "stable".equals(style) ? 0.40D : 0.25D;
-
         if (fairValueEps > 0D && peerAveragePe > 0D) {
             double peerFactor = 1D;
             if (latestQuarterEpsYoYPct >= 25D) {
@@ -2861,8 +2975,7 @@ public class TaiwanStockAnalyzer {
         if (coreValues.isEmpty()) {
             double gapPct = currentPrice > 0D && fairValueEps > 0D ? (fairValueEps - currentPrice) * 100D / currentPrice
                     : 0D;
-            String epsText = "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
-                    + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
+            String epsText = buildFairValueEpsText(fairValueEps, trailingEps, twoQuarterAnnualizedEps);
             List<String> blockedReasons = new ArrayList<String>();
             if (fairValueEps <= 0D) {
                 blockedReasons.add("估值EPS仍為負或不足");
@@ -2937,12 +3050,20 @@ public class TaiwanStockAnalyzer {
                 : "均衡混合估值";
         String supportText = supportNotes.isEmpty() ? "" : "；" + joinReasonNotes(supportNotes);
         String discountText = discountNotes.isEmpty() ? "" : "；折價：" + joinReasonNotes(discountNotes);
-        String epsText = "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
-                + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
+        String epsText = buildFairValueEpsText(fairValueEps, trailingEps, twoQuarterAnnualizedEps);
         String reason = epsText + "；以 " + joinReasonNotes(methodNotes) + " 綜合估算" + supportText
                 + discountText + "，合理價中位 " + format(basePrice) + "，相對現價 " + formatSigned(gapPct)
                 + "%，信心 " + format(confidence) + " 分";
         return new FairValueProfile(lowPrice, basePrice, highPrice, confidence, method, reason);
+    }
+
+    private String buildFairValueEpsText(double fairValueEps, double trailingEps, double twoQuarterAnnualizedEps) {
+        if (trailingEps < 0D && twoQuarterAnnualizedEps > 0D) {
+            return "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
+                    + " 為負，改用近兩季年化 " + format(twoQuarterAnnualizedEps) + "）";
+        }
+        return "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
+                + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
     }
 
     private double computeFairValuePeCap(String style, int discountRiskCount, double debtRatioPct,
@@ -3022,6 +3143,9 @@ public class TaiwanStockAnalyzer {
             return 0D;
         }
         double twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2D;
+        if (trailingFourQuarterEps < 0D && twoQuarterAnnualizedEps > 0D) {
+            return twoQuarterAnnualizedEps;
+        }
         return trailingFourQuarterEps * 0.40D + twoQuarterAnnualizedEps * 0.60D;
     }
 
@@ -3066,6 +3190,17 @@ public class TaiwanStockAnalyzer {
 
     private String formatSigned(double value) {
         return (value >= 0D ? "+" : "") + format(value);
+    }
+
+    private double recomputePctFromOriginalPrice(double originalPct, double originalPrice, double newPrice) {
+        if (originalPrice <= 0D || newPrice <= 0D || originalPct <= -99.9D) {
+            return originalPct;
+        }
+        double basePrice = originalPrice / (1D + originalPct / 100D);
+        if (basePrice <= 0D) {
+            return originalPct;
+        }
+        return (newPrice - basePrice) * 100D / basePrice;
     }
 
     private double calcTripleConfirmBonus(double latestQuarterEpsYoYPct, double latestInstitutionalNetRatioPct,
@@ -4770,12 +4905,19 @@ public class TaiwanStockAnalyzer {
     }
 
     private String buildChipsReason(StockAnalysisResultVO result) {
-        return "5 日法人買賣超 " + formatLots(result.getFiveDayInstitutionalNetLots()) + " 張，占比 "
+        String reason = "5 日法人買賣超 " + formatLots(result.getFiveDayInstitutionalNetLots()) + " 張，占比 "
                 + format(result.getFiveDayInstitutionalNetRatioPct()) + "%；單日法人 "
                 + formatLots(result.getLatestInstitutionalNetLots()) + " 張，占比 "
                 + format(result.getLatestInstitutionalNetRatioPct()) + "%；外資 "
                 + formatLots(result.getLatestForeignNetLots()) + " 張；主力 "
                 + formatLots(result.getBrokerNetLots()) + " 張，占比 " + format(result.getBrokerNetRatioPct()) + "%";
+        if (result.getMarginDataDate() != null && result.getMarginDataDate().length() > 0) {
+            reason += "；融資使用率 " + format(result.getMarginUsagePct()) + "%，融資餘額 "
+                    + formatLots(result.getMarginBalance()) + " 張，日增減 "
+                    + formatSignedLots(result.getMarginBalanceDelta()) + " 張，資券比 "
+                    + format(result.getShortMarginRatioPct()) + "%";
+        }
+        return reason;
     }
 
     private String buildLiquidityReason(StockAnalysisResultVO result) {
@@ -5125,6 +5267,21 @@ public class TaiwanStockAnalyzer {
         result.setLatestForeignNetLots(row.latestForeignNetLots);
         result.setBrokerNetLots(row.brokerNetLots);
         result.setBrokerNetRatioPct(row.brokerNetRatioPct);
+        result.setMarginDataDate(row.marginDataDate);
+        result.setPreviousMarginBalance(row.previousMarginBalance);
+        result.setMarginBalance(row.marginBalance);
+        result.setMarginBalanceDelta(row.marginBalanceDelta);
+        result.setMarginBuy(row.marginBuy);
+        result.setMarginSell(row.marginSell);
+        result.setMarginCashRepay(row.marginCashRepay);
+        result.setMarginLimit(row.marginLimit);
+        result.setMarginUsagePct(row.marginUsagePct);
+        result.setPreviousShortBalance(row.previousShortBalance);
+        result.setShortBalance(row.shortBalance);
+        result.setShortBalanceDelta(row.shortBalanceDelta);
+        result.setShortMarginRatioPct(row.shortMarginRatioPct);
+        result.setShortUsagePct(row.shortUsagePct);
+        result.setMarginTradingNote(row.marginTradingNote);
         result.setRsi14(row.rsi14);
         result.setStochasticK(row.stochasticK);
         result.setStochasticD(row.stochasticD);
@@ -5765,6 +5922,10 @@ public class TaiwanStockAnalyzer {
 
     private String formatLots(long value) {
         return String.format("%,d", Long.valueOf(value));
+    }
+
+    private String formatSignedLots(long value) {
+        return (value >= 0L ? "+" : "") + formatLots(value);
     }
 
     private boolean isThrottleLikeFailure(Exception ex) {

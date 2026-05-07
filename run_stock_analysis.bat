@@ -137,6 +137,10 @@ if /I "%RUN_MODE%"=="export-now" goto run_export_now
 goto run_analysis
 
 :run_analysis
+if exist bin\stock (
+    echo Cleaning compiled stock classes...
+    rmdir /s /q bin\stock
+)
 echo Compiling StockAnalysis.java...
 "%JAVAC_CMD%" -encoding UTF-8 -cp "%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockAnalysis.java
 if errorlevel 1 (
