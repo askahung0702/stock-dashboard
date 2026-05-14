@@ -1519,6 +1519,7 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">危險警報 <b>${d.marketAlert || '中性'}</b></div>` +
     `<div class="mkt-chip">爆量股 <b>${fmtMetricWithDelta(`${(d.volumeSurgePct||0).toFixed(1)}%`, fmtDeltaTag(Number(d.volumeSurgePctDelta || 0), '%', 1))}</b></div>` +
     `<div class="mkt-chip">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(fmt1(futures.currentPrice), fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
+    `<div class="mkt-chip">夜盤 <b>${futures.nightPriceAvailable ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
     `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '未更新'}</b></div>` +
     `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></div>` +
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
@@ -1616,6 +1617,8 @@ function renderMarketAdvisor(d) {
     `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>` +
     `<span class="ma-metric">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(`${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)`, fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></span>` +
     `<span class="ma-metric">台指期時間 <b>${futures.priceAvailable ? escapeHtml(futures.marketTime || '已更新') : '—'}</b></span>` +
+    `<span class="ma-metric">夜盤收盤 <b>${futures.nightPriceAvailable ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : '未更新'}</b></span>` +
+    `<span class="ma-metric">夜盤時間 <b>${futures.nightPriceAvailable ? escapeHtml(futures.nightMarketTime || '已更新') : '—'}</b></span>` +
     `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable ? escapeHtml(futures.dataDate || '已更新') : '未更新'}</b></span>` +
     `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '—'}</b></span>` +
     `<span class="ma-metric">外資期貨淨額 <b>${futures.positionAvailable ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
