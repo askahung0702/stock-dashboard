@@ -228,6 +228,10 @@ td{padding:7px 9px;vertical-align:middle}
 .met{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1;min-width:90px}
 .met-lbl{font-size:11px;color:var(--muted)}
 .met-val{font-size:17px;font-weight:700;margin-top:2px}
+.met-business{flex-basis:100%;display:grid;grid-template-columns:minmax(0,1fr) 140px 150px;gap:14px;align-items:center}
+.biz-text{font-size:12px;color:#cbd5e1;line-height:1.7;margin-top:4px}
+.biz-margin{text-align:right;border-left:1px solid var(--border);padding-left:14px}
+.biz-margin .met-val{font-size:21px}
 
 /* 投資建議卡 */
 .inv-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px}
@@ -356,7 +360,7 @@ td{padding:7px 9px;vertical-align:middle}
 .sc-overall-box{background:rgba(234,179,8,.08);border-left:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:130px}
 .sc-overall-stars{font-size:18px;letter-spacing:2px;margin-bottom:4px}
 .sc-divider{height:1px;background:var(--border);margin:14px 0}
-@media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}}
+@media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}.met-business{grid-template-columns:1fr}.biz-margin{text-align:left;border-left:none;border-top:1px solid var(--border);padding-left:0;padding-top:10px}}
 </style>
 </head>
 <body>
@@ -1025,6 +1029,50 @@ function numberFromText(text, pattern) {
   return match ? Number(match[1].replace(/,/g, '')) : 0;
 }
 
+function optionalNumberFromText(text, pattern) {
+  const match = String(text || '').match(pattern);
+  return match ? Number(match[1].replace(/,/g, '')) : NaN;
+}
+
+function grossMarginPctOf(s) {
+  const direct = Number(s?.grossMarginPct);
+  if (Number.isFinite(direct) && Math.abs(direct) > 0.0001) return direct;
+  return optionalNumberFromText(s?.financialQualityReason, /毛利率?\s*([+-]?\d+(?:\.\d+)?)%/);
+}
+
+function grossMarginColor(value) {
+  if (!Number.isFinite(value)) return 'var(--muted)';
+  if (value >= 25) return 'var(--green)';
+  if (value >= 15) return 'var(--yellow)';
+  if (value >= 8) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function percentileColor(value) {
+  if (!Number.isFinite(value) || value <= 0) return 'var(--muted)';
+  if (value >= 70) return 'var(--green)';
+  if (value >= 50) return 'var(--yellow)';
+  if (value >= 30) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function percentileLabel(value) {
+  if (!Number.isFinite(value) || value <= 0) return '—';
+  if (value >= 70) return '優於多數同業';
+  if (value >= 50) return '同業中上';
+  if (value >= 30) return '同業中下';
+  return '低於多數同業';
+}
+
+function companyBusinessText(s) {
+  const summary = String(s?.companySummary || '').trim();
+  if (summary) return summary;
+  const labels = uniq([s?.industry, s?.primaryTheme].filter(Boolean));
+  return labels.length
+    ? `目前資料以 ${labels.join(' / ')} 分類，尚未取得更完整公司業務摘要。`
+    : '尚未取得公司業務摘要。';
+}
+
 function isPreLaunchMode(s) {
   const price = Number(s.price || 0);
   const ma20 = Number(s.movingAverage20 || 0);
@@ -1133,7 +1181,8 @@ async function init() {
         marginBalance: resolvedNumber(s.marginBalance, 0),
         marginBalanceDelta: resolvedNumber(s.marginBalanceDelta, 0),
         shortBalance: resolvedNumber(s.shortBalance, 0),
-        shortMarginRatioPct: resolvedNumber(s.shortMarginRatioPct, 0)
+        shortMarginRatioPct: resolvedNumber(s.shortMarginRatioPct, 0),
+        grossMarginPct: grossMarginPctOf(s)
       };
       const bearish = calcBearishProfile(normalized);
       return {
@@ -2388,6 +2437,16 @@ function renderDB(s, history) {
   const themeScore = s.themeScore || 0;
   const primaryTheme = s.primaryTheme || '一般';
   const themeTags = s.themeTags || '';
+  const companyBusiness = companyBusinessText(s);
+  const grossMarginPct = grossMarginPctOf(s);
+  const grossMarginText = Number.isFinite(grossMarginPct) ? grossMarginPct.toFixed(2) + '%' : '—';
+  const grossMarginDisplayColor = grossMarginColor(grossMarginPct);
+  const grossMarginPeerPct = Number(s.grossMarginIndustryPercentile || 0);
+  const grossMarginPeerText = Number.isFinite(grossMarginPeerPct) && grossMarginPeerPct > 0
+    ? grossMarginPeerPct.toFixed(0) + '百分位'
+    : '—';
+  const grossMarginPeerColor = percentileColor(grossMarginPeerPct);
+  const grossMarginPeerLabel = percentileLabel(grossMarginPeerPct);
   const trendScore = s.trendPersistenceScore || 0;
   const trendDays = s.trendPersistenceDays || 0;
   const trendStatus = trendLabel(trendScore, trendDays);
@@ -2567,6 +2626,21 @@ function renderDB(s, history) {
   document.getElementById('db-body').innerHTML =
     buildStockCard(s, ss, ms) +
     `<div class="met-row">
+      <div class="met met-business">
+        <div>
+          <div class="met-lbl">公司主要在做什麼</div>
+          <div class="biz-text">${escapeHtml(companyBusiness)}</div>
+        </div>
+        <div class="biz-margin">
+          <div class="met-lbl">毛利率</div>
+          <div class="met-val" style="color:${grossMarginDisplayColor}">${grossMarginText}</div>
+        </div>
+        <div class="biz-margin">
+          <div class="met-lbl">同業毛利率比較</div>
+          <div class="met-val" style="color:${grossMarginPeerColor};font-size:18px">${grossMarginPeerText}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${grossMarginPeerLabel}</div>
+        </div>
+      </div>
       <div class="met"><div class="met-lbl">股價</div><div class="met-val">${s.price>0?'$'+s.price.toLocaleString():'—'}</div></div>
       <div class="met"><div class="met-lbl">總分</div><div class="met-val"><span class="sb ${sc}">${s.score.toFixed(1)}</span></div></div>
       <div class="met"><div class="met-lbl">買點</div><div class="met-val" style="color:${buyScore>=85?'var(--green)':buyScore>=75?'var(--orange)':buyScore>=60?'var(--yellow)':'var(--muted)'}">${buyScore.toFixed(1)}</div></div>
