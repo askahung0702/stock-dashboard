@@ -146,6 +146,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-catalyst.active{color:#f59e0b;border-bottom-color:#f59e0b}
 .tab.tab-breakout.active{color:#22c55e;border-bottom-color:#22c55e}
 .tab.tab-continuation.active{color:#f97316;border-bottom-color:#f97316}
+.tab.tab-resonance.active{color:#14b8a6;border-bottom-color:#14b8a6}
 .tab.tab-breakout1854.active{color:#a855f7;border-bottom-color:#a855f7}
 .tab.tab-continuation1854.active{color:#eab308;border-bottom-color:#eab308}
 .tab.tab-highwin.active{color:#fb7185;border-bottom-color:#fb7185}
@@ -158,6 +159,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC','Microsof
 .tab.tab-catalyst.active .tcnt{background:#f59e0b;color:#fff}
 .tab.tab-breakout.active .tcnt{background:#22c55e;color:#fff}
 .tab.tab-continuation.active .tcnt{background:#f97316;color:#fff}
+.tab.tab-resonance.active .tcnt{background:#14b8a6;color:#042f2e}
 .tab.tab-breakout1854.active .tcnt{background:#a855f7;color:#fff}
 .tab.tab-continuation1854.active .tcnt{background:#eab308;color:#111827}
 .tab.tab-highwin.active .tcnt{background:#fb7185;color:#fff}
@@ -511,6 +513,7 @@ td{padding:7px 9px;vertical-align:middle}
   <div class="tabs">
     <div class="tab active"   data-t="all"    onclick="tab('all')">全部 <span class="tcnt" id="tc-all">0</span></div>
     <div class="tab tab-catalyst" data-t="catalyst" onclick="tab('catalyst')">🚀 催化成長 <span class="tcnt" id="tc-catalyst">0</span></div>
+    <div class="tab tab-resonance" data-t="resonance" onclick="tab('resonance')">🎯 起漲共振 <span class="tcnt" id="tc-resonance">0</span></div>
     <div class="tab tab-breakout" data-t="breakout" onclick="tab('breakout')">🌱 早期起漲 <span class="tcnt" id="tc-breakout">0</span></div>
     <div class="tab tab-continuation" data-t="continuation" onclick="tab('continuation')">🔥 強勢續攻 <span class="tcnt" id="tc-continuation">0</span></div>
     <div class="tab tab-breakout1854" data-t="breakout1854" onclick="tab('breakout1854')">🌿 早期起漲 18/54 <span class="tcnt" id="tc-breakout1854">0</span></div>
@@ -1036,6 +1039,14 @@ function numberFromText(text, pattern) {
   return match ? Number(match[1].replace(/,/g, '')) : 0;
 }
 
+function firstFiniteNumber(...values) {
+  for (const value of values) {
+    const num = Number(value);
+    if (Number.isFinite(num) && Math.abs(num) > 0.0001) return num;
+  }
+  return 0;
+}
+
 function optionalNumberFromText(text, pattern) {
   const match = String(text || '').match(pattern);
   return match ? Number(match[1].replace(/,/g, '')) : NaN;
@@ -1177,13 +1188,97 @@ function isPreLaunchMode(s) {
     && dd60 >= -16 && dd60 <= -8;
 }
 
+function launchResonanceProfile(s) {
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const ma60 = Number(s.movingAverage60 || 0);
+  const ma120 = Number(s.movingAverage120 || 0);
+  const ret20 = Number(s.return20DayPct || 0);
+  const ret60 = Number(s.return60DayPct || 0);
+  const vol = Number(s.volumeRatio || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const dd60 = Number(s.drawdownFromHigh60Pct || 0);
+  const avgRev = firstFiniteNumber(
+    s.averageThreeMonthRevenueYoY,
+    numberFromText(s.revenueReason, /近\s*3\s*月平均年增\s*([+-]?\d+(?:\.\d+)?)/)
+  );
+  const latestRev = firstFiniteNumber(
+    s.latestRevenueYoYPct,
+    numberFromText(s.revenueReason, /最新月營收年增\s*([+-]?\d+(?:\.\d+)?)%/)
+  );
+  const posRev = firstFiniteNumber(
+    s.positiveRevenueMonths,
+    numberFromText(s.revenueReason, /正成長\s*(\d+)/)
+  );
+  const eps = firstFiniteNumber(
+    s.latestQuarterEps,
+    numberFromText(s.financialQualityReason, /最新季\s*EPS\s*([+-]?\d+(?:\.\d+)?)/i)
+  );
+  const epsYoy = firstFiniteNumber(
+    s.latestQuarterEpsYoYPct,
+    numberFromText(s.financialQualityReason, /年增\s*([+-]?\d+(?:\.\d+)?)/)
+  );
+  const epsQuarters = Number(s.positiveEpsQuarters || 0);
+  const inst5 = Number(s.fiveDayInstitutionalNetRatioPct || 0);
+  const broker = Number(s.brokerNetRatioPct || 0);
+  const pe = Number(s.trailingPe || 0);
+  const peerPe = Number(s.peerAveragePe || 0);
+  const structure = String(s.structureLabel || '');
+
+  const subfeatures = [];
+  const missing = [];
+  function add(ok, label) { (ok ? subfeatures : missing).push(label); }
+
+  const revenue = avgRev > 5 && latestRev > 0 && posRev >= 2;
+  const earnings = eps > 0 || epsYoy > 0 || epsQuarters >= 2 || Number(s.financialQualityScore || 0) >= 12;
+  const flow = inst5 > -2 || broker > 0;
+  const trend = ma60 > ma120 && ma60 > 0 && ma120 > 0;
+  const earlyTrend = price > ma20 && ma20 > ma60 && ma60 > 0;
+  const earlyReturn = ret20 >= 0 && ret20 <= 18 && ret60 > -5 && ret60 <= 35;
+  const notHot = ret20 <= 18 && vol <= 2.5 && dd60 <= -1 && (rsi <= 0 || rsi < 78);
+  const structureOk = ['回踩承接', '整理待確認', '平台突破', '結構未完成'].includes(structure);
+  const valuationOk = (pe > 0 && pe <= 35) || (pe > 0 && peerPe > 0 && pe <= peerPe * 1.15) || Number(s.valuationScore || 0) >= 10;
+
+  add(revenue, '營收剛轉強');
+  add(earnings, 'EPS/獲利支撐');
+  add(flow, '籌碼未轉弱');
+  add(trend, '中期均線多頭');
+  add(earlyTrend, '站上 MA20/60');
+  add(earlyReturn, '漲幅仍在初升段');
+  add(notHot, '未過熱');
+  add(structureOk, '結構可發動');
+  add(valuationOk, '估值不極端');
+
+  const coreCount = [revenue, earnings, flow, trend, earlyReturn, notHot].filter(Boolean).length;
+  const supportCount = [earlyTrend, structureOk, valuationOk].filter(Boolean).length;
+  const score = coreCount * 12 + supportCount * 7
+    + Math.max(0, Math.min(14, avgRev / 6))
+    + Math.max(0, Math.min(8, broker / 3))
+    + Math.max(0, Math.min(8, inst5 / 3))
+    - Math.max(0, ret20 - 12) * 0.6
+    - Math.max(0, ret60 - 25) * 0.45;
+  const qualified = coreCount >= 5 && supportCount >= 2 && Number(s.liquidityScore || 0) >= 3 && Number(s.financialQualityScore || 0) >= 8;
+  const overheated = ret20 > 30 || ret60 > 70 || vol > 3.5 || dd60 > -1 || rsi >= 78;
+  const label = qualified ? '起漲共振' : (coreCount >= 4 && supportCount >= 2 ? '共振觀察' : '');
+  return {
+    qualified,
+    overheated,
+    label,
+    score: Math.max(0, Math.min(100, score)),
+    coreCount,
+    supportCount,
+    subfeatures,
+    missing
+  };
+}
+
+function isLaunchResonance(s) {
+  const profile = s.launchResonance || launchResonanceProfile(s);
+  return !!profile.qualified && !profile.overheated;
+}
+
 function buildLaunchTags(s) {
-  if (s.launchTags) {
-    const existing = splitTags(s.launchTags);
-    if (isPreLaunchMode(s) && !existing.includes('起漲前夜')) existing.unshift('起漲前夜');
-    return existing.join('、');
-  }
-  const tags = [];
+  const tags = splitTags(s.launchTags);
   const price = Number(s.price || 0);
   const ma20 = Number(s.movingAverage20 || 0);
   const ma60 = Number(s.movingAverage60 || 0);
@@ -1214,17 +1309,23 @@ function buildLaunchTags(s) {
   const fundamentalSupport = avgRev > 5 && posRev >= 2 && fin >= 8 && (eps > 0 || epsYoy > 0);
   const chipsNotWeak = foreign > 0 || broker > 0 || inst5 > 0;
   const hot = ret20 > 30 || rsi >= 75 || vol > 2.8 || dd60 > -1;
-  if (isPreLaunchMode(s)) tags.push('起漲前夜');
-  if (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) tags.push('起漲共振');
-  if (healthyPullback) tags.push('健康回踩');
-  if (notOverheated && ret20 >= 3) tags.push('價量未過熱');
-  if (fundamentalSupport) tags.push('營收EPS支撐');
-  if (foreign > 0 && broker > 0) tags.push('外資主力轉買');
-  else if (broker > 0 && foreign <= 0) tags.push('主力先行');
-  else if (foreign > 0 && broker <= 0) tags.push('外資接棒');
-  else if (inst5 > 0) tags.push('法人籌碼未轉弱');
-  if (aboveTrend && ret20 >= 3 && ret20 <= 25 && ret60 > 10 && dd60 >= -6 && dd60 <= 1 && !hot) tags.push('強勢續攻');
-  if (hot) tags.push('已過熱勿追');
+  const resonance = s.launchResonance || launchResonanceProfile(s);
+  function addTag(tag) { if (tag && !tags.includes(tag)) tags.push(tag); }
+  if (isPreLaunchMode(s)) addTag('起漲前夜');
+  if ((aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) || resonance.qualified) addTag('起漲共振');
+  if (resonance.subfeatures.includes('營收剛轉強') && resonance.subfeatures.includes('EPS/獲利支撐')) addTag('營收EPS共振');
+  if (resonance.subfeatures.includes('籌碼未轉弱')) addTag('籌碼未轉弱');
+  if (resonance.subfeatures.includes('站上 MA20/60') && resonance.subfeatures.includes('漲幅仍在初升段')) addTag('技術初升段');
+  if (resonance.subfeatures.includes('未過熱')) addTag('未過熱');
+  if (healthyPullback) addTag('健康回踩');
+  if (notOverheated && ret20 >= 3) addTag('價量未過熱');
+  if (fundamentalSupport) addTag('營收EPS支撐');
+  if (foreign > 0 && broker > 0) addTag('外資主力轉買');
+  else if (broker > 0 && foreign <= 0) addTag('主力先行');
+  else if (foreign > 0 && broker <= 0) addTag('外資接棒');
+  else if (inst5 > 0) addTag('法人籌碼未轉弱');
+  if (aboveTrend && ret20 >= 3 && ret20 <= 25 && ret60 > 10 && dd60 >= -6 && dd60 <= 1 && !hot) addTag('強勢續攻');
+  if (hot || resonance.overheated) addTag('突破過熱');
   return tags.join('、');
 }
 
@@ -1258,6 +1359,8 @@ async function init() {
         grossMarginPct: grossMarginPctOf(s)
       };
       const bearish = calcBearishProfile(normalized);
+      const launchResonance = launchResonanceProfile(normalized);
+      const launchTags = buildLaunchTags({ ...normalized, launchResonance });
       return {
         ...normalized,
         legacyScore: typeof s.legacyScore === 'number' ? s.legacyScore : s.score,
@@ -1269,7 +1372,9 @@ async function init() {
         bearishStage: bearish.stage,
         bearishStageLabel: bearish.stageLabel,
         bearishReasons: bearish.reasons,
-        launchTags: buildLaunchTags(normalized),
+        launchTags,
+        launchResonance,
+        launchResonanceScore: launchResonance.score,
         type:       ''  // will be set after scores computed
       };
     });
@@ -1820,6 +1925,7 @@ function fillLaunchTags() {
 function updateTabCounts() {
   document.getElementById('tc-all').textContent    = S.all.length;
   document.getElementById('tc-catalyst').textContent = S.all.filter(isCatalystGrowth).length;
+  document.getElementById('tc-resonance').textContent = S.all.filter(isLaunchResonance).length;
   document.getElementById('tc-breakout').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'early').length;
   document.getElementById('tc-continuation').textContent = S.all.filter(s => s.earlyBreakoutCategory === 'continuation').length;
   document.getElementById('tc-breakout1854').textContent = S.all.filter(s => s.earlyBreakoutCategory1854 === 'early').length;
@@ -1855,6 +1961,7 @@ function go() {
 
   let stocks = S.all;
   if (t === 'catalyst') stocks = stocks.filter(isCatalystGrowth);
+  else if (t === 'resonance') stocks = stocks.filter(isLaunchResonance);
   else if (t === 'breakout') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'early');
   else if (t === 'continuation') stocks = stocks.filter(s => s.earlyBreakoutCategory === 'continuation');
   else if (t === 'breakout1854') stocks = stocks.filter(s => s.earlyBreakoutCategory1854 === 'early');
@@ -1891,6 +1998,7 @@ function go() {
   if (t === 'highwin' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   if (t === 'prelaunch' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   if (t === 'bearish' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'bearishScore';
+  if (t === 'resonance' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'launchResonanceScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -1918,6 +2026,9 @@ function tab(t) {
   // 切換 tab 時同步預設排序
   if (t === 'catalyst' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'buyPointScore'; refreshSortArrows();
+  }
+  else if (t === 'resonance' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'buyPointScore' || S.sortKey === 'bearishScore')) {
+    S.sortKey = 'launchResonanceScore'; S.sortDir = -1; refreshSortArrows();
   }
   else if (t === 'highwin' && (S.sortKey === 'score' || S.sortKey === 'midScore' || S.sortKey === 'shortScore' || S.sortKey === 'earlyBreakoutScreenScore' || S.sortKey === 'structureEdgeScore' || S.sortKey === 'bearishScore')) {
     S.sortKey = 'buyPointScore'; S.sortDir = -1; refreshSortArrows();
@@ -2523,6 +2634,7 @@ function renderDB(s, history) {
   const themeTags = s.themeTags || '';
   const companyBusiness = companyBusinessText(s);
   const businessProfile = businessDetailProfile(s);
+  const launchResonance = s.launchResonance || launchResonanceProfile(s);
   const grossMarginPct = grossMarginPctOf(s);
   const grossMarginText = Number.isFinite(grossMarginPct) ? grossMarginPct.toFixed(2) + '%' : '—';
   const grossMarginDisplayColor = grossMarginColor(grossMarginPct);
@@ -2576,6 +2688,19 @@ function renderDB(s, history) {
       <div class="rsn-txt">${warningGroups.overheated.join('、')}</div>
     </div>` : ''
   ].filter(Boolean).join('');
+  const resonanceBox = launchResonance.label ? `
+    <div class="rsn">
+      <div class="rsn-hdr">
+        <span class="rsn-lbl" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">起漲共振</span>
+        <span class="rsn-score" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">${launchResonance.score.toFixed(1)}分</span>
+        <span class="rsn-pct">核心 ${launchResonance.coreCount}/6｜輔助 ${launchResonance.supportCount}/3</span>
+      </div>
+      <div class="rsn-txt">
+        已符合：${launchResonance.subfeatures.join('、') || '—'}<br>
+        ${launchResonance.missing.length ? '未符合：' + launchResonance.missing.join('、') + '<br>' : ''}
+        判讀：${launchResonance.overheated ? '有共振但已偏熱，歸類為突破過熱，不適合當早期買點。' : launchResonance.qualified ? '本月大漲股起漲前共同特徵已集中出現，屬於未漲起漲共振候選。' : '有部分起漲特徵，但還要等更多條件補齊。'}
+      </div>
+    </div>` : '';
 
   // ── 投資建議卡 ──
   const invConclusion = buildConclusion(s, ss, ms);
@@ -2779,6 +2904,7 @@ function renderDB(s, history) {
     ${buyCard}
     ${costCard}
     ${warningBox}
+    ${resonanceBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">
