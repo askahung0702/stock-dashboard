@@ -1297,8 +1297,19 @@ async function init() {
     document.getElementById('ld').style.display  = 'none';
     document.getElementById('tbl').style.display = '';
   } catch(e) {
-    document.getElementById('ld').innerHTML = '<div style="color:var(--red)">載入失敗：' + e.message + '</div>';
+    document.getElementById('ld').innerHTML = loadFailureHtml(e);
   }
+}
+
+function loadFailureHtml(error) {
+  const msg = escapeHtml(error?.message || error || '未知錯誤');
+  if (window.location.protocol === 'file:') {
+    return `<div style="color:var(--red);line-height:1.8">
+      載入失敗：${msg}<br>
+      <span style="color:var(--muted)">目前是用檔案直接開啟，瀏覽器會擋掉資料讀取。請改開 <b style="color:var(--blue)">http://localhost:8788/</b></span>
+    </div>`;
+  }
+  return '<div style="color:var(--red)">載入失敗：' + msg + '</div>';
 }
 
 async function fetchLatestData() {
