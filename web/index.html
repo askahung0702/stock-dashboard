@@ -1229,39 +1229,47 @@ function launchResonanceProfile(s) {
   const missing = [];
   function add(ok, label) { (ok ? subfeatures : missing).push(label); }
 
-  const revenue = avgRev > 5 && latestRev > 0 && posRev >= 2;
-  const earnings = eps > 0 || epsYoy > 0 || epsQuarters >= 2 || Number(s.financialQualityScore || 0) >= 12;
-  const flow = inst5 > -2 || broker > 0;
+  const revenue = avgRev > 8 && latestRev > 0 && posRev >= 2;
+  const earnings = eps > 0 && (epsYoy > 0 || epsQuarters >= 2 || Number(s.financialQualityScore || 0) >= 12);
+  const flow = inst5 > 0 || broker >= 3;
   const trend = ma60 > ma120 && ma60 > 0 && ma120 > 0;
   const earlyTrend = price > ma20 && ma20 > ma60 && ma60 > 0;
-  const earlyReturn = ret20 >= 0 && ret20 <= 18 && ret60 > -5 && ret60 <= 35;
-  const notHot = ret20 <= 18 && vol <= 2.5 && dd60 <= -1 && (rsi <= 0 || rsi < 78);
-  const structureOk = ['回踩承接', '整理待確認', '平台突破', '結構未完成'].includes(structure);
+  const earlyReturn = ret20 >= 1 && ret20 <= 16 && ret60 > 0 && ret60 <= 35;
+  const pullbackOk = dd60 <= -2 && dd60 >= -22;
+  const notHot = ret20 <= 16 && vol <= 2.2 && pullbackOk && (rsi <= 0 || rsi < 76);
+  const structureOk = ['回踩承接', '整理待確認', '平台突破'].includes(structure);
   const valuationOk = (pe > 0 && pe <= 35) || (pe > 0 && peerPe > 0 && pe <= peerPe * 1.15) || Number(s.valuationScore || 0) >= 10;
+  const buyPointOk = Number(s.buyPointScore || 0) >= 68;
+  const qualityGate = Number(s.liquidityScore || 0) >= 3 && Number(s.financialQualityScore || 0) >= 10
+    && Number(s.score || s.selectionScore || 0) >= 60;
 
   add(revenue, '營收剛轉強');
   add(earnings, 'EPS/獲利支撐');
-  add(flow, '籌碼未轉弱');
+  add(flow, '籌碼偏買');
   add(trend, '中期均線多頭');
   add(earlyTrend, '站上 MA20/60');
   add(earlyReturn, '漲幅仍在初升段');
   add(notHot, '未過熱');
   add(structureOk, '結構可發動');
   add(valuationOk, '估值不極端');
+  add(buyPointOk, '買點分達標');
+  add(qualityGate, '流動性/財報門檻');
 
   const coreCount = [revenue, earnings, flow, trend, earlyReturn, notHot].filter(Boolean).length;
-  const supportCount = [earlyTrend, structureOk, valuationOk].filter(Boolean).length;
+  const supportCount = [earlyTrend, structureOk, valuationOk, buyPointOk, qualityGate].filter(Boolean).length;
   const score = coreCount * 12 + supportCount * 7
     + Math.max(0, Math.min(14, avgRev / 6))
     + Math.max(0, Math.min(8, broker / 3))
     + Math.max(0, Math.min(8, inst5 / 3))
     - Math.max(0, ret20 - 12) * 0.6
     - Math.max(0, ret60 - 25) * 0.45;
-  const qualified = coreCount >= 5 && supportCount >= 2 && Number(s.liquidityScore || 0) >= 3 && Number(s.financialQualityScore || 0) >= 8;
+  const qualified = coreCount === 6 && supportCount >= 4;
+  const watchQualified = coreCount >= 5 && supportCount >= 3;
   const overheated = ret20 > 30 || ret60 > 70 || vol > 3.5 || dd60 > -1 || rsi >= 78;
-  const label = qualified ? '起漲共振' : (coreCount >= 4 && supportCount >= 2 ? '共振觀察' : '');
+  const label = qualified ? '起漲共振' : (watchQualified ? '共振觀察' : '');
   return {
     qualified,
+    watchQualified,
     overheated,
     label,
     score: Math.max(0, Math.min(100, score)),
@@ -1312,9 +1320,10 @@ function buildLaunchTags(s) {
   const resonance = s.launchResonance || launchResonanceProfile(s);
   function addTag(tag) { if (tag && !tags.includes(tag)) tags.push(tag); }
   if (isPreLaunchMode(s)) addTag('起漲前夜');
-  if ((aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) || resonance.qualified) addTag('起漲共振');
+  if (resonance.qualified) addTag('起漲共振');
+  else if (resonance.watchQualified || (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak)) addTag('共振觀察');
   if (resonance.subfeatures.includes('營收剛轉強') && resonance.subfeatures.includes('EPS/獲利支撐')) addTag('營收EPS共振');
-  if (resonance.subfeatures.includes('籌碼未轉弱')) addTag('籌碼未轉弱');
+  if (resonance.subfeatures.includes('籌碼偏買')) addTag('籌碼偏買');
   if (resonance.subfeatures.includes('站上 MA20/60') && resonance.subfeatures.includes('漲幅仍在初升段')) addTag('技術初升段');
   if (resonance.subfeatures.includes('未過熱')) addTag('未過熱');
   if (healthyPullback) addTag('健康回踩');
@@ -2693,12 +2702,12 @@ function renderDB(s, history) {
       <div class="rsn-hdr">
         <span class="rsn-lbl" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">起漲共振</span>
         <span class="rsn-score" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">${launchResonance.score.toFixed(1)}分</span>
-        <span class="rsn-pct">核心 ${launchResonance.coreCount}/6｜輔助 ${launchResonance.supportCount}/3</span>
+        <span class="rsn-pct">核心 ${launchResonance.coreCount}/6｜輔助 ${launchResonance.supportCount}/5</span>
       </div>
       <div class="rsn-txt">
         已符合：${launchResonance.subfeatures.join('、') || '—'}<br>
         ${launchResonance.missing.length ? '未符合：' + launchResonance.missing.join('、') + '<br>' : ''}
-        判讀：${launchResonance.overheated ? '有共振但已偏熱，歸類為突破過熱，不適合當早期買點。' : launchResonance.qualified ? '本月大漲股起漲前共同特徵已集中出現，屬於未漲起漲共振候選。' : '有部分起漲特徵，但還要等更多條件補齊。'}
+        判讀：${launchResonance.overheated ? '有共振但已偏熱，歸類為突破過熱，不適合當早期買點。' : launchResonance.qualified ? '本月大漲股起漲前共同特徵已集中出現，符合精準版起漲共振候選。' : launchResonance.watchQualified ? '已接近起漲共振，但仍缺少關鍵條件，先列為共振觀察。' : '有部分起漲特徵，但還要等更多條件補齊。'}
       </div>
     </div>` : '';
 
