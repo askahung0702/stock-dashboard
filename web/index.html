@@ -232,6 +232,13 @@ td{padding:7px 9px;vertical-align:middle}
 .biz-text{font-size:12px;color:#cbd5e1;line-height:1.7;margin-top:4px}
 .biz-margin{text-align:right;border-left:1px solid var(--border);padding-left:14px}
 .biz-margin .met-val{font-size:21px}
+.biz-detail{grid-column:1 / -1;border-top:1px solid var(--border);padding-top:10px}
+.biz-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.biz-field{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:8px 10px;min-width:0}
+.biz-label{font-size:10px;color:var(--muted);margin-bottom:5px}
+.biz-value{font-size:12px;color:#cbd5e1;line-height:1.55;word-break:break-word}
+.biz-tags{display:flex;flex-wrap:wrap;gap:5px}
+.biz-tag{display:inline-flex;align-items:center;max-width:100%;padding:2px 7px;border-radius:999px;background:rgba(59,130,246,.12);color:#bfdbfe;font-size:11px;line-height:1.5}
 
 /* 投資建議卡 */
 .inv-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px}
@@ -360,7 +367,7 @@ td{padding:7px 9px;vertical-align:middle}
 .sc-overall-box{background:rgba(234,179,8,.08);border-left:1px solid var(--border);padding:12px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:130px}
 .sc-overall-stars{font-size:18px;letter-spacing:2px;margin-bottom:4px}
 .sc-divider{height:1px;background:var(--border);margin:14px 0}
-@media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}.met-business{grid-template-columns:1fr}.biz-margin{text-align:left;border-left:none;border-top:1px solid var(--border);padding-left:0;padding-top:10px}}
+@media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}.met-business{grid-template-columns:1fr}.biz-margin{text-align:left;border-left:none;border-top:1px solid var(--border);padding-left:0;padding-top:10px}.biz-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1071,6 +1078,72 @@ function companyBusinessText(s) {
   return labels.length
     ? `目前資料以 ${labels.join(' / ')} 分類，尚未取得更完整公司業務摘要。`
     : '尚未取得公司業務摘要。';
+}
+
+function businessSourceText(s) {
+  return [
+    s?.companySummary, s?.recentNewsBrief, s?.newsSummary, s?.newsDigest,
+    s?.eventTypeSummary, s?.themeTags, s?.primaryTheme, s?.industry
+  ].filter(Boolean).join(' ');
+}
+
+function hasBusinessKeyword(text, keywords) {
+  return keywords.some(keyword => text.includes(keyword));
+}
+
+function matchedBusinessTags(text) {
+  const groups = [
+    ['記憶體', ['記憶體','DRAM','NAND','Flash','快閃','模組','利基型記憶體','NOR','儲存']],
+    ['IC / 晶片', ['IC','晶片','晶元','晶片設計','ASIC','SoC','MCU','驅動IC','電源管理','PMIC','感測器']],
+    ['晶圓 / 代工', ['晶圓','晶圓代工','foundry','製程','成熟製程','8吋','12吋','矽晶圓']],
+    ['封裝測試', ['封裝','測試','封測','SiP','先進封裝','COWoS','Bumping','凸塊']],
+    ['材料 / 原物料', ['原物料','材料','基板','載板','ABF','銅箔','樹脂','玻纖','化學','特化','氣體','光阻','矽砂']],
+    ['設備 / 自動化', ['設備','機台','自動化','檢測','AOI','探針','測試設備','半導體設備']],
+    ['AI / 伺服器', ['AI','伺服器','GPU','HPC','資料中心','散熱','液冷']],
+    ['PCB / 板材', ['PCB','印刷電路板','HDI','軟板','載板']],
+    ['光通訊 / 網通', ['光通訊','光模組','矽光子','網通','交換器','800G','1.6T']]
+  ];
+  return groups.filter(group => hasBusinessKeyword(text, group[1])).map(group => group[0]);
+}
+
+function supplyChainRole(text, tags, s) {
+  if (tags.includes('封裝測試')) return '封測 / 後段製程';
+  if (tags.includes('晶圓 / 代工')) return '晶圓製造 / 代工';
+  if (tags.includes('IC / 晶片')) return 'IC 設計或晶片供應';
+  if (tags.includes('記憶體')) return '記憶體供應鏈';
+  if (tags.includes('材料 / 原物料')) return '上游材料 / 原物料';
+  if (tags.includes('設備 / 自動化')) return '設備 / 製程支援';
+  if (tags.includes('PCB / 板材')) return '板材 / 載板供應鏈';
+  const industry = String(s?.industry || '').trim();
+  return industry || '待確認';
+}
+
+function extractKnownPartners(text) {
+  const names = [
+    '台積電','TSMC','聯電','UMC','世界先進','力積電','Intel','英特爾','NVIDIA','輝達','AMD',
+    'Apple','蘋果','Microsoft','微軟','Google','Meta','Amazon','AWS','美光','Micron',
+    '三星','Samsung','SK海力士','海力士','南亞科','華邦電','旺宏','群聯','聯發科','MediaTek',
+    '高通','Qualcomm','博通','Broadcom','日月光','ASE','矽品','鴻海','廣達','緯創','緯穎',
+    '仁寶','和碩','華碩','技嘉','微星','大聯大','文曄'
+  ];
+  return uniq(names.filter(name => text.includes(name))).slice(0, 8);
+}
+
+function businessDetailProfile(s) {
+  const text = businessSourceText(s);
+  const tags = matchedBusinessTags(text);
+  const partners = extractKnownPartners(text);
+  const role = supplyChainRole(text, tags, s);
+  const products = tags.length ? tags : uniq([s?.primaryTheme, s?.industry].filter(Boolean));
+  return {
+    role,
+    products: products.length ? products : ['待補資料'],
+    partners: partners.length ? partners : ['資料未提及']
+  };
+}
+
+function businessTagsHtml(values) {
+  return `<div class="biz-tags">${values.map(value => `<span class="biz-tag">${escapeHtml(value)}</span>`).join('')}</div>`;
 }
 
 function isPreLaunchMode(s) {
@@ -2438,6 +2511,7 @@ function renderDB(s, history) {
   const primaryTheme = s.primaryTheme || '一般';
   const themeTags = s.themeTags || '';
   const companyBusiness = companyBusinessText(s);
+  const businessProfile = businessDetailProfile(s);
   const grossMarginPct = grossMarginPctOf(s);
   const grossMarginText = Number.isFinite(grossMarginPct) ? grossMarginPct.toFixed(2) + '%' : '—';
   const grossMarginDisplayColor = grossMarginColor(grossMarginPct);
@@ -2639,6 +2713,22 @@ function renderDB(s, history) {
           <div class="met-lbl">同業毛利率比較</div>
           <div class="met-val" style="color:${grossMarginPeerColor};font-size:18px">${grossMarginPeerText}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">${grossMarginPeerLabel}</div>
+        </div>
+        <div class="biz-detail">
+          <div class="biz-grid">
+            <div class="biz-field">
+              <div class="biz-label">供應鏈角色</div>
+              <div class="biz-value">${escapeHtml(businessProfile.role)}</div>
+            </div>
+            <div class="biz-field">
+              <div class="biz-label">產品 / 技術關鍵字</div>
+              <div class="biz-value">${businessTagsHtml(businessProfile.products)}</div>
+            </div>
+            <div class="biz-field">
+              <div class="biz-label">客戶 / 合作線索</div>
+              <div class="biz-value">${businessTagsHtml(businessProfile.partners)}</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="met"><div class="met-lbl">股價</div><div class="met-val">${s.price>0?'$'+s.price.toLocaleString():'—'}</div></div>
