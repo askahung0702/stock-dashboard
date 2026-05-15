@@ -393,6 +393,16 @@ public class MarketThemeNewsAnalyzer {
             keywords.add("衛星通訊");
             keywords.add("衛星地面設備");
             keywords.add("太空通訊");
+        } else if ("CoPoS".equals(theme)) {
+            keywords.add("chip-on-panel-on-substrate");
+            keywords.add("面板級封裝");
+            keywords.add("扇出型面板級封裝");
+            keywords.add("foplp");
+            keywords.add("玻璃基板");
+            keywords.add("化圓為方");
+            keywords.add("面板級封裝設備");
+            keywords.add("狹縫式塗佈");
+            keywords.add("slit coater");
         } else if ("CoWoS".equals(theme)) {
             keywords.add("先進封裝");
             keywords.add("扇出型封裝");

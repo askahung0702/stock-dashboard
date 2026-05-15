@@ -461,6 +461,8 @@ public class YahooTaiwanStockService {
                 || headline.contains("儲能") || headline.contains("綠能") || headline.contains("航太")
                 || headline.contains("量子") || headline.contains("資料中心") || headline.contains("液冷")
                 || headline.contains("chiplet") || lowered.contains("hbm") || headline.contains("CoWoS")
+                || headline.contains("CoPoS") || lowered.contains("copos") || lowered.contains("foplp")
+                || headline.contains("面板級封裝") || headline.contains("玻璃基板")
                 || headline.contains("法說") || headline.contains("營收") || headline.contains("獲利")) {
             return headline;
         }

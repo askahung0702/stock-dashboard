@@ -194,6 +194,7 @@ public class ThemeBasketRepository {
         map.put("矽光子", Arrays.asList("光", "通訊", "網通", "半導體", "電子", "cpo", "光收發", "光模組", "光纖"));
         map.put("AI", Arrays.asList("電子", "半導體", "網通", "伺服器", "電腦", "資料中心", "軟體", "雲端"));
         map.put("低軌衛星", Arrays.asList("通訊", "網通", "電子", "航太", "衛星", "太空", "雷達"));
+        map.put("CoPoS", Arrays.asList("半導體", "封裝", "面板", "設備", "材料", "玻璃", "基板", "電子", "塗佈"));
         map.put("CoWoS", Arrays.asList("半導體", "封裝", "電子", "測試", "晶圓"));
         map.put("散熱", Arrays.asList("電子", "電腦", "伺服器", "散熱", "熱"));
         map.put("BBU", Arrays.asList("電池", "電子", "電源", "儲能", "伺服器"));

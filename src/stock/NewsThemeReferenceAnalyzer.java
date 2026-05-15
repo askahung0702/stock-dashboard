@@ -211,6 +211,10 @@ public class NewsThemeReferenceAnalyzer {
         if ("低軌衛星".equals(theme)) {
             return Arrays.asList("leo", "衛星通訊", "衛星地面設備", "太空通訊");
         }
+        if ("CoPoS".equals(theme)) {
+            return Arrays.asList("chip-on-panel-on-substrate", "面板級封裝", "扇出型面板級封裝", "foplp",
+                    "玻璃基板", "化圓為方", "面板級封裝設備", "狹縫式塗佈", "slit coater");
+        }
         if ("CoWoS".equals(theme)) {
             return Arrays.asList("先進封裝", "cowos", "扇出型封裝", "封裝測試");
         }
@@ -250,6 +254,7 @@ public class NewsThemeReferenceAnalyzer {
         map.put("矽光子", Arrays.asList("光", "通訊", "網通", "半導體", "電子", "cpo", "光收發", "光模組", "光纖"));
         map.put("AI", Arrays.asList("電子", "半導體", "網通", "伺服器", "電腦", "資料中心", "軟體", "雲端"));
         map.put("低軌衛星", Arrays.asList("通訊", "網通", "電子", "航太", "衛星", "太空", "雷達"));
+        map.put("CoPoS", Arrays.asList("半導體", "封裝", "面板", "設備", "材料", "玻璃", "基板", "電子", "塗佈"));
         map.put("CoWoS", Arrays.asList("半導體", "封裝", "電子", "測試", "晶圓"));
         map.put("散熱", Arrays.asList("電子", "電腦", "伺服器", "散熱", "熱"));
         map.put("BBU", Arrays.asList("電池", "電子", "電源", "儲能", "伺服器"));
@@ -264,6 +269,8 @@ public class NewsThemeReferenceAnalyzer {
         rules.add(new IndustryRule("矽光子/光通訊", Arrays.asList("矽光子", "cpo", "光通訊", "光模組", "光收發", "矽晶光")));
         rules.add(new IndustryRule("AI伺服器/資料中心", Arrays.asList("ai", "伺服器", "資料中心", "gpu", "asic", "加速器")));
         rules.add(new IndustryRule("衛星通訊", Arrays.asList("低軌", "衛星", "leo", "太空", "衛星通訊")));
+        rules.add(new IndustryRule("CoPoS/面板級封裝",
+                Arrays.asList("copos", "面板級封裝", "foplp", "玻璃基板", "狹縫式塗佈", "slit coater")));
         rules.add(new IndustryRule("先進封裝", Arrays.asList("cowos", "先進封裝", "封裝", "chiplet")));
         rules.add(new IndustryRule("散熱", Arrays.asList("散熱", "液冷", "熱管理", "均熱板", "熱管")));
         rules.add(new IndustryRule("電池/儲能", Arrays.asList("bbu", "備援電池", "鋰電池", "儲能")));
