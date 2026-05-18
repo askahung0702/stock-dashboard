@@ -3490,12 +3490,10 @@ function drawTechnicalChart(s, history) {
   const rows = (history || []).filter(h => Number(h.price || 0) > 0).slice(-90);
   if (rows.length <= 1) return;
   const prices = rows.map(h => Number(h.price || 0));
-  const ma20 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage20', 'ma20')), s, 'movingAverage20');
-  const ma60 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage60', 'ma60')), s, 'movingAverage60');
-  const ma120 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage120', 'ma120')), s, 'movingAverage120');
-  const computedMa20 = rollingAverage(prices, 20);
-  const computedMa60 = rollingAverage(prices, 60);
-  const computedMa120 = rollingAverage(prices, 120);
+  const ma18 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage18', 'ma18')), s, 'movingAverage18');
+  const computedMa5 = rollingAverage(prices, 5);
+  const computedMa10 = rollingAverage(prices, 10);
+  const computedMa18 = rollingAverage(prices, 18);
   const pickSeries = (primary, computed) => primary.map((v, i) => v || computed[i]);
   const volumeRatios = rows.map(h => {
     const value = Number(h.volumeRatio || 0);
@@ -3509,11 +3507,11 @@ function drawTechnicalChart(s, history) {
          backgroundColor:'rgba(148,163,184,.22)',borderColor:'rgba(148,163,184,.35)',borderWidth:1,order:5},
         {type:'line',label:'股價',data:prices,yAxisID:'price',borderColor:'#f97316',backgroundColor:'transparent',
          tension:.25,pointRadius:2.5,pointHoverRadius:5,borderWidth:2.2,order:1},
-        {type:'line',label:'MA20',data:pickSeries(ma20, computedMa20),yAxisID:'price',borderColor:'#22c55e',
+        {type:'line',label:'MA5',data:computedMa5,yAxisID:'price',borderColor:'#22c55e',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:2},
-        {type:'line',label:'MA60',data:pickSeries(ma60, computedMa60),yAxisID:'price',borderColor:'#a855f7',
+        {type:'line',label:'MA10',data:computedMa10,yAxisID:'price',borderColor:'#a855f7',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:3},
-        {type:'line',label:'MA120',data:pickSeries(ma120, computedMa120),yAxisID:'price',borderColor:'#94a3b8',
+        {type:'line',label:'MA18',data:pickSeries(ma18, computedMa18),yAxisID:'price',borderColor:'#94a3b8',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.6,borderDash:[5,4],order:4}
       ]
     },
