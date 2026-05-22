@@ -7,6 +7,11 @@ import java.util.List;
 public class MarketStrategyAdvisor {
 
     public MarketAdvisorReport advise(MarketRegime regime, MarketBreadthSnapshot breadth, MarketIndexSnapshot index) {
+        return advise(regime, breadth, index, null);
+    }
+
+    public MarketAdvisorReport advise(MarketRegime regime, MarketBreadthSnapshot breadth, MarketIndexSnapshot index,
+            MarketLiquiditySnapshot liquidity) {
         int exposureMin;
         int exposureMax;
         String summary;
@@ -91,11 +96,26 @@ public class MarketStrategyAdvisor {
             alerts.add("VIX / Put-Call Ratio 尚未接入，目前情緒面以量價與市場寬度替代判讀。");
         }
 
+        if (liquidity != null && liquidity.isAvailable()) {
+            if ("量能轉強".equals(liquidity.getSignalLabel()) || "健康轉強".equals(liquidity.getSignalLabel())) {
+                alerts.add("融資/量能：" + liquidity.getSignalLabel() + "，大盤成交量為近 15 日均量 "
+                        + format(liquidity.getMarketVolumeRatio15Day()) + " 倍。");
+            } else if ("量增槓桿升溫".equals(liquidity.getSignalLabel())
+                    || "量縮融資升溫".equals(liquidity.getSignalLabel())
+                    || "量能轉弱".equals(liquidity.getSignalLabel())) {
+                alerts.add("融資/量能警示：" + liquidity.getSignalLabel() + "，" + liquidity.getSignalText());
+            }
+        }
+
         if (alerts.isEmpty()) {
             alerts.add("目前未見明顯宏觀風險擴散，可依主策略節奏執行。");
         }
 
         return new MarketAdvisorReport(regime, exposureMin, exposureMax, summary, exposureGuidance, preferredTabs,
                 avoidTabs, strategyGuidance, atrMultiplier, riskGuidance, alerts);
+    }
+
+    private String format(double value) {
+        return String.format(java.util.Locale.US, "%.2f", Double.valueOf(value));
     }
 }

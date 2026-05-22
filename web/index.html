@@ -1753,6 +1753,7 @@ function renderMarketBanner(d) {
   const confidenceReady = !!d.confidenceReady;
   const futures = d.marketFutures || {};
   const futuresSignal = futures.signal || {};
+  const liquidity = d.marketLiquidity || {};
   const marketText = d.marketSignalText || '';
   banner.className = 'mkt-banner ' + cls;
   document.getElementById('mkt-signal').textContent = '市場環境：' + (d.marketSignal || '—') + ` (${(d.marketScore||0).toFixed(1)}分)`;
@@ -1769,6 +1770,7 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">夜盤 <b>${futures.nightPriceAvailable ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
     `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '未更新'}</b></div>` +
     `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></div>` +
+    `<div class="mkt-chip">融資量能 <b>${liquidity.available ? `${escapeHtml(liquidity.signalLabel || '—')} ${fmt1(liquidity.signalScore)}` : '資料不足'}</b></div>` +
     `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
 }
 
@@ -1777,10 +1779,13 @@ function calcWeaknessLevel(d) {
   const danger  = Number(d.marketDangerScore) || 0;
   const wCount  = Number((d.marketWeakness || {}).warningCount) || 0;
   const revScore= Number((d.marketReversal  || {}).score)       || 0;
+  const liqScore= Number((d.marketLiquidity || {}).signalScore) || 50;
+  const liqLabel= (d.marketLiquidity || {}).signalLabel || '';
   if (sig === '警戒' && (danger >= 60 || wCount >= 3 || revScore >= 65)) return 3;
   if (sig === '警戒') return 2;
   if (sig === '偏弱' && (danger >= 50 || wCount >= 2 || revScore >= 55)) return 2;
   if (sig === '偏弱') return 1;
+  if ((liqLabel === '量縮融資升溫' || liqLabel === '量能轉弱') && liqScore <= 38) return 1;
   if (danger >= 45 || wCount >= 2) return 1;
   return 0;
 }
@@ -1795,6 +1800,7 @@ function renderWeaknessBar(d) {
   const wCount  = Number((d.marketWeakness || {}).warningCount) || 0;
   const revScore= Number((d.marketReversal  || {}).score)       || 0;
   const alerts  = ((d.marketWeakness || {}).alerts || []).slice(0, 2);
+  const liquidity = d.marketLiquidity || {};
 
   const configs = {
     1: { cls:'wk-1', icon:'⚠', title:'大盤開始出現轉弱訊號', action:'降低新進倉位' },
@@ -1808,6 +1814,7 @@ function renderWeaknessBar(d) {
   if (danger > 0)     parts.push(`警報分 ${danger.toFixed(1)}`);
   if (wCount > 0)     parts.push(`轉弱 ${wCount} 項`);
   if (revScore > 0)   parts.push(`反轉風險 ${revScore.toFixed(1)}`);
+  if (liquidity.available && (liquidity.signalLabel === '量縮融資升溫' || liquidity.signalLabel === '量能轉弱')) parts.push(`融資量能 ${liquidity.signalLabel}`);
   if (alerts.length)  parts.push(...alerts);
 
   bar.className = 'wk-bar ' + cfg.cls;
@@ -1832,6 +1839,7 @@ function renderMarketAdvisor(d) {
   const futuresSignal = futures.signal || {};
   const reversal = d.marketReversal || {};
   const weakness = d.marketWeakness || {};
+  const liquidity = d.marketLiquidity || {};
   panel.style.display = '';
   document.getElementById('ma-regime').textContent = advisor.regimeLabel || d.marketRegimeLabel || '—';
   document.getElementById('ma-sub').textContent =
@@ -1869,12 +1877,18 @@ function renderMarketAdvisor(d) {
     `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable ? escapeHtml(futures.dataDate || '已更新') : '未更新'}</b></span>` +
     `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '—'}</b></span>` +
     `<span class="ma-metric">外資期貨淨額 <b>${futures.positionAvailable ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
-    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></span>`;
+    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></span>` +
+    `<span class="ma-metric">融資量能 <b>${liquidity.available ? `${escapeHtml(liquidity.signalLabel || '—')} ${fmt1(liquidity.signalScore)}分` : '資料不足'}</b></span>` +
+    `<span class="ma-metric">大盤量/15日 <b>${liquidity.available ? `${fmt1(liquidity.marketVolumeRatio15Day)}倍` : '—'}</b></span>` +
+    `<span class="ma-metric">融資水位/15日 <b>${liquidity.available ? fmtSignedPlain(Number(liquidity.marginBalanceVs15DayPct || 0), '%', 1) : '—'}</b></span>` +
+    `<span class="ma-metric">融資日增減 <b>${liquidity.available ? fmtSignedPlain(Number(liquidity.totalMarginBalanceDelta || 0), '張', 0) : '—'}</b></span>`;
 
   const alerts = advisor.alerts || [];
   const mergedAlerts = [];
   if (reversal.available && reversal.reason) mergedAlerts.push(reversal.reason);
   if (weakness.available && weakness.alerts && weakness.alerts.length) mergedAlerts.push(...weakness.alerts);
+  if (liquidity.available && liquidity.signalText) mergedAlerts.push(`融資量能：${liquidity.signalText}`);
+  if (liquidity.available && liquidity.alerts && liquidity.alerts.length) mergedAlerts.push(...liquidity.alerts.slice(0, 2));
   if (futuresSignal.available && futuresSignal.action) mergedAlerts.push(`期貨風控：${futuresSignal.action}`);
   if (futuresSignal.available && futuresSignal.reasons && futuresSignal.reasons.length) mergedAlerts.push(...futuresSignal.reasons.slice(0, 2));
   mergedAlerts.push(...alerts);
@@ -2224,6 +2238,12 @@ function fmtDeltaTag(v, suffix = '', digits = 1) {
   const cls = v > 0 ? 'rp' : 'rn';
   const num = digits === 0 ? Math.round(v).toLocaleString() : v.toFixed(digits);
   return `<span class="${cls}">較昨 ${v > 0 ? '+' : ''}${num}${suffix}</span>`;
+}
+function fmtSignedPlain(v, suffix = '', digits = 1) {
+  if (!Number.isFinite(v) || Math.abs(v) < 0.05) return '<span class="muted">0</span>';
+  const cls = v > 0 ? 'rp' : 'rn';
+  const num = digits === 0 ? Math.round(v).toLocaleString() : v.toFixed(digits);
+  return `<span class="${cls}">${v > 0 ? '+' : ''}${num}${suffix}</span>`;
 }
 function fmtMetricWithDelta(valueHtml, deltaHtml) {
   return `${valueHtml}<span style="display:block;font-size:11px;color:var(--muted);margin-top:2px">${deltaHtml}</span>`;

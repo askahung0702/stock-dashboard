@@ -120,9 +120,11 @@ public class StockApiRenderer {
                 : null;
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
         JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, latestDate);
+        MarketLiquiditySnapshot marketLiquidity = new MarketLiquidityAnalyzer().analyze(snapshots, snapshot.date,
+                snapshot.rows);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(snapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
-                marketIndexSnapshot);
+                marketIndexSnapshot, marketLiquidity);
         MarketReversalSignal marketReversal = new MarketReversalAnalyzer().analyze(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
         MarketWeaknessReport marketWeakness = new MarketWeaknessAnalyzer().analyze(snapshots, snapshot.date,
@@ -190,6 +192,7 @@ public class StockApiRenderer {
         result.put("marketBreadth",     marketBreadthToJson(breadthSnapshot, prevBreadthSnapshot));
         result.put("marketIndex",       marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures",     marketFuturesSnapshot);
+        result.put("marketLiquidity",   marketLiquidityToJson(marketLiquidity));
         result.put("marketAdvisor",     marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal",    marketReversalToJson(marketReversal));
         result.put("marketWeakness",    marketWeaknessToJson(marketWeakness));
@@ -318,9 +321,11 @@ public class StockApiRenderer {
                 : null;
         MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
         JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, currentSnapshot.date);
+        MarketLiquiditySnapshot marketLiquidity = new MarketLiquidityAnalyzer().analyze(snapshots, currentSnapshot.date,
+                currentSnapshot.rows);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(currentSnapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
-                marketIndexSnapshot);
+                marketIndexSnapshot, marketLiquidity);
         MarketReversalSignal marketReversal = new MarketReversalAnalyzer().analyze(marketRegime, breadthSnapshot,
                 marketIndexSnapshot);
         MarketWeaknessReport marketWeakness = new MarketWeaknessAnalyzer().analyze(snapshots, currentSnapshot.date,
@@ -387,6 +392,7 @@ public class StockApiRenderer {
         result.put("marketBreadth", marketBreadthToJson(breadthSnapshot, prevBreadthSnapshot));
         result.put("marketIndex", marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures", marketFuturesSnapshot);
+        result.put("marketLiquidity", marketLiquidityToJson(marketLiquidity));
         result.put("marketAdvisor", marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal", marketReversalToJson(marketReversal));
         result.put("marketWeakness", marketWeaknessToJson(marketWeakness));
@@ -450,6 +456,7 @@ public class StockApiRenderer {
         payload.put("marketBreadth", root.getOrDefault("marketBreadth", new JSONObject()));
         payload.put("marketIndex", root.getOrDefault("marketIndex", new JSONObject()));
         payload.put("marketFutures", root.getOrDefault("marketFutures", new JSONObject()));
+        payload.put("marketLiquidity", root.getOrDefault("marketLiquidity", new JSONObject()));
         payload.put("marketAdvisor", root.getOrDefault("marketAdvisor", new JSONObject()));
         payload.put("marketReversal", root.getOrDefault("marketReversal", new JSONObject()));
         payload.put("marketWeakness", root.getOrDefault("marketWeakness", new JSONObject()));
@@ -879,6 +886,36 @@ public class StockApiRenderer {
     }
 
     @SuppressWarnings("unchecked")
+    private JSONObject marketLiquidityToJson(MarketLiquiditySnapshot liquidity) {
+        JSONObject obj = new JSONObject();
+        if (liquidity == null) {
+            obj.put("available", Boolean.FALSE);
+            return obj;
+        }
+        obj.put("available", Boolean.valueOf(liquidity.isAvailable()));
+        obj.put("date", liquidity.getDate());
+        obj.put("comparisonDays", Long.valueOf(liquidity.getComparisonDays()));
+        obj.put("totalMarginBalance", Long.valueOf(liquidity.getTotalMarginBalance()));
+        obj.put("totalMarginBalanceDelta", Long.valueOf(liquidity.getTotalMarginBalanceDelta()));
+        obj.put("marginBalance15DayAverage", Double.valueOf(round1(liquidity.getMarginBalance15DayAverage())));
+        obj.put("marginBalanceVs15DayPct", Double.valueOf(round1(liquidity.getMarginBalanceVs15DayPct())));
+        obj.put("marginBalanceDeltaPct", Double.valueOf(round2(liquidity.getMarginBalanceDeltaPct())));
+        obj.put("marketVolumeLots", Double.valueOf(round1(liquidity.getMarketVolumeLots())));
+        obj.put("marketVolume15DayAverageLots", Double.valueOf(round1(liquidity.getMarketVolume15DayAverageLots())));
+        obj.put("marketVolumeRatio15Day", Double.valueOf(round2(liquidity.getMarketVolumeRatio15Day())));
+        obj.put("marketTurnoverBillion", Double.valueOf(round1(liquidity.getMarketTurnoverBillion())));
+        obj.put("marketTurnover15DayAverageBillion",
+                Double.valueOf(round1(liquidity.getMarketTurnover15DayAverageBillion())));
+        obj.put("marketTurnoverRatio15Day", Double.valueOf(round2(liquidity.getMarketTurnoverRatio15Day())));
+        obj.put("signalScore", Double.valueOf(round1(liquidity.getSignalScore())));
+        obj.put("signalLabel", liquidity.getSignalLabel());
+        obj.put("signalText", liquidity.getSignalText());
+        JSONArray alerts = new JSONArray();
+        alerts.addAll(liquidity.getAlerts());
+        obj.put("alerts", alerts);
+        return obj;
+    }
+    @SuppressWarnings("unchecked")
     private JSONObject loadMarketFuturesJson(MarketBreadthSnapshot breadthSnapshot, String currentDate) {
         JSONObject obj = new JSONObject();
         try {
@@ -1088,6 +1125,10 @@ public class StockApiRenderer {
 
     private double round1(double value) {
         return Math.round(value * 10D) / 10D;
+    }
+
+    private double round2(double value) {
+        return Math.round(value * 100D) / 100D;
     }
 
     private String safeJsonText(Object value) {
