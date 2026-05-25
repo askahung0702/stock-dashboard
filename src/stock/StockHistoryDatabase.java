@@ -12,19 +12,26 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import stock.common.NumberParser;
+import stock.vo.InsiderTransferEventVO;
+import stock.vo.ShareholderConcentrationVO;
+import stock.vo.ShareholderDistributionRowVO;
 import stock.vo.StockAnalysisResultVO;
 
 public class StockHistoryDatabase {
@@ -78,6 +85,38 @@ public class StockHistoryDatabase {
             }
         }
         return loadSnapshotsFromJson(historyDirectory);
+    }
+
+    public List<SnapshotRow> loadStockHistoryRows(String code) throws Exception {
+        String normalizedCode = safeText(code);
+        if (normalizedCode.length() == 0) {
+            return new ArrayList<SnapshotRow>();
+        }
+
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore != null) {
+            seedSqliteIfNeeded(historyDirectory, sqliteStore);
+            return sqliteStore.loadStockHistoryRows(normalizedCode);
+        }
+
+        Map<String, Snapshot> snapshots = loadSnapshotsFromJson(historyDirectory);
+        List<String> dates = new ArrayList<String>(snapshots.keySet());
+        Collections.sort(dates);
+        List<SnapshotRow> rows = new ArrayList<SnapshotRow>();
+        for (String date : dates) {
+            Snapshot snapshot = snapshots.get(date);
+            if (snapshot == null) {
+                continue;
+            }
+            for (SnapshotRow row : snapshot.rows) {
+                if (normalizedCode.equals(row.code)) {
+                    rows.add(row);
+                    break;
+                }
+            }
+        }
+        return rows;
     }
 
     public void upsertDailyStockRaw(String date, String stage, List<StockAnalysisResultVO> results) throws Exception {
@@ -146,6 +185,46 @@ public class StockHistoryDatabase {
         }
         seedSqliteIfNeeded(historyDirectory, sqliteStore);
         return sqliteStore.loadLatestDailyMarketDataBefore(safeText(dataKey), safeText(beforeDate));
+    }
+
+    public void upsertShareholderDistributionRows(List<ShareholderDistributionRowVO> rows) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertShareholderDistributionRows(rows == null ? new ArrayList<ShareholderDistributionRowVO>() : rows);
+    }
+
+    public void upsertShareholderConcentrationRows(Iterable<ShareholderConcentrationVO> rows) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertShareholderConcentrationRows(rows);
+    }
+
+    public void upsertInsiderTransferEvents(List<InsiderTransferEventVO> events) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return;
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        sqliteStore.upsertInsiderTransferEvents(events == null ? new ArrayList<InsiderTransferEventVO>() : events);
+    }
+
+    public JSONObject loadShareholderInsiderData(String date) throws Exception {
+        File historyDirectory = ensureHistoryDirectory();
+        SQLiteStore sqliteStore = resolveSqliteStore(historyDirectory);
+        if (sqliteStore == null) {
+            return new JSONObject();
+        }
+        seedSqliteIfNeeded(historyDirectory, sqliteStore);
+        return sqliteStore.loadShareholderInsiderData(safeText(date));
     }
 
     public String getDatabasePath() {
@@ -459,6 +538,7 @@ public class StockHistoryDatabase {
         row.valuationScore = numberValue(rowObject.get("valuationScore"));
         row.technicalScore = numberValue(rowObject.get("technicalScore"));
         row.financialQualityScore = numberValue(rowObject.get("financialQualityScore"));
+        row.grossMarginPct = numberValue(rowObject.get("grossMarginPct"));
         row.valuationIndustryPercentile = numberValue(rowObject.get("valuationIndustryPercentile"));
         row.financialQualityIndustryPercentile = numberValue(rowObject.get("financialQualityIndustryPercentile"));
         row.grossMarginIndustryPercentile = numberValue(rowObject.get("grossMarginIndustryPercentile"));
@@ -473,8 +553,14 @@ public class StockHistoryDatabase {
         row.fiveDayInstitutionalNetLots = Math.round(numberValue(rowObject.get("fiveDayInstitutionalNetLots")));
         row.fiveDayInstitutionalNetRatioPct = numberValue(rowObject.get("fiveDayInstitutionalNetRatioPct"));
         row.latestForeignNetLots = Math.round(numberValue(rowObject.get("latestForeignNetLots")));
+        row.latestTrustNetLots = Math.round(numberValue(rowObject.get("latestTrustNetLots")));
+        row.latestDealerNetLots = Math.round(numberValue(rowObject.get("latestDealerNetLots")));
         row.brokerNetLots = Math.round(numberValue(rowObject.get("brokerNetLots")));
         row.brokerNetRatioPct = numberValue(rowObject.get("brokerNetRatioPct"));
+        row.officialFundingScore = numberValue(rowObject.get("officialFundingScore"));
+        row.officialFundingLabel = safeText(rowObject.get("officialFundingLabel"));
+        row.officialFundingReason = safeText(rowObject.get("officialFundingReason"));
+        row.officialFundingSource = safeText(rowObject.get("officialFundingSource"));
         row.marginDataDate = safeText(rowObject.get("marginDataDate"));
         row.previousMarginBalance = Math.round(numberValue(rowObject.get("previousMarginBalance")));
         row.marginBalance = Math.round(numberValue(rowObject.get("marginBalance")));
@@ -662,6 +748,7 @@ public class StockHistoryDatabase {
         row.valuationScore = safeNumber(result.getValuationScore());
         row.technicalScore = safeNumber(result.getTechnicalScore());
         row.financialQualityScore = safeNumber(result.getFinancialQualityScore());
+        row.grossMarginPct = safeNumber(result.getGrossMarginPct());
         row.valuationIndustryPercentile = safeNumber(result.getValuationIndustryPercentile());
         row.financialQualityIndustryPercentile = safeNumber(result.getFinancialQualityIndustryPercentile());
         row.grossMarginIndustryPercentile = safeNumber(result.getGrossMarginIndustryPercentile());
@@ -676,8 +763,14 @@ public class StockHistoryDatabase {
         row.fiveDayInstitutionalNetLots = result.getFiveDayInstitutionalNetLots();
         row.fiveDayInstitutionalNetRatioPct = safeNumber(result.getFiveDayInstitutionalNetRatioPct());
         row.latestForeignNetLots = result.getLatestForeignNetLots();
+        row.latestTrustNetLots = result.getLatestTrustNetLots();
+        row.latestDealerNetLots = result.getLatestDealerNetLots();
         row.brokerNetLots = result.getBrokerNetLots();
         row.brokerNetRatioPct = safeNumber(result.getBrokerNetRatioPct());
+        row.officialFundingScore = safeNumber(result.getOfficialFundingScore());
+        row.officialFundingLabel = safeText(result.getOfficialFundingLabel());
+        row.officialFundingReason = safeText(result.getOfficialFundingReason());
+        row.officialFundingSource = safeText(result.getOfficialFundingSource());
         row.marginDataDate = safeText(result.getMarginDataDate());
         row.previousMarginBalance = result.getPreviousMarginBalance();
         row.marginBalance = result.getMarginBalance();
@@ -837,6 +930,7 @@ public class StockHistoryDatabase {
         rowObject.put("valuationScore", Double.valueOf(safeNumber(row.valuationScore)));
         rowObject.put("technicalScore", Double.valueOf(safeNumber(row.technicalScore)));
         rowObject.put("financialQualityScore", Double.valueOf(safeNumber(row.financialQualityScore)));
+        rowObject.put("grossMarginPct", Double.valueOf(safeNumber(row.grossMarginPct)));
         rowObject.put("valuationIndustryPercentile", Double.valueOf(safeNumber(row.valuationIndustryPercentile)));
         rowObject.put("financialQualityIndustryPercentile",
                 Double.valueOf(safeNumber(row.financialQualityIndustryPercentile)));
@@ -857,8 +951,14 @@ public class StockHistoryDatabase {
         rowObject.put("fiveDayInstitutionalNetRatioPct",
                 Double.valueOf(safeNumber(row.fiveDayInstitutionalNetRatioPct)));
         rowObject.put("latestForeignNetLots", Long.valueOf(row.latestForeignNetLots));
+        rowObject.put("latestTrustNetLots", Long.valueOf(row.latestTrustNetLots));
+        rowObject.put("latestDealerNetLots", Long.valueOf(row.latestDealerNetLots));
         rowObject.put("brokerNetLots", Long.valueOf(row.brokerNetLots));
         rowObject.put("brokerNetRatioPct", Double.valueOf(safeNumber(row.brokerNetRatioPct)));
+        rowObject.put("officialFundingScore", Double.valueOf(safeNumber(row.officialFundingScore)));
+        rowObject.put("officialFundingLabel", safeText(row.officialFundingLabel));
+        rowObject.put("officialFundingReason", safeText(row.officialFundingReason));
+        rowObject.put("officialFundingSource", safeText(row.officialFundingSource));
         rowObject.put("marginDataDate", safeText(row.marginDataDate));
         rowObject.put("previousMarginBalance", Long.valueOf(row.previousMarginBalance));
         rowObject.put("marginBalance", Long.valueOf(row.marginBalance));
@@ -1089,6 +1189,7 @@ public class StockHistoryDatabase {
                 row.valuationScore = NumberParser.parseDouble(valueAt(fields, indexes, "valuation_score"));
                 row.technicalScore = NumberParser.parseDouble(valueAt(fields, indexes, "technical_score"));
                 row.financialQualityScore = NumberParser.parseDouble(valueAt(fields, indexes, "financial_quality_score"));
+                row.grossMarginPct = NumberParser.parseDouble(valueAt(fields, indexes, "gross_margin_pct"));
                 row.latestInstitutionalNetLots = NumberParser.parseLong(valueAt(fields, indexes,
                         "latest_institutional_net_lots"));
                 row.latestInstitutionalNetRatioPct = NumberParser.parseDouble(valueAt(fields, indexes,
@@ -1431,6 +1532,7 @@ public class StockHistoryDatabase {
         public double valuationScore;
         public double technicalScore;
         public double financialQualityScore;
+        public double grossMarginPct;
         public double valuationIndustryPercentile;
         public double financialQualityIndustryPercentile;
         public double grossMarginIndustryPercentile;
@@ -1445,8 +1547,14 @@ public class StockHistoryDatabase {
         public long fiveDayInstitutionalNetLots;
         public double fiveDayInstitutionalNetRatioPct;
         public long latestForeignNetLots;
+        public long latestTrustNetLots;
+        public long latestDealerNetLots;
         public long brokerNetLots;
         public double brokerNetRatioPct;
+        public double officialFundingScore;
+        public String officialFundingLabel = "";
+        public String officialFundingReason = "";
+        public String officialFundingSource = "";
         public String marginDataDate = "";
         public long previousMarginBalance;
         public long marginBalance;
@@ -1564,6 +1672,12 @@ public class StockHistoryDatabase {
                 statement.executeUpdate("create index if not exists idx_daily_stock_analysis_code_date on daily_stock_analysis(code, trade_date)");
                 statement.executeUpdate("create table if not exists daily_market_data (trade_date text not null, stage text not null, data_key text not null, data_json text not null, updated_at text not null, primary key (trade_date, stage, data_key))");
                 statement.executeUpdate("create table if not exists daily_run_status (trade_date text not null, stage text not null, status text not null, row_count integer not null, note text, updated_at text not null, primary key (trade_date, stage))");
+                statement.executeUpdate("create table if not exists shareholder_distribution_weekly (data_date text not null, code text not null, holding_level integer not null, holders integer not null, shares integer not null, ratio_percent real not null, updated_at text not null, primary key (data_date, code, holding_level))");
+                statement.executeUpdate("create index if not exists idx_shareholder_distribution_code_date on shareholder_distribution_weekly(code, data_date)");
+                statement.executeUpdate("create table if not exists shareholder_concentration_weekly (data_date text not null, code text not null, holders_100_to_1000_lots integer not null, shares_100_to_1000_lots integer not null, ratio_100_to_1000_lots real not null, holders_over_1000_lots integer not null, shares_over_1000_lots integer not null, ratio_over_1000_lots real not null, holders_100_to_1000_delta_1w integer not null, holders_over_1000_delta_1w integer not null, ratio_100_to_1000_delta_1w real not null, ratio_over_1000_delta_1w real not null, updated_at text not null, primary key (data_date, code))");
+                statement.executeUpdate("create index if not exists idx_shareholder_concentration_code_date on shareholder_concentration_weekly(code, data_date)");
+                statement.executeUpdate("create table if not exists insider_transfer_events (report_date text not null, code text not null, name text, insider_name text, insider_role text, transfer_method text, planned_transfer_shares integer not null, planned_transfer_lots real not null, current_holding_shares integer not null, transfer_start_date text, transfer_end_date text, row_hash text not null, raw_json text not null, updated_at text not null, primary key (report_date, code, row_hash))");
+                statement.executeUpdate("create index if not exists idx_insider_transfer_code_date on insider_transfer_events(code, report_date)");
             } finally {
                 statement.close();
             }
@@ -1736,6 +1850,40 @@ public class StockHistoryDatabase {
                 connection.close();
             }
             return snapshotsByDate;
+        }
+
+        private List<SnapshotRow> loadStockHistoryRows(String code) throws Exception {
+            List<SnapshotRow> rows = new ArrayList<SnapshotRow>();
+            if (code.length() == 0) {
+                return rows;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "select snapshot_date, row_json from snapshot_rows where code = ? order by snapshot_date");
+                try {
+                    statement.setString(1, code);
+                    ResultSet resultSet = statement.executeQuery();
+                    try {
+                        while (resultSet.next()) {
+                            String date = safeText(resultSet.getString("snapshot_date"));
+                            String rowJson = safeText(resultSet.getString("row_json"));
+                            Snapshot parsed = parseSnapshotRowJson(date, rowJson);
+                            if (!parsed.rows.isEmpty()) {
+                                rows.add(parsed.rows.get(0));
+                            }
+                        }
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    statement.close();
+                    connection.commit();
+                }
+            } finally {
+                connection.close();
+            }
+            return rows;
         }
 
         private void upsertStageSnapshot(Snapshot snapshot, String stage, boolean rawTable) throws Exception {
@@ -1976,6 +2124,325 @@ public class StockHistoryDatabase {
                 connection.close();
             }
             return result;
+        }
+
+        private void upsertShareholderDistributionRows(List<ShareholderDistributionRowVO> rows) throws Exception {
+            if (rows == null || rows.isEmpty()) {
+                return;
+            }
+            Connection connection = openConnection();
+            try {
+                Set<String> dates = shareholderDistributionDates(rows);
+                PreparedStatement deleteStatement = connection
+                        .prepareStatement("delete from shareholder_distribution_weekly where data_date = ?");
+                PreparedStatement statement = connection.prepareStatement(
+                        "insert into shareholder_distribution_weekly(data_date, code, holding_level, holders, shares, ratio_percent, updated_at) values(?,?,?,?,?,?,?) on conflict(data_date, code, holding_level) do update set holders = excluded.holders, shares = excluded.shares, ratio_percent = excluded.ratio_percent, updated_at = excluded.updated_at");
+                try {
+                    for (String date : dates) {
+                        deleteStatement.setString(1, date);
+                        deleteStatement.executeUpdate();
+                    }
+                    for (ShareholderDistributionRowVO row : rows) {
+                        if (row == null || row.getDataDate().length() == 0 || row.getCode().length() == 0) {
+                            continue;
+                        }
+                        statement.setString(1, row.getDataDate());
+                        statement.setString(2, row.getCode());
+                        statement.setInt(3, row.getHoldingLevel());
+                        statement.setLong(4, row.getHolders());
+                        statement.setLong(5, row.getShares());
+                        statement.setDouble(6, row.getRatioPercent());
+                        statement.setString(7, nowStamp());
+                        statement.executeUpdate();
+                    }
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    deleteStatement.close();
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        private void upsertShareholderConcentrationRows(Iterable<ShareholderConcentrationVO> rows) throws Exception {
+            if (rows == null) {
+                return;
+            }
+            List<ShareholderConcentrationVO> rowList = new ArrayList<ShareholderConcentrationVO>();
+            for (ShareholderConcentrationVO row : rows) {
+                if (row != null) {
+                    rowList.add(row);
+                }
+            }
+            if (rowList.isEmpty()) {
+                return;
+            }
+            Connection connection = openConnection();
+            try {
+                Set<String> dates = shareholderConcentrationDates(rowList);
+                PreparedStatement deleteStatement = connection
+                        .prepareStatement("delete from shareholder_concentration_weekly where data_date = ?");
+                PreparedStatement previousStatement = connection.prepareStatement(
+                        "select holders_100_to_1000_lots, holders_over_1000_lots, ratio_100_to_1000_lots, ratio_over_1000_lots from shareholder_concentration_weekly where code = ? and data_date < ? order by data_date desc limit 1");
+                PreparedStatement statement = connection.prepareStatement(
+                        "insert into shareholder_concentration_weekly(data_date, code, holders_100_to_1000_lots, shares_100_to_1000_lots, ratio_100_to_1000_lots, holders_over_1000_lots, shares_over_1000_lots, ratio_over_1000_lots, holders_100_to_1000_delta_1w, holders_over_1000_delta_1w, ratio_100_to_1000_delta_1w, ratio_over_1000_delta_1w, updated_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(data_date, code) do update set holders_100_to_1000_lots = excluded.holders_100_to_1000_lots, shares_100_to_1000_lots = excluded.shares_100_to_1000_lots, ratio_100_to_1000_lots = excluded.ratio_100_to_1000_lots, holders_over_1000_lots = excluded.holders_over_1000_lots, shares_over_1000_lots = excluded.shares_over_1000_lots, ratio_over_1000_lots = excluded.ratio_over_1000_lots, holders_100_to_1000_delta_1w = excluded.holders_100_to_1000_delta_1w, holders_over_1000_delta_1w = excluded.holders_over_1000_delta_1w, ratio_100_to_1000_delta_1w = excluded.ratio_100_to_1000_delta_1w, ratio_over_1000_delta_1w = excluded.ratio_over_1000_delta_1w, updated_at = excluded.updated_at");
+                try {
+                    for (String date : dates) {
+                        deleteStatement.setString(1, date);
+                        deleteStatement.executeUpdate();
+                    }
+                    for (ShareholderConcentrationVO row : rowList) {
+                        if (row == null || row.getDataDate().length() == 0 || row.getCode().length() == 0) {
+                            continue;
+                        }
+                        applyShareholderConcentrationDelta(previousStatement, row);
+                        statement.setString(1, row.getDataDate());
+                        statement.setString(2, row.getCode());
+                        statement.setLong(3, row.getHolders100To1000Lots());
+                        statement.setLong(4, row.getShares100To1000Lots());
+                        statement.setDouble(5, row.getRatio100To1000Lots());
+                        statement.setLong(6, row.getHoldersOver1000Lots());
+                        statement.setLong(7, row.getSharesOver1000Lots());
+                        statement.setDouble(8, row.getRatioOver1000Lots());
+                        statement.setLong(9, row.getHolders100To1000LotsDelta());
+                        statement.setLong(10, row.getHoldersOver1000LotsDelta());
+                        statement.setDouble(11, row.getRatio100To1000LotsDelta());
+                        statement.setDouble(12, row.getRatioOver1000LotsDelta());
+                        statement.setString(13, nowStamp());
+                        statement.executeUpdate();
+                    }
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    deleteStatement.close();
+                    previousStatement.close();
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        private Set<String> shareholderDistributionDates(List<ShareholderDistributionRowVO> rows) {
+            Set<String> dates = new HashSet<String>();
+            for (ShareholderDistributionRowVO row : rows) {
+                if (row != null && row.getDataDate().length() > 0) {
+                    dates.add(row.getDataDate());
+                }
+            }
+            return dates;
+        }
+
+        private Set<String> shareholderConcentrationDates(List<ShareholderConcentrationVO> rows) {
+            Set<String> dates = new HashSet<String>();
+            for (ShareholderConcentrationVO row : rows) {
+                if (row != null && row.getDataDate().length() > 0) {
+                    dates.add(row.getDataDate());
+                }
+            }
+            return dates;
+        }
+
+        private void applyShareholderConcentrationDelta(PreparedStatement previousStatement,
+                ShareholderConcentrationVO row) throws Exception {
+            previousStatement.setString(1, row.getCode());
+            previousStatement.setString(2, row.getDataDate());
+            ResultSet resultSet = previousStatement.executeQuery();
+            try {
+                if (!resultSet.next()) {
+                    return;
+                }
+                row.setHolders100To1000LotsDelta(
+                        row.getHolders100To1000Lots() - resultSet.getLong("holders_100_to_1000_lots"));
+                row.setHoldersOver1000LotsDelta(
+                        row.getHoldersOver1000Lots() - resultSet.getLong("holders_over_1000_lots"));
+                row.setRatio100To1000LotsDelta(
+                        row.getRatio100To1000Lots() - resultSet.getDouble("ratio_100_to_1000_lots"));
+                row.setRatioOver1000LotsDelta(
+                        row.getRatioOver1000Lots() - resultSet.getDouble("ratio_over_1000_lots"));
+            } finally {
+                resultSet.close();
+            }
+        }
+
+        private void upsertInsiderTransferEvents(List<InsiderTransferEventVO> events) throws Exception {
+            if (events == null || events.isEmpty()) {
+                return;
+            }
+            Connection connection = openConnection();
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "insert into insider_transfer_events(report_date, code, name, insider_name, insider_role, transfer_method, planned_transfer_shares, planned_transfer_lots, current_holding_shares, transfer_start_date, transfer_end_date, row_hash, raw_json, updated_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(report_date, code, row_hash) do update set name = excluded.name, insider_name = excluded.insider_name, insider_role = excluded.insider_role, transfer_method = excluded.transfer_method, planned_transfer_shares = excluded.planned_transfer_shares, planned_transfer_lots = excluded.planned_transfer_lots, current_holding_shares = excluded.current_holding_shares, transfer_start_date = excluded.transfer_start_date, transfer_end_date = excluded.transfer_end_date, raw_json = excluded.raw_json, updated_at = excluded.updated_at");
+                try {
+                    for (InsiderTransferEventVO event : events) {
+                        if (event == null || event.getReportDate().length() == 0 || event.getCode().length() == 0) {
+                            continue;
+                        }
+                        statement.setString(1, event.getReportDate());
+                        statement.setString(2, event.getCode());
+                        statement.setString(3, event.getName());
+                        statement.setString(4, event.getInsiderName());
+                        statement.setString(5, event.getInsiderRole());
+                        statement.setString(6, event.getTransferMethod());
+                        statement.setLong(7, event.getPlannedTransferShares());
+                        statement.setDouble(8, event.getPlannedTransferShares() / 1000D);
+                        statement.setLong(9, event.getCurrentHoldingShares());
+                        statement.setString(10, event.getTransferStartDate());
+                        statement.setString(11, event.getTransferEndDate());
+                        statement.setString(12, Integer.toHexString(event.stableKey().hashCode()));
+                        statement.setString(13, event.getRawJson().toJSONString());
+                        statement.setString(14, nowStamp());
+                        statement.executeUpdate();
+                    }
+                    connection.commit();
+                } catch (Exception ex) {
+                    connection.rollback();
+                    throw ex;
+                } finally {
+                    statement.close();
+                }
+            } finally {
+                connection.close();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private JSONObject loadShareholderInsiderData(String date) throws Exception {
+            JSONObject result = new JSONObject();
+            JSONObject concentrationByCode = new JSONObject();
+            JSONObject insiderByCode = new JSONObject();
+            result.put("concentrationByCode", concentrationByCode);
+            result.put("insiderByCode", insiderByCode);
+            String normalizedDate = normalizeBasicDate(date);
+            String cutoffDate = insiderCutoffDate(normalizedDate);
+            Connection connection = openConnection();
+            try {
+                loadLatestShareholderConcentration(connection, normalizedDate, concentrationByCode);
+                loadRecentInsiderTransfers(connection, normalizedDate, cutoffDate, insiderByCode);
+                connection.commit();
+            } finally {
+                connection.close();
+            }
+            result.put("date", normalizedDate);
+            result.put("insiderCutoffDate", cutoffDate);
+            return result;
+        }
+
+        @SuppressWarnings("unchecked")
+        private void loadLatestShareholderConcentration(Connection connection, String date, JSONObject byCode)
+                throws Exception {
+            String sql = date.length() > 0
+                    ? "select c.* from shareholder_concentration_weekly c join (select code, max(data_date) data_date from shareholder_concentration_weekly where data_date <= ? group by code) latest on latest.code = c.code and latest.data_date = c.data_date"
+                    : "select c.* from shareholder_concentration_weekly c join (select code, max(data_date) data_date from shareholder_concentration_weekly group by code) latest on latest.code = c.code and latest.data_date = c.data_date";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            try {
+                if (date.length() > 0) {
+                    statement.setString(1, date);
+                }
+                ResultSet rs = statement.executeQuery();
+                try {
+                    while (rs.next()) {
+                        JSONObject obj = new JSONObject();
+                        String code = safeText(rs.getString("code"));
+                        obj.put("dataDate", safeText(rs.getString("data_date")));
+                        obj.put("holders100To1000Lots", Long.valueOf(rs.getLong("holders_100_to_1000_lots")));
+                        obj.put("shares100To1000Lots", Long.valueOf(rs.getLong("shares_100_to_1000_lots")));
+                        obj.put("ratio100To1000Lots", Double.valueOf(rs.getDouble("ratio_100_to_1000_lots")));
+                        obj.put("holdersOver1000Lots", Long.valueOf(rs.getLong("holders_over_1000_lots")));
+                        obj.put("sharesOver1000Lots", Long.valueOf(rs.getLong("shares_over_1000_lots")));
+                        obj.put("ratioOver1000Lots", Double.valueOf(rs.getDouble("ratio_over_1000_lots")));
+                        obj.put("holders100To1000LotsDelta", Long.valueOf(rs.getLong("holders_100_to_1000_delta_1w")));
+                        obj.put("holdersOver1000LotsDelta", Long.valueOf(rs.getLong("holders_over_1000_delta_1w")));
+                        obj.put("ratio100To1000LotsDelta", Double.valueOf(rs.getDouble("ratio_100_to_1000_delta_1w")));
+                        obj.put("ratioOver1000LotsDelta", Double.valueOf(rs.getDouble("ratio_over_1000_delta_1w")));
+                        byCode.put(code, obj);
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                statement.close();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void loadRecentInsiderTransfers(Connection connection, String date, String cutoffDate, JSONObject byCode)
+                throws Exception {
+            String sql = date.length() > 0
+                    ? "select * from insider_transfer_events where report_date >= ? and report_date <= ? order by report_date desc, code, row_hash"
+                    : "select * from insider_transfer_events where report_date >= ? order by report_date desc, code, row_hash";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            try {
+                statement.setString(1, cutoffDate);
+                if (date.length() > 0) {
+                    statement.setString(2, date);
+                }
+                ResultSet rs = statement.executeQuery();
+                try {
+                    while (rs.next()) {
+                        String code = safeText(rs.getString("code"));
+                        JSONObject aggregate = (JSONObject) byCode.get(code);
+                        if (aggregate == null) {
+                            aggregate = new JSONObject();
+                            aggregate.put("count30d", Long.valueOf(0L));
+                            aggregate.put("plannedTransferShares30d", Long.valueOf(0L));
+                            aggregate.put("plannedTransferLots30d", Double.valueOf(0D));
+                            aggregate.put("latestReportDate", "");
+                            aggregate.put("events", new JSONArray());
+                            byCode.put(code, aggregate);
+                        }
+                        long shares = rs.getLong("planned_transfer_shares");
+                        long count = ((Number) aggregate.get("count30d")).longValue() + 1L;
+                        long shareSum = ((Number) aggregate.get("plannedTransferShares30d")).longValue() + shares;
+                        aggregate.put("count30d", Long.valueOf(count));
+                        aggregate.put("plannedTransferShares30d", Long.valueOf(shareSum));
+                        aggregate.put("plannedTransferLots30d", Double.valueOf(shareSum / 1000D));
+                        if (safeText(aggregate.get("latestReportDate")).length() == 0) {
+                            aggregate.put("latestReportDate", safeText(rs.getString("report_date")));
+                        }
+                        JSONArray events = (JSONArray) aggregate.get("events");
+                        if (events.size() < 5) {
+                            JSONObject event = new JSONObject();
+                            event.put("reportDate", safeText(rs.getString("report_date")));
+                            event.put("name", safeText(rs.getString("name")));
+                            event.put("insiderName", safeText(rs.getString("insider_name")));
+                            event.put("insiderRole", safeText(rs.getString("insider_role")));
+                            event.put("transferMethod", safeText(rs.getString("transfer_method")));
+                            event.put("plannedTransferShares", Long.valueOf(shares));
+                            event.put("plannedTransferLots", Double.valueOf(rs.getDouble("planned_transfer_lots")));
+                            event.put("currentHoldingShares", Long.valueOf(rs.getLong("current_holding_shares")));
+                            event.put("transferStartDate", safeText(rs.getString("transfer_start_date")));
+                            event.put("transferEndDate", safeText(rs.getString("transfer_end_date")));
+                            events.add(event);
+                        }
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                statement.close();
+            }
+        }
+
+        private String normalizeBasicDate(String date) {
+            String text = safeText(date).replace("/", "").replace("-", "");
+            return text.matches("\\d{8}") ? text : "";
+        }
+
+        private String insiderCutoffDate(String date) {
+            try {
+                LocalDate base = date.length() > 0 ? LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE)
+                        : LocalDate.now();
+                return base.minusDays(30).format(DateTimeFormatter.BASIC_ISO_DATE);
+            } catch (Exception ex) {
+                return "";
+            }
         }
     }
 }

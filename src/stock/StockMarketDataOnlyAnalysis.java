@@ -5,6 +5,7 @@ import org.json.simple.JSONObject;
 public class StockMarketDataOnlyAnalysis {
 
     private static final String KEY_FUTURES_PRICE = "marketFuturesPrice";
+    private static final String KEY_FUTURES_NIGHT_PRICE = "marketFuturesNightPrice";
     private static final String KEY_FUTURES_POSITION = "marketFuturesPosition";
 
     public static void main(String[] args) throws Exception {
@@ -23,6 +24,18 @@ public class StockMarketDataOnlyAnalysis {
             return;
         }
 
+        if ("market-futures-night".equals(mode) || "futures-night".equals(mode) || "night-futures".equals(mode)) {
+            JSONObject payload = priceToJson(new TaiexFuturesPriceService().fetchNightClose(date));
+            payload.put("session", "night");
+            payload.put("tradeDate", date);
+            database.upsertDailyMarketData(date, "market-futures-night", KEY_FUTURES_NIGHT_PRICE, payload);
+            database.upsertDailyRunStatus(date, "market-futures-night",
+                    Boolean.TRUE.equals(payload.get("available")) ? "completed" : "unavailable", 1,
+                    String.valueOf(payload.get("errorMessage")));
+            System.out.println("Market futures night price saved: " + payload.toJSONString());
+            return;
+        }
+
         if ("futures-position".equals(mode) || "taifex-position".equals(mode) || "foreign-futures".equals(mode)) {
             JSONObject payload = positionToJson(new TaifexFuturesService().fetchTaiwanIndexFuturesForeignPosition());
             database.upsertDailyMarketData(date, "futures-position", KEY_FUTURES_POSITION, payload);
@@ -30,6 +43,12 @@ public class StockMarketDataOnlyAnalysis {
                     Boolean.TRUE.equals(payload.get("available")) ? "completed" : "unavailable", 1,
                     String.valueOf(payload.get("errorMessage")));
             System.out.println("Futures position saved: " + payload.toJSONString());
+            return;
+        }
+
+        if ("shareholder-insider".equals(mode) || "shareholder-distribution".equals(mode)
+                || "insider-transfer".equals(mode)) {
+            ShareholderInsiderDailyUpdate.main(args);
             return;
         }
 

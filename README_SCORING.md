@@ -1,6 +1,6 @@
 # 台股選股系統規格總整理
 
-更新日期：2026-05-05
+更新日期：2026-05-08
 
 這份文件整理目前 repo 內真正有在跑的選股、評分、估值、分階段更新與前端篩選規則。它是工程規格文件，不是投資建議。
 
@@ -9,6 +9,7 @@
 - `run_stock_analysis.bat`
 - `run_stock_1400_intraday.bat`
 - `run_stock_1700_close.bat`
+- `run_stock_2015_official_chip.bat`
 - `run_stock_2300_full.bat`
 - `src/stock/StockAnalysis.java`
 - `src/stock/TaiwanStockAnalyzer.java`
@@ -82,7 +83,34 @@ stock.close.deferEventRisk=true
 - 17:00 會抓盤後籌碼與主力。
 - 新聞、事件風險仍延後，避免盤後初版太慢或不穩。
 
-### 1.3 23:00 `full`
+### 1.3 20:15 `official-chip`
+
+入口：`run_stock_2015_official_chip.bat`
+
+流程：
+
+1. 執行 `run_stock_analysis.bat official-chip`
+2. 讀取當天 `close` raw 快照作為底稿
+3. 補 TWSE T86 官方三大法人、TWSE OpenAPI 融資融券與官方收盤價
+4. 寫入 `official-chip` stage
+5. 匯出前端資料並推送 GitHub
+
+20:15 模式會設定：
+
+```text
+stock.analysis.stageOnly=true
+stock.analyzer.perStockPauseMs=75
+stock.close.deferNews=true
+stock.close.deferEventRisk=true
+```
+
+重點：
+
+- 20:15 不跑完整新聞、事件風險、回測與低頻報表。
+- 20:15 會沿用 17:00 close 的多數快照內容，主要重補官方盤後資金資料。
+- 上市三大法人 T86 約 20:00 後含鉅額版本較完整，因此官方資金力道以 20:15 / 23:00 較可靠。
+
+### 1.4 23:00 `full`
 
 入口：`run_stock_2300_full.bat`
 
@@ -95,13 +123,14 @@ stock.close.deferEventRisk=true
 
 23:00 是每天最完整版本。
 
-### 1.4 stage 匯出優先順序
+### 1.5 stage 匯出優先順序
 
 `StockStageExporter` 依 request mode 選擇資料：
 
 - `intraday-close` / `market-futures`：優先 `intraday-close`，再退回 `close`，再退回 `full`
 - `close`：優先 `close`，再退回 `full`
-- `full`：優先 `full`，再退回 `close+news-event`
+- `official-chip`：優先 `official-chip`，再退回 `close`，再退回 `full`
+- `full`：優先 `full`，再退回 `official-chip+news-event`，再退回 `close+news-event`
 - `news-event`：合併 `close + news-event`
 - 手動匯出：優先最完整的 `full`
 
@@ -114,7 +143,7 @@ stock.close.deferEventRisk=true
 - `static/dashboards/stock_dashboard_YYYYMMDD.html`
 - `history/stock_history_db.sqlite`
 
-### 1.5 日期判定
+### 1.6 日期判定
 
 `TaiwanStockAnalyzer.currentDateStamp()` 使用台北時間。
 
@@ -148,6 +177,7 @@ stock.close.deferEventRisk=true
 
 資料來源：
 
+- TWSE OpenAPI，上市公司優先用官方最新月營收補強
 - Yahoo
 - LowFrequencyDataCache
 - FinMind supplement，需有 token
@@ -164,6 +194,17 @@ stock.close.deferEventRisk=true
 - `broker_net_ratio_pct`
 
 14:00 初版若 deferred chips，會沿用前一個有效籌碼快照。17:00 / 23:00 會重新抓 Yahoo 籌碼資料。
+
+融資融券資料上市優先使用 TWSE OpenAPI `exchangeReport/MI_MARGN`，上櫃維持 TPEX 來源。
+
+上市三大法人單日資料優先使用 TWSE T86 官方資料，拆出外資、投信、自營商與三大法人合計，並產生前端的「資金力道」欄位：
+
+- `official_funding_score`：0 到 100 分，綜合三大法人買賣超占成交量比、外資 / 投信 / 自營商方向、融資風險、量比、20 日漲幅與 Yahoo 分點主力。
+- `official_funding_label`：例如 `官方資金強買`、`外資主導`、`投信主導`、`資金偏多`、`資金分歧`、`法人撤退`。
+- `official_funding_reason`：顯示法人合計、外資、投信、自營商與融資 / 主力輔助判斷。
+- `official_funding_source`：目前上市為 `TWSE T86`；上櫃仍以既有 Yahoo / TPEX 可取得資料為主。
+
+T86 官方資料屬盤後資料，交易日約 18:00 先產生不含鉅額版本、20:00 產生含鉅額版本。因此 17:00 close 可視為盤後初版，20:15 official-chip 與 23:00 full 才是較完整的官方籌碼版本。
 
 ### 2.4 財報 / 估值
 
@@ -192,6 +233,8 @@ stock.close.deferEventRisk=true
 - `fair_value_confidence`
 - `fair_value_method`
 - `fair_value_reason`
+
+上市公司會優先使用 TWSE OpenAPI 補最新季 `EPS / 損益表 / 資產負債表`，再與 Yahoo 歷史季資料合併；現金流量表目前仍保留 Yahoo / cache，因 TWSE OpenAPI 目前沒有直接對應的現金流端點。
 
 ### 2.5 技術
 
@@ -486,7 +529,9 @@ twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2
 fairValueEps = trailingFourQuarterEps * 0.40 + twoQuarterAnnualizedEps * 0.60
 ```
 
-因此，剛轉盈或單季爆發的股票，合理價會快速上修；近四季 EPS 很低但股價已經大漲的股票，合理價會很低。
+若近四季 EPS 為負、但 `twoQuarterAnnualizedEps` 已轉正，系統會改用 `twoQuarterAnnualizedEps` 作為估值 EPS。
+
+因此，剛轉盈或近期獲利明顯改善的股票，合理價會比單純看近四季 EPS 更快反應；近四季 EPS 很低但股價已經大漲的股票，合理價仍會受到基本面約束。
 
 ### 6.2 估值風格
 

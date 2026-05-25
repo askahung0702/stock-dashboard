@@ -15,6 +15,8 @@ public class MarginTradingService {
 
     private static final String TWSE_URL =
             "https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN?date=%s&selectType=ALL&response=json";
+    private static final String TWSE_OPENAPI_URL =
+            "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN";
     private static final String TPEX_URL =
             "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?l=zh-tw&d=%s&s=0,asc,0";
 
@@ -33,6 +35,10 @@ public class MarginTradingService {
 
     private void loadTwse(Map<String, MarginTradingVO> rowsByCode, String tradeDate) {
         int before = rowsByCode.size();
+        if (loadTwseOpenApi(rowsByCode, tradeDate)) {
+            System.out.println("TWSE OpenAPI margin trading loaded: " + (rowsByCode.size() - before));
+            return;
+        }
         try {
             JSONObject root = (JSONObject) parser.parse(fetcher.fetchJson(String.format(TWSE_URL, tradeDate), 15000, 2));
             JSONArray tables = (JSONArray) root.get("tables");
@@ -66,6 +72,52 @@ public class MarginTradingService {
         } catch (Exception ex) {
             System.out.println("TWSE margin trading unavailable: " + ex.getMessage());
         }
+    }
+
+    private boolean loadTwseOpenApi(Map<String, MarginTradingVO> rowsByCode, String tradeDate) {
+        try {
+            JSONArray rows = (JSONArray) parser.parse(fetcher.fetchJson(TWSE_OPENAPI_URL, 15000, 2));
+            int loaded = 0;
+            for (Object rowObj : rows) {
+                if (!(rowObj instanceof JSONObject)) {
+                    continue;
+                }
+                JSONObject json = (JSONObject) rowObj;
+                String code = text(json.get("股票代號"));
+                if (!NumberParser.isFourDigitStockCode(code)) {
+                    continue;
+                }
+                rowsByCode.put(code, parseTwseOpenApiRow(json, tradeDate));
+                loaded++;
+            }
+            return loaded > 0;
+        } catch (Exception ex) {
+            System.out.println("TWSE OpenAPI margin trading unavailable: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    private MarginTradingVO parseTwseOpenApiRow(JSONObject json, String tradeDate) {
+        MarginTradingVO row = new MarginTradingVO();
+        row.setDataDate(tradeDate);
+        row.setSource("TWSE OpenAPI MI_MARGN");
+        row.setMarginBuy(longValue(json.get("融資買進")));
+        row.setMarginSell(longValue(json.get("融資賣出")));
+        row.setMarginCashRepay(longValue(json.get("融資現金償還")));
+        row.setPreviousMarginBalance(longValue(json.get("融資前日餘額")));
+        row.setMarginBalance(longValue(json.get("融資今日餘額")));
+        row.setMarginLimit(longValue(json.get("融資限額")));
+        row.setMarginUsagePct(usagePct(row.getMarginBalance(), row.getMarginLimit()));
+        row.setShortBuy(longValue(json.get("融券買進")));
+        row.setShortSell(longValue(json.get("融券賣出")));
+        row.setShortRepay(longValue(json.get("融券現券償還")));
+        row.setPreviousShortBalance(longValue(json.get("融券前日餘額")));
+        row.setShortBalance(longValue(json.get("融券今日餘額")));
+        row.setShortLimit(longValue(json.get("融券限額")));
+        row.setShortUsagePct(usagePct(row.getShortBalance(), row.getShortLimit()));
+        row.setOffsetLots(longValue(json.get("資券互抵")));
+        row.setNote(text(json.get("註記")));
+        return row;
     }
 
     private MarginTradingVO parseTwseRow(JSONArray fields, String tradeDate) {
@@ -163,6 +215,10 @@ public class MarginTradingService {
 
     private long longAt(JSONArray fields, int index) {
         return NumberParser.parseLong(textAt(fields, index));
+    }
+
+    private long longValue(Object value) {
+        return NumberParser.parseLong(text(value));
     }
 
     private double doubleAt(JSONArray fields, int index) {

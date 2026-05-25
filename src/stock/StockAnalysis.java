@@ -19,6 +19,7 @@ public class StockAnalysis {
 
     private static final String STAGE_FULL = "full";
     private static final String STAGE_CLOSE = "close";
+    private static final String STAGE_OFFICIAL_CHIP = "official-chip";
     private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
     private static final String STATIC_DASHBOARD_DIR = "static" + File.separator + "dashboards";
 
@@ -35,7 +36,8 @@ public class StockAnalysis {
     private static void run(String[] args, RunContext context) throws Exception {
         RunOptions runOptions = parseArgs(args);
         int maxStocks = runOptions.maxStocks;
-        boolean closeStage = STAGE_CLOSE.equals(runOptions.stage) || STAGE_INTRADAY_CLOSE.equals(runOptions.stage);
+        boolean closeStage = STAGE_CLOSE.equals(runOptions.stage) || STAGE_OFFICIAL_CHIP.equals(runOptions.stage)
+                || STAGE_INTRADAY_CLOSE.equals(runOptions.stage);
         boolean stageOnly = Boolean.getBoolean("stock.analysis.stageOnly");
         TaiwanStockAnalyzer analyzer = new TaiwanStockAnalyzer();
         context.analyzer = analyzer;
@@ -108,6 +110,7 @@ public class StockAnalysis {
         writeSnapshotStatusSafely(runOptions.stage, maxStocks > 0);
         if (!closeStage && maxStocks <= 0) {
             writeStageDiffSafely(analyzer.currentDateStamp());
+            updateShareholderInsiderDataSafely(analyzer.currentDateStamp());
         }
         analyzer.markRunStatus("completed", results.size(), closeStage ? "close stage complete" : "full stage complete");
 
@@ -172,6 +175,12 @@ public class StockAnalysis {
             if ("close".equalsIgnoreCase(trimmed) || "--stage=close".equalsIgnoreCase(trimmed)
                     || "--mode=close".equalsIgnoreCase(trimmed)) {
                 options.stage = STAGE_CLOSE;
+                continue;
+            }
+            if ("official-chip".equalsIgnoreCase(trimmed) || "official-chips".equalsIgnoreCase(trimmed)
+                    || "--stage=official-chip".equalsIgnoreCase(trimmed)
+                    || "--mode=official-chip".equalsIgnoreCase(trimmed)) {
+                options.stage = STAGE_OFFICIAL_CHIP;
                 continue;
             }
             if ("full".equalsIgnoreCase(trimmed) || "--stage=full".equalsIgnoreCase(trimmed)
@@ -386,6 +395,15 @@ public class StockAnalysis {
         }
     }
 
+    private static void updateShareholderInsiderDataSafely(String date) {
+        try {
+            ShareholderInsiderDailyUpdate.main(new String[] { "shareholder-insider", date });
+            System.out.println("Shareholder/insider data updated in full stage.");
+        } catch (Exception ex) {
+            System.out.println("Cannot update shareholder/insider data: " + ex.getMessage());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static void writeStageDiffSummarySafely(String date, int comparedCount, int changedSelectionCount,
             int changedBuyPointCount, int newsReadyImproved, int brokerReadyImproved, int financialReadyImproved,
@@ -565,6 +583,9 @@ public class StockAnalysis {
         }
         if (STAGE_CLOSE.equals(stage)) {
             return "盤後初版";
+        }
+        if (STAGE_OFFICIAL_CHIP.equals(stage)) {
+            return "官方資金補強";
         }
         return "夜間完整版";
     }

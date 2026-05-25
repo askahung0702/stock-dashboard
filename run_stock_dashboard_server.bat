@@ -1,10 +1,13 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
 
 set "JAVAC_CMD=javac"
 set "JAVA_CMD=java"
+set "APP_CLASSPATH=lib\jsoup-1.15.1.jar;lib\json-simple-1.1.1.jar;lib\sqlite-jdbc-3.51.1.0.jar"
+set "JAVA_HEAP_OPTS=%STOCK_DASHBOARD_JAVA_OPTS%"
+if "!JAVA_HEAP_OPTS!"=="" set "JAVA_HEAP_OPTS=-Xms256m -Xmx2g"
 
 if exist "C:\Program Files\OpenLogic\jdk-21.0.6.7-hotspot\bin\javac.exe" (
     set "JAVAC_CMD=C:\Program Files\OpenLogic\jdk-21.0.6.7-hotspot\bin\javac.exe"
@@ -17,7 +20,7 @@ if exist "C:\Progra~1\Java\jdk1.8.0_202\bin\javac.exe" if /I "%JAVAC_CMD%"=="jav
 )
 
 echo Compiling StockHistoryWebServer.java...
-"%JAVAC_CMD%" -encoding UTF-8 -cp "lib\jsoup-1.15.1.jar;lib\json-simple-1.1.1.jar" -d bin -sourcepath src src\stock\StockHistoryWebServer.java
+"!JAVAC_CMD!" -encoding UTF-8 -cp "!APP_CLASSPATH!" -d bin -sourcepath src src\stock\StockHistoryWebServer.java
 if errorlevel 1 (
     echo.
     echo Compile failed.
@@ -45,7 +48,7 @@ echo Latest API:  http://%DISPLAY_HOST%:%DISPLAY_PORT%/api/latest
 echo History API: http://%DISPLAY_HOST%:%DISPLAY_PORT%/api/history
 echo Press Ctrl+C to stop.
 echo.
-"%JAVA_CMD%" -cp "bin;lib\jsoup-1.15.1.jar;lib\json-simple-1.1.1.jar" stock.StockHistoryWebServer %*
+"!JAVA_CMD!" !JAVA_HEAP_OPTS! -cp "bin;!APP_CLASSPATH!" stock.StockHistoryWebServer %*
 set "EXIT_CODE=%ERRORLEVEL%"
 
 echo.

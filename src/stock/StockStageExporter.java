@@ -16,6 +16,7 @@ public class StockStageExporter {
 
     private static final String STAGE_CLOSE = "close";
     private static final String STAGE_FULL = "full";
+    private static final String STAGE_OFFICIAL_CHIP = "official-chip";
     private static final String STAGE_INTRADAY_CLOSE = "intraday-close";
     private static final String STAGE_NEWS_EVENT = "news-event";
 
@@ -27,10 +28,11 @@ public class StockStageExporter {
         StockHistoryDatabase.Snapshot full = database.loadDailyStockAnalysis(date, STAGE_FULL);
         StockHistoryDatabase.Snapshot intradayClose = database.loadDailyStockAnalysis(date, STAGE_INTRADAY_CLOSE);
         StockHistoryDatabase.Snapshot close = database.loadDailyStockAnalysis(date, STAGE_CLOSE);
+        StockHistoryDatabase.Snapshot officialChip = database.loadDailyStockAnalysis(date, STAGE_OFFICIAL_CHIP);
         StockHistoryDatabase.Snapshot newsEvent = database.loadDailyStockAnalysis(date, STAGE_NEWS_EVENT);
 
         ExportSelection selection = selectSnapshot(System.getenv("STOCK_EXPORT_REQUEST_MODE"), full, intradayClose, close,
-                newsEvent);
+                officialChip, newsEvent);
         if (selection == null || selection.snapshot == null || selection.snapshot.rows.isEmpty()) {
             System.out.println("No staged close/full data found for " + date + ". Export latest DB snapshot only.");
             new StockStaticApiExporter().writeDefaultOutputs(new File("web\\data", "latest.json").getPath(),
@@ -54,11 +56,12 @@ public class StockStageExporter {
 
     private static ExportSelection selectSnapshot(String requestMode, StockHistoryDatabase.Snapshot full,
             StockHistoryDatabase.Snapshot intradayClose, StockHistoryDatabase.Snapshot close,
-            StockHistoryDatabase.Snapshot newsEvent) {
+            StockHistoryDatabase.Snapshot officialChip, StockHistoryDatabase.Snapshot newsEvent) {
         String mode = requestMode == null ? "" : requestMode.trim().toLowerCase();
         boolean hasFull = full != null && full.rows != null && !full.rows.isEmpty();
         boolean hasIntradayClose = intradayClose != null && intradayClose.rows != null && !intradayClose.rows.isEmpty();
         boolean hasClose = close != null && close.rows != null && !close.rows.isEmpty();
+        boolean hasOfficialChip = officialChip != null && officialChip.rows != null && !officialChip.rows.isEmpty();
         boolean hasNews = newsEvent != null && newsEvent.rows != null && !newsEvent.rows.isEmpty();
 
         if ("intraday-close".equals(mode) || "intraday".equals(mode)) {
@@ -74,15 +77,25 @@ public class StockStageExporter {
         if ("close".equals(mode)) {
             return hasClose ? new ExportSelection(close, STAGE_CLOSE) : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
         }
+        if ("official-chip".equals(mode) || "official-chips".equals(mode)) {
+            return hasOfficialChip ? new ExportSelection(officialChip, STAGE_OFFICIAL_CHIP)
+                    : hasClose ? new ExportSelection(close, STAGE_CLOSE)
+                            : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
+        }
         if ("news-event".equals(mode) || "news-only".equals(mode)) {
-            return hasClose ? new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
-                    hasNews ? "close+news-event" : STAGE_CLOSE)
+            StockHistoryDatabase.Snapshot base = hasOfficialChip ? officialChip : close;
+            String baseStage = hasOfficialChip ? STAGE_OFFICIAL_CHIP : STAGE_CLOSE;
+            return base != null && base.rows != null && !base.rows.isEmpty()
+                    ? new ExportSelection(mergeCloseAndNewsEvent(base, newsEvent),
+                    hasNews ? baseStage + "+news-event" : baseStage)
                     : hasFull ? new ExportSelection(full, STAGE_FULL) : null;
         }
         if ("full".equals(mode)) {
             return hasFull ? new ExportSelection(full, STAGE_FULL)
+                    : hasOfficialChip ? new ExportSelection(mergeCloseAndNewsEvent(officialChip, newsEvent),
+                            hasNews ? STAGE_OFFICIAL_CHIP + "+news-event" : STAGE_OFFICIAL_CHIP)
                     : hasClose ? new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
-                            hasNews ? "close+news-event" : STAGE_CLOSE)
+                    hasNews ? "close+news-event" : STAGE_CLOSE)
                             : null;
         }
 
@@ -90,6 +103,10 @@ public class StockStageExporter {
         // must not let an older same-date full run mask a fresh close/news-event run.
         if (hasFull) {
             return new ExportSelection(full, STAGE_FULL);
+        }
+        if (hasOfficialChip) {
+            return new ExportSelection(mergeCloseAndNewsEvent(officialChip, newsEvent),
+                    hasNews ? STAGE_OFFICIAL_CHIP + "+news-event" : STAGE_OFFICIAL_CHIP);
         }
         if (hasClose) {
             return new ExportSelection(mergeCloseAndNewsEvent(close, newsEvent),
@@ -247,7 +264,10 @@ public class StockStageExporter {
         t.nonOperatingIndustryPercentile = s.nonOperatingIndustryPercentile; t.latestInstitutionalNetLots = s.latestInstitutionalNetLots;
         t.latestInstitutionalNetRatioPct = s.latestInstitutionalNetRatioPct; t.fiveDayInstitutionalNetLots = s.fiveDayInstitutionalNetLots;
         t.fiveDayInstitutionalNetRatioPct = s.fiveDayInstitutionalNetRatioPct; t.latestForeignNetLots = s.latestForeignNetLots;
-        t.brokerNetLots = s.brokerNetLots; t.brokerNetRatioPct = s.brokerNetRatioPct; t.rsi14 = s.rsi14;
+        t.latestTrustNetLots = s.latestTrustNetLots; t.latestDealerNetLots = s.latestDealerNetLots;
+        t.brokerNetLots = s.brokerNetLots; t.brokerNetRatioPct = s.brokerNetRatioPct;
+        t.officialFundingScore = s.officialFundingScore; t.officialFundingLabel = s.officialFundingLabel;
+        t.officialFundingReason = s.officialFundingReason; t.officialFundingSource = s.officialFundingSource; t.rsi14 = s.rsi14;
         t.stochasticK = s.stochasticK; t.stochasticD = s.stochasticD; t.epsAccelerationPct = s.epsAccelerationPct; t.peg = s.peg;
         t.scoreReason = s.scoreReason; t.revenueReason = s.revenueReason; t.chipsReason = s.chipsReason;
         t.liquidityReason = s.liquidityReason; t.valuationReason = s.valuationReason; t.technicalReason = s.technicalReason;
@@ -334,6 +354,12 @@ public class StockStageExporter {
         }
         if (STAGE_CLOSE.equals(stage)) {
             return "盤後初版";
+        }
+        if (STAGE_OFFICIAL_CHIP.equals(stage)) {
+            return "官方資金補強";
+        }
+        if ((STAGE_OFFICIAL_CHIP + "+news-event").equals(stage)) {
+            return "官方資金補強 + 新聞事件";
         }
         return stage;
     }

@@ -18,8 +18,14 @@ public class StockAnalysisResultVO {
     private long fiveDayInstitutionalNetLots;
     private double fiveDayInstitutionalNetRatioPct;
     private long latestForeignNetLots;
+    private long latestTrustNetLots;
+    private long latestDealerNetLots;
     private long brokerNetLots;
     private double brokerNetRatioPct;
+    private double officialFundingScore;
+    private String officialFundingLabel;
+    private String officialFundingReason;
+    private String officialFundingSource;
     private String marginDataDate = "";
     private long marginBalance;
     private long previousMarginBalance;
@@ -309,6 +315,22 @@ public class StockAnalysisResultVO {
         this.latestForeignNetLots = latestForeignNetLots;
     }
 
+    public long getLatestTrustNetLots() {
+        return latestTrustNetLots;
+    }
+
+    public void setLatestTrustNetLots(long latestTrustNetLots) {
+        this.latestTrustNetLots = latestTrustNetLots;
+    }
+
+    public long getLatestDealerNetLots() {
+        return latestDealerNetLots;
+    }
+
+    public void setLatestDealerNetLots(long latestDealerNetLots) {
+        this.latestDealerNetLots = latestDealerNetLots;
+    }
+
     public long getBrokerNetLots() {
         return brokerNetLots;
     }
@@ -323,6 +345,38 @@ public class StockAnalysisResultVO {
 
     public void setBrokerNetRatioPct(double brokerNetRatioPct) {
         this.brokerNetRatioPct = brokerNetRatioPct;
+    }
+
+    public double getOfficialFundingScore() {
+        return officialFundingScore;
+    }
+
+    public void setOfficialFundingScore(double officialFundingScore) {
+        this.officialFundingScore = officialFundingScore;
+    }
+
+    public String getOfficialFundingLabel() {
+        return officialFundingLabel;
+    }
+
+    public void setOfficialFundingLabel(String officialFundingLabel) {
+        this.officialFundingLabel = officialFundingLabel;
+    }
+
+    public String getOfficialFundingReason() {
+        return officialFundingReason;
+    }
+
+    public void setOfficialFundingReason(String officialFundingReason) {
+        this.officialFundingReason = officialFundingReason;
+    }
+
+    public String getOfficialFundingSource() {
+        return officialFundingSource;
+    }
+
+    public void setOfficialFundingSource(String officialFundingSource) {
+        this.officialFundingSource = officialFundingSource;
     }
 
     public String getMarginDataDate() {

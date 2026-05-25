@@ -259,6 +259,10 @@ td{padding:7px 9px;vertical-align:middle}
 .sl-item-lbl{font-size:11px;color:var(--muted);margin-bottom:3px}
 .sl-item-val{font-size:15px;font-weight:700}
 .sl-item-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.insider-shell{overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:10px;max-height:220px}
+.insider-table{width:100%;min-width:620px;border-collapse:collapse;white-space:nowrap}
+.insider-table th,.insider-table td{padding:7px 9px;font-size:11px;border-bottom:1px solid var(--border)}
+.insider-table th{background:var(--surface2);color:var(--muted);text-align:left}
 .pos-card{border-color:rgba(59,130,246,.45)}
 .pos-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .pos-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 9px;width:150px;font-family:inherit;font-size:13px}
@@ -558,6 +562,9 @@ td{padding:7px 9px;vertical-align:middle}
         <th onclick="srt('officialFundingScore')">資金力道<span class="sa" id="sa-officialFundingScore"></span></th>
         <th onclick="srt('brokerNetLots')">單日主力<span class="sa" id="sa-brokerNetLots"></span></th>
         <th onclick="srt('brokerNetRatioPct')">主力比率<span class="sa" id="sa-brokerNetRatioPct"></span></th>
+        <th onclick="srt('holders100To1000Lots')" title="100~1000張持有人數；下方小字為週變化">100~1000戶<span class="sa" id="sa-holders100To1000Lots"></span></th>
+        <th onclick="srt('holdersOver1000Lots')" title="1000張以上持有人數；下方小字為週變化">千張戶<span class="sa" id="sa-holdersOver1000Lots"></span></th>
+        <th onclick="srt('insiderTransferLots30d')" title="近30天內部人申報轉讓張數">內部人<span class="sa" id="sa-insiderTransferLots30d"></span></th>
         <th onclick="srt('marginUsagePct')">融資率<span class="sa" id="sa-marginUsagePct"></span></th>
         <th onclick="srt('shortScore')" title="短線適性分">短分<span class="sa" id="sa-shortScore"></span></th>
         <th onclick="srt('midScore')" title="中線適性分">中分<span class="sa" id="sa-midScore"></span></th>
@@ -1365,6 +1372,16 @@ async function init() {
         marginBalanceDelta: resolvedNumber(s.marginBalanceDelta, 0),
         shortBalance: resolvedNumber(s.shortBalance, 0),
         shortMarginRatioPct: resolvedNumber(s.shortMarginRatioPct, 0),
+        holders100To1000Lots: resolvedNumber(s.holders100To1000Lots, 0),
+        holders100To1000LotsDelta: resolvedNumber(s.holders100To1000LotsDelta, 0),
+        ratio100To1000Lots: resolvedNumber(s.ratio100To1000Lots, 0),
+        ratio100To1000LotsDelta: resolvedNumber(s.ratio100To1000LotsDelta, 0),
+        holdersOver1000Lots: resolvedNumber(s.holdersOver1000Lots, 0),
+        holdersOver1000LotsDelta: resolvedNumber(s.holdersOver1000LotsDelta, 0),
+        ratioOver1000Lots: resolvedNumber(s.ratioOver1000Lots, 0),
+        ratioOver1000LotsDelta: resolvedNumber(s.ratioOver1000LotsDelta, 0),
+        insiderTransferCount30d: resolvedNumber(s.insiderTransferCount30d, 0),
+        insiderTransferLots30d: resolvedNumber(s.insiderTransferLots30d, 0),
         grossMarginPct: grossMarginPctOf(s)
       };
       const bearish = calcBearishProfile(normalized);
@@ -2105,7 +2122,7 @@ function render(fresh) {
   const stocks = S.filtered;
 
   if (fresh && stocks.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="29"><div class="empty">沒有符合條件的股票</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="34"><div class="empty">沒有符合條件的股票</div></td></tr>';
     document.getElementById('lmore').style.display = 'none';
     document.getElementById('rinfo').textContent = '0 筆';
     return;
@@ -2193,7 +2210,11 @@ function mkRow(s) {
     `<td>${s.volumeRatio > 0 ? s.volumeRatio.toFixed(2) : '—'}</td>` +
     fmtPctCell(s.latestInstitutionalNetRatioPct) + fmtPctCell(s.fiveDayInstitutionalNetRatioPct) +
     fmtFundingCell(s.officialFundingScore, s.officialFundingLabel) +
-    fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) + fmtMarginUsageCell(s.marginUsagePct) +
+    fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) +
+    fmtHolderCell(s.holders100To1000Lots, s.holders100To1000LotsDelta) +
+    fmtHolderCell(s.holdersOver1000Lots, s.holdersOver1000LotsDelta) +
+    fmtInsiderCell(s.insiderTransferCount30d, s.insiderTransferLots30d, s.shareholderInsiderLabel) +
+    fmtMarginUsageCell(s.marginUsagePct) +
     `<td style="color:${ssColor};font-weight:600;background:linear-gradient(90deg,rgba(59,130,246,.12) ${s.shortScore}%,transparent ${s.shortScore}%)">${s.shortScore}</td>` +
     `<td style="color:${msColor};font-weight:600;background:linear-gradient(90deg,rgba(34,197,94,.12) ${s.midScore}%,transparent ${s.midScore}%)">${s.midScore}</td>`;
   return tr;
@@ -2232,6 +2253,28 @@ function fmtLotsCell(v) {
   if (!Number.isFinite(v)) return '<td style="color:var(--muted)">—</td>';
   if (v === 0) return '<td style="color:var(--muted)">0</td>';
   return `<td class="${v>0?'rp':'rn'}">${v>0?'+':''}${Math.round(v).toLocaleString()}</td>`;
+}
+function fmtHolderDeltaCell(v) {
+  const value = Number(v || 0);
+  if (!Number.isFinite(value) || value === 0) return '<td style="color:var(--muted)">0</td>';
+  return `<td class="${value>0?'rp':'rn'}" style="font-weight:700">${value>0?'+':''}${Math.round(value).toLocaleString()}</td>`;
+}
+function fmtHolderCell(count, delta) {
+  const c = Number(count || 0);
+  const d = Number(delta || 0);
+  if (!Number.isFinite(c) || c <= 0) return '<td style="color:var(--muted)">—</td>';
+  const deltaText = !Number.isFinite(d) || d === 0
+    ? '<span style="color:var(--muted)">Δ 0</span>'
+    : `<span class="${d>0?'rp':'rn'}">Δ ${d>0?'+':''}${Math.round(d).toLocaleString()}</span>`;
+  return `<td style="font-weight:700">${Math.round(c).toLocaleString()}<div class="et">${deltaText}</div></td>`;
+}
+function fmtInsiderCell(count, lots, label) {
+  const c = Number(count || 0);
+  const l = Number(lots || 0);
+  if (!Number.isFinite(c) || c <= 0) return '<td style="color:var(--muted)">—</td>';
+  const text = l >= 1 ? `${Math.round(l).toLocaleString()}張` : `${Math.round(c)}筆`;
+  const color = label && label.indexOf('大戶降') >= 0 ? 'var(--red)' : 'var(--orange)';
+  return `<td title="${label || '近30天內部人申報轉讓'}" style="color:${color};font-weight:700">${text}</td>`;
 }
 function fmtDeltaTag(v, suffix = '', digits = 1) {
   if (!Number.isFinite(v) || Math.abs(v) < 0.05) return '<span class="muted">較昨 0</span>';
@@ -2651,6 +2694,13 @@ function renderDB(s, history) {
   const marginDelta = Number.isFinite(s.marginBalanceDelta) ? s.marginBalanceDelta : 0;
   const marginBalance = Number.isFinite(s.marginBalance) ? s.marginBalance : 0;
   const shortMarginRatio = Number.isFinite(s.shortMarginRatioPct) ? s.shortMarginRatioPct : 0;
+  const shareholderDate = s.shareholderDataDate || '';
+  const midHolderCount = Number.isFinite(s.holders100To1000Lots) ? s.holders100To1000Lots : 0;
+  const midHolderDelta = Number.isFinite(s.holders100To1000LotsDelta) ? s.holders100To1000LotsDelta : 0;
+  const largeHolderCount = Number.isFinite(s.holdersOver1000Lots) ? s.holdersOver1000Lots : 0;
+  const largeHolderDelta = Number.isFinite(s.holdersOver1000LotsDelta) ? s.holdersOver1000LotsDelta : 0;
+  const insiderCount = Number.isFinite(s.insiderTransferCount30d) ? s.insiderTransferCount30d : 0;
+  const insiderLots = Number.isFinite(s.insiderTransferLots30d) ? s.insiderTransferLots30d : 0;
   const ss   = s.shortScore, ms = s.midScore;
   const buyScore = s.buyPointScore || 0;
   const confidenceReady = hasConfidenceData(s);
@@ -2921,6 +2971,9 @@ function renderDB(s, history) {
       <div class="met" title="${fundingReason}"><div class="met-lbl">資金力道</div><div class="met-val" style="font-size:13px;color:${fundingScore>=68?'var(--green)':fundingScore>=55?'var(--yellow)':fundingScore>0&&fundingScore<45?'var(--red)':'var(--muted)'}">${fundingScore>0?Math.round(fundingScore)+' '+fundingLabel:'—'}</div></div>
       <div class="met"><div class="met-lbl">單日主力</div><div class="met-val ${brokerLots>0?'rp':brokerLots<0?'rn':'dz'}">${brokerLots>0?'+':''}${brokerLots.toLocaleString()}</div></div>
       <div class="met"><div class="met-lbl">主力比率</div><div class="met-val ${brokerRatio>0?'rp':brokerRatio<0?'rn':'dz'}">${brokerRatio>0?'+':''}${brokerRatio.toFixed(2)}%</div></div>
+      <div class="met"><div class="met-lbl">100~1000張戶</div><div class="met-val">${midHolderCount>0?Math.round(midHolderCount).toLocaleString():'—'} <span class="${midHolderDelta>0?'rp':midHolderDelta<0?'rn':'dz'}" style="font-size:12px">${midHolderDelta>0?'+':''}${Math.round(midHolderDelta).toLocaleString()}</span></div></div>
+      <div class="met"><div class="met-lbl">千張以上戶</div><div class="met-val">${largeHolderCount>0?Math.round(largeHolderCount).toLocaleString():'—'} <span class="${largeHolderDelta>0?'rp':largeHolderDelta<0?'rn':'dz'}" style="font-size:12px">${largeHolderDelta>0?'+':''}${Math.round(largeHolderDelta).toLocaleString()}</span></div></div>
+      <div class="met"><div class="met-lbl">內部人30日申轉</div><div class="met-val" style="color:${insiderCount>0?'var(--orange)':'var(--muted)'}">${insiderCount>0?Math.round(insiderCount)+'筆 / '+Math.round(insiderLots).toLocaleString()+'張':'—'}</div></div>
       <div class="met"><div class="met-lbl">融資使用率</div><div class="met-val" style="color:${marginUsage>=60?'var(--red)':marginUsage>=45?'var(--yellow)':marginUsage>0?'var(--muted)':'var(--muted)'}">${marginUsage>0?marginUsage.toFixed(2)+'%':'—'}</div></div>
       <div class="met"><div class="met-lbl">融資增減</div><div class="met-val ${marginDelta>0?'rn':marginDelta<0?'rp':'dz'}">${marginBalance>0?(marginDelta>0?'+':'')+marginDelta.toLocaleString():'—'}</div></div>
       <div class="met"><div class="met-lbl">資券比</div><div class="met-val" style="color:${shortMarginRatio>=20?'var(--yellow)':'var(--muted)'}">${shortMarginRatio>0?shortMarginRatio.toFixed(2)+'%':'—'}</div></div>
@@ -2932,6 +2985,7 @@ function renderDB(s, history) {
     </div>
     ${buyCard}
     ${costCard}
+    ${buildShareholderInsiderCard(s)}
     ${warningBox}
     ${resonanceBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
@@ -2951,6 +3005,68 @@ function renderDB(s, history) {
     document.getElementById('cv-t').closest('.cc').querySelector('.cc-title').textContent = '技術線圖（歷史資料累積中）';
     document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
   }
+}
+
+function buildShareholderInsiderCard(s) {
+  const dataDate = s.shareholderDataDate ? fmtDate(s.shareholderDataDate) : '—';
+  const midHolders = Number(s.holders100To1000Lots || 0);
+  const midDelta = Number(s.holders100To1000LotsDelta || 0);
+  const midRatio = Number(s.ratio100To1000Lots || 0);
+  const midRatioDelta = Number(s.ratio100To1000LotsDelta || 0);
+  const largeHolders = Number(s.holdersOver1000Lots || 0);
+  const largeDelta = Number(s.holdersOver1000LotsDelta || 0);
+  const largeRatio = Number(s.ratioOver1000Lots || 0);
+  const largeRatioDelta = Number(s.ratioOver1000LotsDelta || 0);
+  const insiderCount = Number(s.insiderTransferCount30d || 0);
+  const insiderLots = Number(s.insiderTransferLots30d || 0);
+  const events = Array.isArray(s.insiderTransferEvents) ? s.insiderTransferEvents : [];
+  const label = s.shareholderInsiderLabel || (largeDelta > 0 ? '大戶增加' : largeDelta < 0 ? '大戶減少' : '觀察');
+  const labelColor = label.indexOf('降') >= 0 || label.indexOf('減') >= 0 || insiderCount > 0
+    ? 'var(--orange)' : largeDelta > 0 ? 'var(--green)' : 'var(--muted)';
+  const eventRows = events.length ? events.map(e => `
+    <tr>
+      <td>${fmtDate(e.reportDate || '')}</td>
+      <td>${escapeHtml(e.insiderName || '—')}</td>
+      <td>${escapeHtml(e.insiderRole || '—')}</td>
+      <td>${escapeHtml(e.transferMethod || '—')}</td>
+      <td style="text-align:right;color:var(--orange);font-weight:700">${Math.round(Number(e.plannedTransferLots || 0)).toLocaleString()}張</td>
+    </tr>`).join('') : `<tr><td colspan="5" style="color:var(--muted);text-align:center">近30天沒有內部人申報轉讓紀錄</td></tr>`;
+  return `
+    <div class="inv-card">
+      <div class="inv-title">大戶 / 內部人</div>
+      <div class="ma-metrics" style="margin-top:0;margin-bottom:10px">
+        <span class="ma-metric">集保日期 <b>${dataDate}</b></span>
+        <span class="ma-metric">訊號 <b style="color:${labelColor}">${escapeHtml(label || '觀察')}</b></span>
+      </div>
+      <div class="sl-grid">
+        <div class="sl-item" style="border-left:3px solid var(--blue)">
+          <div class="sl-item-lbl">100~1000張持有人</div>
+          <div class="sl-item-val">${midHolders ? Math.round(midHolders).toLocaleString() : '—'} 戶</div>
+          <div class="sl-item-sub">${fmtSignedPlain(midDelta, '戶', 0)}｜占比 ${midRatio.toFixed(2)}%（${fmtSignedPlain(midRatioDelta, '%', 2)}）</div>
+        </div>
+        <div class="sl-item" style="border-left:3px solid var(--green)">
+          <div class="sl-item-lbl">1000張以上持有人</div>
+          <div class="sl-item-val">${largeHolders ? Math.round(largeHolders).toLocaleString() : '—'} 戶</div>
+          <div class="sl-item-sub">${fmtSignedPlain(largeDelta, '戶', 0)}｜占比 ${largeRatio.toFixed(2)}%（${fmtSignedPlain(largeRatioDelta, '%', 2)}）</div>
+        </div>
+        <div class="sl-item" style="border-left:3px solid var(--orange)">
+          <div class="sl-item-lbl">內部人申報轉讓</div>
+          <div class="sl-item-val" style="color:${insiderCount > 0 ? 'var(--orange)' : 'var(--muted)'}">${insiderCount ? Math.round(insiderCount) + ' 筆' : '—'}</div>
+          <div class="sl-item-sub">近30天 ${insiderLots ? Math.round(insiderLots).toLocaleString() + ' 張' : '無申報轉讓張數'}</div>
+        </div>
+        <div class="sl-item" style="border-left:3px solid var(--muted)">
+          <div class="sl-item-lbl">最近申報日</div>
+          <div class="sl-item-val" style="font-size:15px">${s.latestInsiderTransferDate ? fmtDate(s.latestInsiderTransferDate) : '—'}</div>
+          <div class="sl-item-sub">MOPS 內部人申報轉讓</div>
+        </div>
+      </div>
+      <div class="insider-shell">
+        <table class="insider-table">
+          <thead><tr><th>日期</th><th>內部人</th><th>身分</th><th>方式</th><th style="text-align:right">申轉張數</th></tr></thead>
+          <tbody>${eventRows}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 function positionCostKey(code) {

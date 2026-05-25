@@ -30,14 +30,16 @@ HORIZONS = (1, 3, 5, 10, 20, 40)
 STAGE_LABELS = {
     "intraday-close": "14:00",
     "close": "17:00",
+    "official-chip": "20:15",
     "full": "23:00",
 }
 STAGE_ORDER = {
     "intraday-close": 1,
     "close": 2,
-    "full": 3,
+    "official-chip": 3,
+    "full": 4,
 }
-CANONICAL_PRICE_STAGE_ORDER = ("full", "close", "intraday-close")
+CANONICAL_PRICE_STAGE_ORDER = ("full", "official-chip", "close", "intraday-close")
 
 
 def n(row, *keys, default=0.0):
@@ -313,7 +315,7 @@ def load_snapshots(db_path, start_date=None, end_date=None):
         "selection_score, price, volume_ratio, likely, row_json, updated_at "
         "from daily_stock_analysis"
     )
-    where.append("stage in ('intraday-close','close','full')")
+    where.append("stage in ('intraday-close','close','official-chip','full')")
     if where:
         sql += " where " + " and ".join(where)
     sql += " order by trade_date, stage, sort_order, code"

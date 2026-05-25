@@ -31,13 +31,21 @@ set "SHOULD_PAUSE=1"
 if /I "%~1"=="intraday-close" goto mode_intraday_close
 if /I "%~1"=="intraday" goto mode_intraday_close
 if /I "%~1"=="close" goto mode_close
+if /I "%~1"=="official-chip" goto mode_official_chip
+if /I "%~1"=="official-chips" goto mode_official_chip
 if /I "%~1"=="full" goto mode_full
 if /I "%~1"=="news-event" goto mode_news_event
 if /I "%~1"=="news-only" goto mode_news_event
 if /I "%~1"=="market-futures" goto mode_market_futures
 if /I "%~1"=="futures-price" goto mode_market_futures
+if /I "%~1"=="market-futures-night" goto mode_market_futures_night
+if /I "%~1"=="futures-night" goto mode_market_futures_night
+if /I "%~1"=="night-futures" goto mode_market_futures_night
 if /I "%~1"=="futures-position" goto mode_futures_position
 if /I "%~1"=="taifex-position" goto mode_futures_position
+if /I "%~1"=="shareholder-insider" goto mode_shareholder_insider
+if /I "%~1"=="shareholder-distribution" goto mode_shareholder_insider
+if /I "%~1"=="insider-transfer" goto mode_shareholder_insider
 if /I "%~1"=="export" goto mode_export
 if /I "%~1"=="export-now" goto mode_export_now
 if not "%~1"=="" (
@@ -55,6 +63,12 @@ goto mode_done
 :mode_close
 set "RUN_MODE=close"
 set "RUN_STAGE=close"
+set "SHOULD_PAUSE=0"
+goto mode_done
+
+:mode_official_chip
+set "RUN_MODE=official-chip"
+set "RUN_STAGE=official-chip"
 set "SHOULD_PAUSE=0"
 goto mode_done
 
@@ -76,9 +90,21 @@ set "RUN_STAGE=market-futures"
 set "SHOULD_PAUSE=0"
 goto mode_done
 
+:mode_market_futures_night
+set "RUN_MODE=market-futures-night"
+set "RUN_STAGE=market-futures-night"
+set "SHOULD_PAUSE=0"
+goto mode_done
+
 :mode_futures_position
 set "RUN_MODE=futures-position"
 set "RUN_STAGE=futures-position"
+set "SHOULD_PAUSE=0"
+goto mode_done
+
+:mode_shareholder_insider
+set "RUN_MODE=shareholder-insider"
+set "RUN_STAGE=shareholder-insider"
 set "SHOULD_PAUSE=0"
 goto mode_done
 
@@ -96,16 +122,22 @@ goto mode_done
 
 if /I "%RUN_MODE%"=="intraday-close" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="close" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+if /I "%RUN_MODE%"=="official-chip" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="full" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="news-event" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="market-futures" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+if /I "%RUN_MODE%"=="market-futures-night" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 if /I "%RUN_MODE%"=="futures-position" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
+if /I "%RUN_MODE%"=="shareholder-insider" if not "%~2"=="" set "HAS_LIMITED_ARGS=1"
 
 if /I "%RUN_MODE%"=="intraday-close" (
     set "JAVA_STAGE_OPTS=-Dstock.analysis.stageOnly=true -Dstock.analyzer.perStockPauseMs=150 -Dstock.intraday.deferChips=true -Dstock.close.deferNews=true -Dstock.close.deferEventRisk=true"
 )
 if /I "%RUN_MODE%"=="close" (
     set "JAVA_STAGE_OPTS=-Dstock.analysis.stageOnly=true -Dstock.analyzer.perStockPauseMs=150 -Dstock.close.deferNews=true -Dstock.close.deferEventRisk=true"
+)
+if /I "%RUN_MODE%"=="official-chip" (
+    set "JAVA_STAGE_OPTS=-Dstock.analysis.stageOnly=true -Dstock.analyzer.perStockPauseMs=75 -Dstock.close.deferNews=true -Dstock.close.deferEventRisk=true"
 )
 if /I "%RUN_MODE%"=="news-event" (
     set "JAVA_STAGE_OPTS=-Dstock.news.stageOnly=true -Dstock.analyzer.perStockPauseMs=150"
@@ -132,7 +164,9 @@ set "LOCK_ACQUIRED=1"
 
 if /I "%RUN_MODE%"=="news-event" goto run_news_event
 if /I "%RUN_MODE%"=="market-futures" goto run_market_data
+if /I "%RUN_MODE%"=="market-futures-night" goto run_market_data
 if /I "%RUN_MODE%"=="futures-position" goto run_market_data
+if /I "%RUN_MODE%"=="shareholder-insider" goto run_market_data
 if /I "%RUN_MODE%"=="export-now" goto run_export_now
 goto run_analysis
 
@@ -238,9 +272,12 @@ if not "%EXIT_CODE%"=="0" (
 if "%EXIT_CODE%"=="0" (
     if /I "%RUN_MODE%"=="intraday-close" goto after_intraday_close_run
     if /I "%RUN_MODE%"=="close" goto after_close_run
+    if /I "%RUN_MODE%"=="official-chip" goto after_official_chip_run
     if /I "%RUN_MODE%"=="news-event" goto after_news_event_run
     if /I "%RUN_MODE%"=="market-futures" goto after_market_data_run
+    if /I "%RUN_MODE%"=="market-futures-night" goto after_market_data_run
     if /I "%RUN_MODE%"=="futures-position" goto after_market_data_run
+    if /I "%RUN_MODE%"=="shareholder-insider" goto after_market_data_run
     goto after_full_run
 )
 goto cleanup
@@ -282,6 +319,20 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after close stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode close
+        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+    )
+)
+goto cleanup
+
+:after_official_chip_run
+if defined HAS_LIMITED_ARGS (
+    echo Limited official-chip run detected, skip export request.
+) else (
+    if defined STOCK_SKIP_EXPORT_REQUEST (
+        echo Export request skipped because STOCK_SKIP_EXPORT_REQUEST is set.
+    ) else (
+        echo Requesting serialized export after official-chip stage...
+        "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode official-chip
         if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
     )
 )

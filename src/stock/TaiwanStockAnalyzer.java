@@ -99,6 +99,7 @@ public class TaiwanStockAnalyzer {
     private final TaiwanStockMarketProvider marketProvider = new TaiwanStockMarketProvider();
     private final YahooTaiwanStockService yahooService = new YahooTaiwanStockService();
     private final OfficialDailyCloseService officialDailyCloseService = new OfficialDailyCloseService();
+    private final OfficialInstitutionalTradingService officialInstitutionalTradingService = new OfficialInstitutionalTradingService();
     private final MarginTradingService marginTradingService = new MarginTradingService();
     private final StockHistoryDatabase historyDatabase = new StockHistoryDatabase();
     private final ThemeBasketRepository themeBasketRepository = new ThemeBasketRepository();
@@ -107,6 +108,7 @@ public class TaiwanStockAnalyzer {
     private final MarketThemeRadar marketThemeRadar = new MarketThemeRadar();
     private final NewsCompanySummarizer newsCompanySummarizer = new NewsCompanySummarizer();
     private final LowFrequencyDataCache lowFrequencyDataCache = LowFrequencyDataCache.loadDefault();
+    private final FinancialDataProvider twseOpenApiFinancialProvider = new TwseOpenApiFinancialProvider();
     private final FinancialDataProvider finMindFinancialProvider = new FinMindFinancialProvider();
     private final FinancialDataProvider mopsFinancialProvider = new MopsFinancialProvider();
     private final ScoringConfig scoringConfig = ScoringConfig.loadDefault();
@@ -119,6 +121,7 @@ public class TaiwanStockAnalyzer {
     private Map<String, StockHistoryDatabase.SnapshotRow> sameDayCloseRawRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
     private Map<String, StockHistoryDatabase.SnapshotRow> deferredChipRowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
     private Map<String, Double> officialClosePricesByCode = new HashMap<String, Double>();
+    private Map<String, InstitutionalTradingDailyVO> officialInstitutionalRowsByCode = new HashMap<String, InstitutionalTradingDailyVO>();
     private Map<String, MarginTradingVO> marginTradingRowsByCode = new HashMap<String, MarginTradingVO>();
 
     public List<StockAnalysisResultVO> analyze(int maxStocks) throws Exception {
@@ -131,6 +134,7 @@ public class TaiwanStockAnalyzer {
         officialClosePricesByCode = shouldUseOfficialClosePrices()
                 ? officialDailyCloseService.loadClosePrices(allStocks, currentDateStamp())
                 : new HashMap<String, Double>();
+        officialInstitutionalRowsByCode = officialInstitutionalTradingService.loadDailyTrading(currentDateStamp());
         marginTradingRowsByCode = marginTradingService.loadMarginTrading(currentDateStamp());
         String runNote = sameDayCloseRawRowsByCode.isEmpty() ? "close raw unavailable"
                 : "reusing close raw " + sameDayCloseRawRowsByCode.size();
@@ -139,6 +143,9 @@ public class TaiwanStockAnalyzer {
         }
         if (!officialClosePricesByCode.isEmpty()) {
             runNote += "; official closes " + officialClosePricesByCode.size();
+        }
+        if (!officialInstitutionalRowsByCode.isEmpty()) {
+            runNote += "; official flows " + officialInstitutionalRowsByCode.size();
         }
         if (!marginTradingRowsByCode.isEmpty()) {
             runNote += "; margin rows " + marginTradingRowsByCode.size();
@@ -1309,7 +1316,7 @@ public class TaiwanStockAnalyzer {
 
     private Map<String, StockHistoryDatabase.SnapshotRow> loadSameDayCloseRawRows() {
         Map<String, StockHistoryDatabase.SnapshotRow> rowsByCode = new HashMap<String, StockHistoryDatabase.SnapshotRow>();
-        if (!"full".equals(runStage)) {
+        if (!"full".equals(runStage) && !"official-chip".equals(runStage)) {
             return rowsByCode;
         }
         try {
@@ -1329,7 +1336,7 @@ public class TaiwanStockAnalyzer {
     }
 
     private boolean shouldUseOfficialClosePrices() {
-        if ("close".equals(runStage)) {
+        if ("close".equals(runStage) || "official-chip".equals(runStage)) {
             return true;
         }
         if ("intraday-close".equals(runStage)) {
@@ -1516,9 +1523,10 @@ public class TaiwanStockAnalyzer {
     private StockAnalysisResultVO analyzeOneStock(TaiwanStockVO stock) throws Exception {
         LowFrequencyDataCache.Entry cacheEntry = lowFrequencyDataCache.get(stock.getCode());
         StockHistoryDatabase.SnapshotRow stagedRawRow = sameDayCloseRawRowsByCode.get(stock.getCode());
-        boolean reuseCloseRaw = "full".equals(runStage) && stagedRawRow != null;
+        boolean reuseCloseRaw = ("full".equals(runStage) || "official-chip".equals(runStage)) && stagedRawRow != null;
         boolean intradayCloseStage = "intraday-close".equals(runStage);
-        boolean closeStage = "close".equals(runStage) || intradayCloseStage;
+        boolean officialChipStage = "official-chip".equals(runStage);
+        boolean closeStage = "close".equals(runStage) || officialChipStage || intradayCloseStage;
         boolean deferChips = intradayCloseStage && parseBooleanProperty("stock.intraday.deferChips", true);
         StockHistoryDatabase.SnapshotRow deferredChipRow = deferChips ? deferredChipRowsByCode.get(stock.getCode()) : null;
         boolean deferNews = closeStage && CLOSE_DEFER_NEWS;
@@ -1600,6 +1608,29 @@ public class TaiwanStockAnalyzer {
         String revenueSourceName = !revenues.isEmpty() ? "Yahoo" : cachedSource(cacheEntry, true);
         String financialSourceName = hasAnyFinancialRecords(epsRecords, incomeRecords, balanceRecords, cashFlowRecords)
                 ? "Yahoo" : cachedSource(cacheEntry, false);
+        if (allowFinancialFetch && twseOpenApiFinancialProvider.isEnabled()) {
+            FinancialDataBundle official = fetchFinancialSupplement(twseOpenApiFinancialProvider, stock);
+            String currentRevenuePeriod = !revenues.isEmpty() ? revenues.get(0).getPeriod()
+                    : cacheEntry == null ? "" : emptyIfBlank(cacheEntry.latestRevenuePeriod, "");
+            if (official.hasRevenueData()
+                    && isSameOrNewerMonthPeriod(official.latestRevenuePeriod(), currentRevenuePeriod)) {
+                revenues = mergeMonthlyRevenueRecords(revenues, official.getRevenues());
+                revenueSourceName = official.getSourceName();
+            }
+            String currentFinancialPeriod = resolveFinancialPeriod(epsRecords, incomeRecords, balanceRecords,
+                    cashFlowRecords);
+            if (currentFinancialPeriod.length() == 0 && cacheEntry != null) {
+                currentFinancialPeriod = emptyIfBlank(cacheEntry.latestFinancialPeriod, "");
+            }
+            if (hasTwseOfficialFinancialData(official)
+                    && isSameOrNewerQuarterPeriod(official.latestFinancialPeriod(), currentFinancialPeriod)) {
+                epsRecords = mergeEpsRecords(epsRecords, official.getEpsRecords());
+                incomeRecords = mergeIncomeRecords(incomeRecords, official.getIncomeRecords());
+                balanceRecords = mergeBalanceRecords(balanceRecords, official.getBalanceRecords());
+                financialSourceName = official.getSourceName()
+                        + (cashFlowRecords.isEmpty() ? "" : "+Yahoo cash flow");
+            }
+        }
         if (allowFinancialFetch && shouldFetchFinancialSupplement(cacheEntry, revenues, epsRecords, incomeRecords,
                 balanceRecords, cashFlowRecords, newsSignal)) {
             FinancialDataBundle supplement = fetchFinancialSupplement(stock);
@@ -1701,6 +1732,23 @@ public class TaiwanStockAnalyzer {
                 : chipSnapshotRow != null ? chipSnapshotRow.fiveDayInstitutionalNetRatioPct : 0D;
         long latestForeignNetLots = !institutional.isEmpty() ? institutional.get(0).getForeignNetLots()
                 : chipSnapshotRow != null ? chipSnapshotRow.latestForeignNetLots : 0L;
+        long latestTrustNetLots = !institutional.isEmpty() ? institutional.get(0).getTrustNetLots() : 0L;
+        long latestDealerNetLots = !institutional.isEmpty() ? institutional.get(0).getDealerNetLots() : 0L;
+        InstitutionalTradingDailyVO officialInstitutional = officialInstitutionalRowsByCode
+                .get(result.getStock().getCode());
+        boolean hasOfficialInstitutional = officialInstitutional != null && officialInstitutional.getDate().length() > 0;
+        if (hasOfficialInstitutional
+                && (chipSnapshotRow == null || "full".equals(runStage) || "official-chip".equals(runStage))) {
+            latestInstitutionalNetLots = officialInstitutional.getTotalNetLots();
+            latestForeignNetLots = officialInstitutional.getForeignNetLots();
+            latestTrustNetLots = officialInstitutional.getTrustNetLots();
+            latestDealerNetLots = officialInstitutional.getDealerNetLots();
+            long ratioVolume = profile.getLatestVolumeLots() > 0L ? profile.getLatestVolumeLots()
+                    : technical != null ? Math.round(technical.getCurrentVolume() / 1000D) : 0L;
+            if (ratioVolume > 0L) {
+                latestInstitutionalNetRatioPct = NumberParser.ratioPercent(latestInstitutionalNetLots, ratioVolume);
+            }
+        }
         long brokerNetLots = chipSnapshotRow != null ? chipSnapshotRow.brokerNetLots : broker.getNetLots();
         double brokerNetRatioPct = chipSnapshotRow != null ? chipSnapshotRow.brokerNetRatioPct
                 : broker.getNetVolumeRatioPct();
@@ -1799,6 +1847,10 @@ public class TaiwanStockAnalyzer {
         }
         double ma20Slope = technical != null ? technical.getMa20Slope()
                 : reusedSameDayCloseRaw ? stagedRawRow.ma20Slope : 0D;
+        OfficialFundingProfile officialFundingProfile = buildOfficialFundingProfile(hasOfficialInstitutional,
+                latestInstitutionalNetLots, latestForeignNetLots, latestTrustNetLots, latestDealerNetLots,
+                latestInstitutionalNetRatioPct, brokerNetLots, brokerNetRatioPct, marginUsagePct, marginBalanceDelta,
+                shortMarginRatioPct, volumeRatio, return20DayPct);
 
         double trailingFourQuarterEps = !epsRecords.isEmpty() ? sumTrailingEps(epsRecords, epsWindow)
                 : cacheNumber(cacheEntry == null ? 0D : cacheEntry.trailingFourQuarterEps);
@@ -1933,7 +1985,7 @@ public class TaiwanStockAnalyzer {
                 movingAverage120, drawdownFromHigh60Pct, volatility20Pct, atr20, structureProfile.score,
                 selectionScore);
         double twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2D;
-        double fairValueEps = computeFairValueEps(trailingFourQuarterEps, latestQuarterEps, previousQuarterEps);
+        double fairValueEps = computeFairValueEps(trailingFourQuarterEps, twoQuarterAnnualizedEps);
         FairValueProfile fairValueProfile = buildFairValueProfile(currentPrice, industry, fairValueEps,
                 trailingFourQuarterEps, twoQuarterAnnualizedEps, peerAveragePe, latestQuarterEpsYoYPct,
                 averageThreeMonthRevenueYoY, returnOnEquityPct, bookValue, financialQualityScore, valuationScore, peg,
@@ -1967,8 +2019,14 @@ public class TaiwanStockAnalyzer {
         result.setFiveDayInstitutionalNetLots(fiveDayInstitutionalNetLots);
         result.setFiveDayInstitutionalNetRatioPct(fiveDayInstitutionalNetRatioPct);
         result.setLatestForeignNetLots(latestForeignNetLots);
+        result.setLatestTrustNetLots(latestTrustNetLots);
+        result.setLatestDealerNetLots(latestDealerNetLots);
         result.setBrokerNetLots(brokerNetLots);
         result.setBrokerNetRatioPct(brokerNetRatioPct);
+        result.setOfficialFundingScore(officialFundingProfile.score);
+        result.setOfficialFundingLabel(officialFundingProfile.label);
+        result.setOfficialFundingReason(officialFundingProfile.reason);
+        result.setOfficialFundingSource(officialFundingProfile.source);
         result.setMarginDataDate(marginDataDate);
         result.setPreviousMarginBalance(previousMarginBalance);
         result.setMarginBalance(marginBalance);
@@ -2662,6 +2720,74 @@ public class TaiwanStockAnalyzer {
         return NumberParser.clamp(score, 0D, 30D);
     }
 
+    private OfficialFundingProfile buildOfficialFundingProfile(boolean hasOfficialData, long totalNetLots,
+            long foreignNetLots, long trustNetLots, long dealerNetLots, double totalNetRatioPct, long brokerNetLots,
+            double brokerNetRatioPct, double marginUsagePct, long marginBalanceDelta, double shortMarginRatioPct,
+            double volumeRatio, double return20DayPct) {
+        if (!hasOfficialData) {
+            return new OfficialFundingProfile(0D, "官方資料未建立", "上市三大法人資料尚未取得", "");
+        }
+        double score = 50D;
+        score += NumberParser.clamp(totalNetRatioPct * 2.2D, -22D, 22D);
+        score += NumberParser.clamp(foreignNetLots > 0L ? 8D : foreignNetLots < 0L ? -8D : 0D, -8D, 8D);
+        score += NumberParser.clamp(trustNetLots > 0L ? 7D : trustNetLots < 0L ? -7D : 0D, -7D, 7D);
+        score += NumberParser.clamp(dealerNetLots > 0L ? 4D : dealerNetLots < 0L ? -4D : 0D, -4D, 4D);
+        if (marginUsagePct >= 45D && marginBalanceDelta > 0L && totalNetRatioPct <= 0D) {
+            score -= 8D;
+        } else if (marginBalanceDelta < 0L && totalNetRatioPct > 0D) {
+            score += 4D;
+        }
+        if (shortMarginRatioPct >= 15D && totalNetRatioPct > 0D) {
+            score += 3D;
+        }
+        if (volumeRatio >= 1.2D && totalNetRatioPct > 0D) {
+            score += 4D;
+        } else if (volumeRatio >= 1.8D && totalNetRatioPct < 0D) {
+            score -= 4D;
+        }
+        if (return20DayPct > 25D && totalNetRatioPct < 0D) {
+            score -= 5D;
+        }
+        if (brokerNetRatioPct > 0D && totalNetRatioPct > 0D) {
+            score += 3D;
+        } else if (brokerNetRatioPct < 0D && totalNetRatioPct < 0D) {
+            score -= 3D;
+        }
+        score = NumberParser.clamp(score, 0D, 100D);
+
+        String label;
+        if (score >= 82D) {
+            label = "官方資金強買";
+        } else if (score >= 68D) {
+            label = trustNetLots > 0L && foreignNetLots > 0L ? "法人同步偏多"
+                    : trustNetLots > 0L ? "投信主導" : foreignNetLots > 0L ? "外資主導" : "資金偏多";
+        } else if (score >= 55D) {
+            label = "中性偏多";
+        } else if (score >= 45D) {
+            label = "資金分歧";
+        } else if (score >= 30D) {
+            label = "資金偏空";
+        } else {
+            label = "法人撤退";
+        }
+        if (totalNetRatioPct <= 0D && marginBalanceDelta > 0L && marginUsagePct >= 30D) {
+            label = "融資推升";
+        }
+        String reason = "法人合計 " + formatSignedLots(totalNetLots) + " 張，占成交量 "
+                + format(totalNetRatioPct) + "%；外資 " + formatSignedLots(foreignNetLots)
+                + " 張、投信 " + formatSignedLots(trustNetLots) + " 張、自營 "
+                + formatSignedLots(dealerNetLots) + " 張";
+        if (brokerNetLots != 0L || brokerNetRatioPct != 0D) {
+            reason += "；Yahoo分點主力 " + formatSignedLots(brokerNetLots) + " 張，占比 "
+                    + format(brokerNetRatioPct) + "%";
+        }
+        if (marginUsagePct > 0D) {
+            reason += "；融資使用率 " + format(marginUsagePct) + "%，融資日增減 "
+                    + formatSignedLots(marginBalanceDelta) + " 張";
+        }
+        return new OfficialFundingProfile(score, label, reason, "TWSE T86");
+    }
+
     private double scoreLiquidity(double averageTradeValue20Billion, double averageLots20, double marketCapMillions) {
         double score = 0D;
 
@@ -3137,12 +3263,10 @@ public class TaiwanStockAnalyzer {
         return NumberParser.clamp(discount, 0.45D, 1D);
     }
 
-    private double computeFairValueEps(double trailingFourQuarterEps, double latestQuarterEps,
-            double previousQuarterEps) {
-        if (trailingFourQuarterEps == 0D && latestQuarterEps == 0D && previousQuarterEps == 0D) {
+    private double computeFairValueEps(double trailingFourQuarterEps, double twoQuarterAnnualizedEps) {
+        if (trailingFourQuarterEps == 0D && twoQuarterAnnualizedEps == 0D) {
             return 0D;
         }
-        double twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2D;
         if (trailingFourQuarterEps < 0D && twoQuarterAnnualizedEps > 0D) {
             return twoQuarterAnnualizedEps;
         }
@@ -4917,6 +5041,11 @@ public class TaiwanStockAnalyzer {
                     + formatSignedLots(result.getMarginBalanceDelta()) + " 張，資券比 "
                     + format(result.getShortMarginRatioPct()) + "%";
         }
+        if (result.getOfficialFundingSource() != null && result.getOfficialFundingSource().length() > 0) {
+            reason += "；官方資金力道 " + format(result.getOfficialFundingScore()) + " 分（"
+                    + emptyIfBlank(result.getOfficialFundingLabel(), "未分類") + "），"
+                    + emptyIfBlank(result.getOfficialFundingReason(), "官方資料不足");
+        }
         return reason;
     }
 
@@ -5265,8 +5394,14 @@ public class TaiwanStockAnalyzer {
         result.setFiveDayInstitutionalNetLots(row.fiveDayInstitutionalNetLots);
         result.setFiveDayInstitutionalNetRatioPct(row.fiveDayInstitutionalNetRatioPct);
         result.setLatestForeignNetLots(row.latestForeignNetLots);
+        result.setLatestTrustNetLots(row.latestTrustNetLots);
+        result.setLatestDealerNetLots(row.latestDealerNetLots);
         result.setBrokerNetLots(row.brokerNetLots);
         result.setBrokerNetRatioPct(row.brokerNetRatioPct);
+        result.setOfficialFundingScore(row.officialFundingScore);
+        result.setOfficialFundingLabel(row.officialFundingLabel);
+        result.setOfficialFundingReason(row.officialFundingReason);
+        result.setOfficialFundingSource(row.officialFundingSource);
         result.setMarginDataDate(row.marginDataDate);
         result.setPreviousMarginBalance(row.previousMarginBalance);
         result.setMarginBalance(row.marginBalance);
@@ -5452,11 +5587,17 @@ public class TaiwanStockAnalyzer {
                 && !bundle.getBalanceRecords().isEmpty() && !bundle.getCashFlowRecords().isEmpty();
     }
 
+    private boolean hasTwseOfficialFinancialData(FinancialDataBundle bundle) {
+        return bundle != null && (!bundle.getEpsRecords().isEmpty() || !bundle.getIncomeRecords().isEmpty()
+                || !bundle.getBalanceRecords().isEmpty());
+    }
+
     private boolean shouldFetchFinancialSupplement(LowFrequencyDataCache.Entry cacheEntry,
             List<MonthlyRevenueVO> revenues, List<EpsRecordVO> epsRecords, List<IncomeStatementRecordVO> incomeRecords,
             List<BalanceSheetRecordVO> balanceRecords, List<CashFlowRecordVO> cashFlowRecords,
             NewsSignalVO newsSignal) {
-        if (!finMindFinancialProvider.isEnabled() && !mopsFinancialProvider.isEnabled()) {
+        if (!twseOpenApiFinancialProvider.isEnabled() && !finMindFinancialProvider.isEnabled()
+                && !mopsFinancialProvider.isEnabled()) {
             return false;
         }
         if (parseBooleanProperty("stock.financialSupplement.always", false)) {
@@ -5487,6 +5628,10 @@ public class TaiwanStockAnalyzer {
     }
 
     private FinancialDataBundle fetchFinancialSupplement(TaiwanStockVO stock) {
+        FinancialDataBundle official = fetchFinancialSupplement(twseOpenApiFinancialProvider, stock);
+        if (official.hasFinancialData() || official.hasRevenueData()) {
+            return official;
+        }
         FinancialDataBundle bundle = fetchFinancialSupplement(finMindFinancialProvider, stock);
         if (bundle.hasFinancialData() || bundle.hasRevenueData()) {
             return bundle;
@@ -5546,6 +5691,101 @@ public class TaiwanStockAnalyzer {
         return false;
     }
 
+    private List<MonthlyRevenueVO> mergeMonthlyRevenueRecords(List<MonthlyRevenueVO> existing,
+            List<MonthlyRevenueVO> official) {
+        Map<String, MonthlyRevenueVO> byPeriod = new HashMap<String, MonthlyRevenueVO>();
+        if (existing != null) {
+            for (MonthlyRevenueVO row : existing) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        if (official != null) {
+            for (MonthlyRevenueVO row : official) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        List<MonthlyRevenueVO> merged = new ArrayList<MonthlyRevenueVO>(byPeriod.values());
+        Collections.sort(merged, new Comparator<MonthlyRevenueVO>() {
+            public int compare(MonthlyRevenueVO left, MonthlyRevenueVO right) {
+                return Integer.compare(monthPeriodRank(right.getPeriod()), monthPeriodRank(left.getPeriod()));
+            }
+        });
+        return merged;
+    }
+
+    private List<EpsRecordVO> mergeEpsRecords(List<EpsRecordVO> existing, List<EpsRecordVO> official) {
+        Map<String, EpsRecordVO> byPeriod = new HashMap<String, EpsRecordVO>();
+        if (existing != null) {
+            for (EpsRecordVO row : existing) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        if (official != null) {
+            for (EpsRecordVO row : official) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        List<EpsRecordVO> sorted = new ArrayList<EpsRecordVO>(byPeriod.values());
+        Collections.sort(sorted, new Comparator<EpsRecordVO>() {
+            public int compare(EpsRecordVO left, EpsRecordVO right) {
+                return Integer.compare(quarterPeriodRank(right.getPeriod()), quarterPeriodRank(left.getPeriod()));
+            }
+        });
+        List<EpsRecordVO> recomputed = new ArrayList<EpsRecordVO>();
+        for (EpsRecordVO row : sorted) {
+            EpsRecordVO previous = byPeriod.get(previousQuarterPeriod(row.getPeriod()));
+            EpsRecordVO lastYear = byPeriod.get(sameQuarterLastYearPeriod(row.getPeriod()));
+            recomputed.add(new EpsRecordVO(row.getPeriod(), row.getEps(),
+                    previous == null ? 0D : pctChange(row.getEps(), previous.getEps()),
+                    lastYear == null ? 0D : pctChange(row.getEps(), lastYear.getEps()), row.getAveragePrice()));
+        }
+        return recomputed;
+    }
+
+    private List<IncomeStatementRecordVO> mergeIncomeRecords(List<IncomeStatementRecordVO> existing,
+            List<IncomeStatementRecordVO> official) {
+        Map<String, IncomeStatementRecordVO> byPeriod = new HashMap<String, IncomeStatementRecordVO>();
+        if (existing != null) {
+            for (IncomeStatementRecordVO row : existing) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        if (official != null) {
+            for (IncomeStatementRecordVO row : official) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        List<IncomeStatementRecordVO> merged = new ArrayList<IncomeStatementRecordVO>(byPeriod.values());
+        Collections.sort(merged, new Comparator<IncomeStatementRecordVO>() {
+            public int compare(IncomeStatementRecordVO left, IncomeStatementRecordVO right) {
+                return Integer.compare(quarterPeriodRank(right.getPeriod()), quarterPeriodRank(left.getPeriod()));
+            }
+        });
+        return merged;
+    }
+
+    private List<BalanceSheetRecordVO> mergeBalanceRecords(List<BalanceSheetRecordVO> existing,
+            List<BalanceSheetRecordVO> official) {
+        Map<String, BalanceSheetRecordVO> byPeriod = new HashMap<String, BalanceSheetRecordVO>();
+        if (existing != null) {
+            for (BalanceSheetRecordVO row : existing) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        if (official != null) {
+            for (BalanceSheetRecordVO row : official) {
+                byPeriod.put(emptyIfBlank(row.getPeriod(), ""), row);
+            }
+        }
+        List<BalanceSheetRecordVO> merged = new ArrayList<BalanceSheetRecordVO>(byPeriod.values());
+        Collections.sort(merged, new Comparator<BalanceSheetRecordVO>() {
+            public int compare(BalanceSheetRecordVO left, BalanceSheetRecordVO right) {
+                return Integer.compare(quarterPeriodRank(right.getPeriod()), quarterPeriodRank(left.getPeriod()));
+            }
+        });
+        return merged;
+    }
+
     private String sourceLabel(String sourceName, String period) {
         String source = emptyIfBlank(sourceName, "");
         String dataPeriod = emptyIfBlank(period, "");
@@ -5583,10 +5823,22 @@ public class TaiwanStockAnalyzer {
         return candidateRank > 0 && candidateRank > currentRank;
     }
 
+    private boolean isSameOrNewerMonthPeriod(String candidate, String current) {
+        int candidateRank = monthPeriodRank(candidate);
+        int currentRank = monthPeriodRank(current);
+        return candidateRank > 0 && candidateRank >= currentRank;
+    }
+
     private boolean isNewerQuarterPeriod(String candidate, String current) {
         int candidateRank = quarterPeriodRank(candidate);
         int currentRank = quarterPeriodRank(current);
         return candidateRank > 0 && candidateRank > currentRank;
+    }
+
+    private boolean isSameOrNewerQuarterPeriod(String candidate, String current) {
+        int candidateRank = quarterPeriodRank(candidate);
+        int currentRank = quarterPeriodRank(current);
+        return candidateRank > 0 && candidateRank >= currentRank;
     }
 
     private int monthPeriodRank(String period) {
@@ -5618,6 +5870,51 @@ public class TaiwanStockAnalyzer {
         } catch (Exception ex) {
             return 0;
         }
+    }
+
+    private String previousQuarterPeriod(String period) {
+        int[] parts = parseQuarterPeriod(period);
+        if (parts == null) {
+            return "";
+        }
+        int year = parts[0];
+        int quarter = parts[1] - 1;
+        if (quarter <= 0) {
+            year -= 1;
+            quarter = 4;
+        }
+        return year + " Q" + quarter;
+    }
+
+    private String sameQuarterLastYearPeriod(String period) {
+        int[] parts = parseQuarterPeriod(period);
+        return parts == null ? "" : (parts[0] - 1) + " Q" + parts[1];
+    }
+
+    private int[] parseQuarterPeriod(String period) {
+        String text = emptyIfBlank(period, "").replace("財報", "").replace("FinMind", "").replace("Yahoo", "")
+                .replace("MOPS", "").trim();
+        try {
+            String[] parts = text.split("\\s+Q");
+            if (parts.length < 2) {
+                return null;
+            }
+            int year = Integer.parseInt(parts[0].trim());
+            int quarter = Integer.parseInt(parts[1].trim());
+            if (year <= 0 || quarter < 1 || quarter > 4) {
+                return null;
+            }
+            return new int[] { year, quarter };
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private double pctChange(double current, double previous) {
+        if (previous == 0D || Double.isNaN(current) || Double.isNaN(previous)) {
+            return 0D;
+        }
+        return (current - previous) * 100D / Math.abs(previous);
     }
 
     private boolean hasFinancialCache(LowFrequencyDataCache.Entry entry) {
@@ -6243,6 +6540,20 @@ public class TaiwanStockAnalyzer {
         private SellSignalProfile(double score, String label) {
             this.score = score;
             this.label = label;
+        }
+    }
+
+    private static class OfficialFundingProfile {
+        private final double score;
+        private final String label;
+        private final String reason;
+        private final String source;
+
+        private OfficialFundingProfile(double score, String label, String reason, String source) {
+            this.score = score;
+            this.label = label;
+            this.reason = reason;
+            this.source = source;
         }
     }
 
