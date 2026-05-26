@@ -501,6 +501,9 @@ td{padding:7px 9px;vertical-align:middle}
     <label class="flbl"><input type="checkbox" id="turnprofit" onchange="go()"> 轉虧為盈</label>
     <label class="flbl"><input type="checkbox" id="growthonly" onchange="go()"> 業績成長</label>
     <label class="flbl"><input type="checkbox" id="ebonly" onchange="go()"> 早期起漲</label>
+    <label class="flbl" title="近三月資金行情：主線產業、營收連續轉強、籌碼偏買、站上均線且尚未過熱"><input type="checkbox" id="capitalboom" onchange="go()"> 資金行情大漲股</label>
+    <label class="flbl"><input type="checkbox" id="insider30" onchange="go()"> 內部人：近30天申轉</label>
+    <label class="flbl" title="需有上一期集保資料才會判斷是否上升"><input type="checkbox" id="big1000up" onchange="go()"> 千張戶：持有人數上升</label>
     <label class="flbl"><input type="checkbox" id="wonly" onchange="go()"> 僅目前群組自選</label>
     <div class="group-tools">
       <span class="group-lbl">自選群組</span>
@@ -1059,6 +1062,30 @@ function optionalNumberFromText(text, pattern) {
   return match ? Number(match[1].replace(/,/g, '')) : NaN;
 }
 
+function revenueMetricsOf(s) {
+  return {
+    latest: firstFiniteNumber(
+      s.latestRevenueYoYPct,
+      s.latestRevenueYoY,
+      numberFromText(s.revenueReason, /最新月營收年增\s*([+-]?\d+(?:\.\d+)?)%/)
+    ),
+    avg3: firstFiniteNumber(
+      s.averageThreeMonthRevenueYoY,
+      s.avgThreeMonthRevenueYoY,
+      numberFromText(s.revenueReason, /近\s*3\s*月平均年增\s*([+-]?\d+(?:\.\d+)?)/)
+    ),
+    accumulated: firstFiniteNumber(
+      s.accumulatedRevenueYoY,
+      s.accumulatedRevenueYoYPct,
+      numberFromText(s.revenueReason, /累計年增\s*([+-]?\d+(?:\.\d+)?)%/)
+    ),
+    positiveMonths: firstFiniteNumber(
+      s.positiveRevenueMonths,
+      numberFromText(s.revenueReason, /正成長\s*(\d+)/)
+    )
+  };
+}
+
 function grossMarginPctOf(s) {
   const direct = Number(s?.grossMarginPct);
   if (Number.isFinite(direct) && Math.abs(direct) > 0.0001) return direct;
@@ -1292,6 +1319,90 @@ function isLaunchResonance(s) {
   return !!profile.qualified && !profile.overheated;
 }
 
+function isCapitalBoomTheme(s) {
+  const text = [
+    s.industry, s.primaryTheme, s.themeTags, s.launchTags,
+    s.companySummary, s.transformationHint
+  ].filter(Boolean).join(' ');
+  return [
+    'AI', '半導體', '電子零組件', 'PCB', 'CCL', '玻纖', '銅箔', 'ABF', '載板',
+    'CoWoS', 'CoPoS', '先進封裝', '封測', '散熱', '液冷', 'BBU', '電源',
+    '矽光子', '光通訊', '800G', '1.6T', '記憶體', 'DRAM', 'NAND', '被動元件',
+    'MLCC', '電機', '機器人', '伺服器', 'HPC'
+  ].some(keyword => text.includes(keyword));
+}
+
+function capitalBoomProfile(s) {
+  const price = Number(s.price || 0);
+  const ma20 = Number(s.movingAverage20 || 0);
+  const ma60 = Number(s.movingAverage60 || 0);
+  const ret20 = Number(s.return20DayPct || 0);
+  const ret60 = Number(s.return60DayPct || 0);
+  const vol = Number(s.volumeRatio || 0);
+  const rsi = Number(s.rsi14 || 0);
+  const marginUsage = Number(s.marginUsagePct || 0);
+  const marginBalance = Number(s.marginBalance || 0);
+  const marginDelta = Number(s.marginBalanceDelta || 0);
+  const inst5 = Number(s.fiveDayInstitutionalNetRatioPct || 0);
+  const latestInst = Number(s.latestInstitutionalNetRatioPct || 0);
+  const broker = Number(s.brokerNetRatioPct || 0);
+  const revenue = revenueMetricsOf(s);
+  const reasons = [];
+  const missing = [];
+  function add(ok, text) { (ok ? reasons : missing).push(text); }
+
+  const theme = isCapitalBoomTheme(s);
+  const revenueGate = revenue.latest >= 20 && revenue.avg3 >= 15 && revenue.accumulated >= 10;
+  const revenueContinuity = revenue.positiveMonths >= 2 || revenue.avg3 >= 25;
+  const flow = inst5 > 0 || latestInst > 0 || broker > 0;
+  const trend = price > 0 && ma20 > 0 && ma60 > 0 && price >= ma20 && ma20 >= ma60;
+  const volume = vol >= 0.8 && vol <= 3.5;
+  const notOverheated = ret20 >= 0 && ret20 <= 30 && ret60 <= 90 && (rsi <= 0 || rsi < 78);
+  const marginNotHot = marginUsage <= 0 || marginUsage <= 35;
+  const marginDeltaOk = marginBalance <= 0 || marginDelta <= marginBalance * 0.08;
+  const quality = Number(s.dataConfidence || 0) >= 70 && Number(s.financialQualityScore || 0) >= 8;
+  const structure = ['平台突破', '回踩承接', '整理待確認'].includes(String(s.structureLabel || ''));
+
+  add(theme, '主線產業');
+  add(revenueGate, '營收三重轉強');
+  add(revenueContinuity, '營收具連續性');
+  add(flow, '法人/主力偏買');
+  add(trend, '站上 MA20/60');
+  add(volume, '量能可發動');
+  add(notOverheated, '尚未過熱');
+  add(marginNotHot && marginDeltaOk, '融資未失控');
+  add(quality, '資料/財報品質可用');
+  add(structure, '技術結構可發動');
+
+  const coreCount = [theme, revenueGate, flow, trend, volume, notOverheated].filter(Boolean).length;
+  const supportCount = [revenueContinuity, marginNotHot && marginDeltaOk, quality, structure].filter(Boolean).length;
+  let score = coreCount * 12 + supportCount * 7;
+  score += Math.min(10, Math.max(0, (revenue.latest - 20) / 6));
+  score += Math.min(8, Math.max(0, (revenue.avg3 - 15) / 6));
+  score += Math.min(8, Math.max(0, inst5 + latestInst + broker) / 2);
+  score -= Math.max(0, ret20 - 22) * 0.8;
+  score -= Math.max(0, marginUsage - 30) * 0.6;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  const qualified = coreCount === 6 && supportCount >= 3 && score >= 78;
+  const watchQualified = !qualified && coreCount >= 5 && supportCount >= 2 && score >= 68;
+  return {
+    qualified,
+    watchQualified,
+    label: qualified ? '資金行情大漲' : watchQualified ? '資金行情觀察' : '',
+    score,
+    coreCount,
+    supportCount,
+    reasons: reasons.slice(0, 5),
+    missing: missing.slice(0, 4)
+  };
+}
+
+function isCapitalBoomCandidate(s) {
+  const profile = s.capitalBoom || capitalBoomProfile(s);
+  return !!profile.qualified;
+}
+
 function buildLaunchTags(s) {
   const tags = splitTags(s.launchTags);
   const price = Number(s.price || 0);
@@ -1386,7 +1497,11 @@ async function init() {
       };
       const bearish = calcBearishProfile(normalized);
       const launchResonance = launchResonanceProfile(normalized);
-      const launchTags = buildLaunchTags({ ...normalized, launchResonance });
+      const baseLaunchTags = buildLaunchTags({ ...normalized, launchResonance });
+      const capitalBoom = capitalBoomProfile({ ...normalized, launchTags: baseLaunchTags, launchResonance });
+      const launchTags = capitalBoom.label
+        ? uniq([...splitTags(baseLaunchTags), capitalBoom.label]).join('、')
+        : baseLaunchTags;
       return {
         ...normalized,
         legacyScore: typeof s.legacyScore === 'number' ? s.legacyScore : s.score,
@@ -1401,6 +1516,8 @@ async function init() {
         launchTags,
         launchResonance,
         launchResonanceScore: launchResonance.score,
+        capitalBoom,
+        capitalBoomScore: capitalBoom.score,
         type:       ''  // will be set after scores computed
       };
     });
@@ -1996,6 +2113,9 @@ function go() {
   const turnprofit = document.getElementById('turnprofit').checked;
   const growthonly = document.getElementById('growthonly').checked;
   const ebonly = document.getElementById('ebonly').checked;
+  const capitalboom = document.getElementById('capitalboom').checked;
+  const insider30 = document.getElementById('insider30').checked;
+  const big1000up = document.getElementById('big1000up').checked;
   const wonly = document.getElementById('wonly').checked;
   const t     = S.activeTab;
 
@@ -2030,6 +2150,9 @@ function go() {
     stocks = stocks.filter(s => (turnprofit && isTurnToProfit(s)) || (growthonly && isRevenueGrowth(s)));
   }
   if (ebonly) stocks = stocks.filter(s => s.earlyBreakoutCandidate);
+  if (capitalboom) stocks = stocks.filter(isCapitalBoomCandidate);
+  if (insider30) stocks = stocks.filter(s => (s.insiderTransferCount30d || 0) > 0 || (s.insiderTransferLots30d || 0) > 0);
+  if (big1000up) stocks = stocks.filter(s => (s.holdersOver1000LotsDelta || 0) > 0);
   if (wonly) stocks = stocks.filter(s => S.wl.has(s.code));
 
   // 切換起漲/續攻 tab 時會預設改成篩選器分數；使用者點欄位後，必須尊重欄位排序。
@@ -2039,6 +2162,7 @@ function go() {
   if (t === 'prelaunch' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'buyPointScore';
   if (t === 'bearish' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'bearishScore';
   if (t === 'resonance' && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'launchResonanceScore';
+  if (capitalboom && (defaultKey === 'score' || defaultKey === 'earlyBreakoutScreenScore')) defaultKey = 'capitalBoomScore';
   stocks = [...stocks].sort((a, b) => {
     let va = a[defaultKey] ?? 0, vb = b[defaultKey] ?? 0;
     if (defaultKey === 'type') { va = typeOrder(a.type); vb = typeOrder(b.type); }
@@ -2056,7 +2180,7 @@ function reset() {
   ['mkt','ind','theme','launchTag'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('minscore').value = 0;
   document.getElementById('minscoreval').textContent = '0';
-  ['surge','max300','fairgap40','sup','multi','turnprofit','growthonly','ebonly','wonly'].forEach(id => document.getElementById(id).checked = false);
+  ['surge','max300','fairgap40','sup','multi','turnprofit','growthonly','ebonly','capitalboom','insider30','big1000up','wonly'].forEach(id => document.getElementById(id).checked = false);
   go();
 }
 
