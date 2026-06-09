@@ -86,15 +86,33 @@ public class TaiwanStockAnalyzer {
     private static final String DAILY_SNAPSHOT_DIRECTORY_NAME = "daily_snapshots";
     private static final String ANALYSIS_VERSION = "stage-cache-v1";
     private static final String[] POSITIVE_NEWS_KEYWORDS = { "營收", "訂單", "擴產", "漲價", "法說", "合作", "量產", "受惠",
-            "成長", "上修", "創高", "布局", "AI", "矽光子", "低軌", "衛星", "CoWoS", "散熱", "機器人" };
+            "成長", "上修", "創高", "布局", "AI", "矽光子", "低軌", "衛星", "CoWoS", "散熱", "機器人",
+            "接單", "新高", "翻倍", "爆量", "導入", "突破", "連增", "搶單", "超預期", "加速", "大增",
+            "轉盈", "獲利大增", "強勁", "暢旺", "庫藏股", "股利", "配息", "除息" };
     private static final String[] NEGATIVE_NEWS_KEYWORDS = { "下修", "虧損", "減資", "處分", "停工", "裁員", "違約", "訴訟",
-            "跌停", "示警", "衰退", "急凍", "砍單", "延後", "風險", "調查" };
-    private static final String[] CAUTION_NEWS_KEYWORDS = { "增資", "轉單", "震盪", "觀望", "波動", "修正", "不確定", "保守" };
+            "跌停", "示警", "衰退", "急凍", "砍單", "延後", "風險", "調查",
+            "保守", "不如預期", "低於預期", "展望不樂觀", "庫存去化", "需求疲軟", "客戶取消", "撤單",
+            "暫緩", "凍結", "中止", "終止合作", "罰款", "不確定", "挑戰", "壓力大" };
+    private static final String[] CAUTION_NEWS_KEYWORDS = { "增資", "轉單", "震盪", "觀望", "波動", "修正", "不確定", "保守",
+            "謹慎", "審慎", "持平", "持續觀察", "需觀察" };
     private static final String[] POSITIVE_EVENT_KEYWORDS = { "庫藏股", "買回", "法說", "上修", "接單", "訂單", "量產", "擴產",
-            "漲價", "股利", "配息", "除息", "合作", "受惠", "獲利", "增溫" };
+            "漲價", "股利", "配息", "除息", "合作", "受惠", "獲利", "增溫",
+            "轉盈", "新高", "超預期", "導入量產", "搶單", "布局", "強勁成長" };
     private static final String[] NEGATIVE_EVENT_KEYWORDS = { "現增", "私募", "訴訟", "處分資產", "減資", "虧損", "下修", "罰款",
-            "調查", "停工", "事故", "違約", "重整", "撤單" };
+            "調查", "停工", "事故", "違約", "重整", "撤單",
+            "不如預期", "低於預期", "展望保守", "砍單", "客戶流失", "需求疲軟", "庫存去化" };
     private static final String[] NEUTRAL_EVENT_KEYWORDS = { "董事會", "澄清", "說明", "公告", "決議", "召開", "更正" };
+    // 組合否決對：標題同時出現以下兩詞，則正向訊號翻轉為負向（權重 1.5）
+    private static final String[][] NEGATIVE_OVERRIDE_PAIRS = {
+            { "法說", "下修" }, { "法說", "低於" }, { "法說", "保守" }, { "法說", "不如" }, { "法說", "展望不樂觀" },
+            { "擴產", "延後" }, { "擴產", "暫緩" }, { "擴產", "凍結" },
+            { "訂單", "取消" }, { "訂單", "撤" }, { "接單", "不如" },
+            { "量產", "延遲" }, { "量產", "推遲" }, { "合作", "終止" }, { "合作", "中止" } };
+    // 組合加乘對：標題同時出現以下兩詞，正向分數額外加乘（×1.4）
+    private static final String[][] POSITIVE_BOOST_PAIRS = {
+            { "法說", "上修" }, { "法說", "超預期" }, { "法說", "創高" }, { "法說", "樂觀" },
+            { "接單", "創高" }, { "接單", "暴增" }, { "量產", "提前" }, { "量產", "超預期" },
+            { "AI", "受惠" }, { "AI", "布局" }, { "AI", "導入" } };
 
     private final TaiwanStockMarketProvider marketProvider = new TaiwanStockMarketProvider();
     private final YahooTaiwanStockService yahooService = new YahooTaiwanStockService();
@@ -906,6 +924,7 @@ public class TaiwanStockAnalyzer {
                 6);
         IndustryMetricsSnapshot industryMetrics = IndustryMetricsSnapshot.build(results);
         PeerFairValueSnapshot peerFairValues = PeerFairValueSnapshot.build(results);
+        MarketValuationContext marketValuationContext = buildMarketValuationContext(results);
         MarketRegime resolvedRegime = MarketRegimeResolver.resolve(results, historicalSnapshots, currentDateStamp(),
                 WATCHLIST_THRESHOLD, activeLikelyThreshold());
         activeMarketRegime = resolvedRegime;
@@ -915,6 +934,7 @@ public class TaiwanStockAnalyzer {
         for (StockAnalysisResultVO result : results) {
             applyIndustryRelativeScoring(result, industryMetrics);
             applyPeerFairValueComparison(result, peerFairValues);
+            applyLiquidityFairValueAdjustment(result, marketValuationContext);
             boolean selectionQualified = isSelectionQualified(result.getLiquidityScore(),
                     result.getFinancialQualityScore(), result.getVolumeRatio(), result.getDataConfidence());
             result.setSelectionQualified(selectionQualified);
@@ -1734,6 +1754,8 @@ public class TaiwanStockAnalyzer {
                 : chipSnapshotRow != null ? chipSnapshotRow.latestForeignNetLots : 0L;
         long latestTrustNetLots = !institutional.isEmpty() ? institutional.get(0).getTrustNetLots() : 0L;
         long latestDealerNetLots = !institutional.isEmpty() ? institutional.get(0).getDealerNetLots() : 0L;
+        long priorLatestInstitutionalNetLots = latestInstitutionalNetLots;
+        double priorLatestInstitutionalNetRatioPct = latestInstitutionalNetRatioPct;
         InstitutionalTradingDailyVO officialInstitutional = officialInstitutionalRowsByCode
                 .get(result.getStock().getCode());
         boolean hasOfficialInstitutional = officialInstitutional != null && officialInstitutional.getDate().length() > 0;
@@ -1747,6 +1769,19 @@ public class TaiwanStockAnalyzer {
                     : technical != null ? Math.round(technical.getCurrentVolume() / 1000D) : 0L;
             if (ratioVolume > 0L) {
                 latestInstitutionalNetRatioPct = NumberParser.ratioPercent(latestInstitutionalNetLots, ratioVolume);
+            }
+            if ((institutionWindow > 0 || chipSnapshotRow != null)
+                    && latestInstitutionalNetLots != priorLatestInstitutionalNetLots) {
+                long adjustedFiveDayInstitutionalNetLots = fiveDayInstitutionalNetLots
+                        - priorLatestInstitutionalNetLots + latestInstitutionalNetLots;
+                double adjustedFiveDayVolume = adjustedFiveDayVolume(fiveDayInstitutionalNetLots,
+                        fiveDayInstitutionalNetRatioPct, priorLatestInstitutionalNetLots,
+                        priorLatestInstitutionalNetRatioPct, ratioVolume);
+                fiveDayInstitutionalNetLots = adjustedFiveDayInstitutionalNetLots;
+                if (adjustedFiveDayVolume > 0D) {
+                    fiveDayInstitutionalNetRatioPct = NumberParser.ratioPercent(fiveDayInstitutionalNetLots,
+                            Math.round(adjustedFiveDayVolume));
+                }
             }
         }
         long brokerNetLots = chipSnapshotRow != null ? chipSnapshotRow.brokerNetLots : broker.getNetLots();
@@ -1987,10 +2022,12 @@ public class TaiwanStockAnalyzer {
         double twoQuarterAnnualizedEps = (latestQuarterEps + previousQuarterEps) * 2D;
         double fairValueEps = computeFairValueEps(trailingFourQuarterEps, twoQuarterAnnualizedEps);
         FairValueProfile fairValueProfile = buildFairValueProfile(currentPrice, industry, fairValueEps,
-                trailingFourQuarterEps, twoQuarterAnnualizedEps, peerAveragePe, latestQuarterEpsYoYPct,
-                averageThreeMonthRevenueYoY, returnOnEquityPct, bookValue, financialQualityScore, valuationScore, peg,
-                nonOperatingRatioPct, latestOperatingCashFlow, latestFreeCashFlow, positiveOperatingCashFlowQuarters,
-                positiveFreeCashFlowQuarters, debtRatioPct, currentRatio, selectionQualified, dataConfidence);
+                trailingFourQuarterEps, twoQuarterAnnualizedEps, peerAveragePe, latestRevenueYoY,
+                averageThreeMonthRevenueYoY, accumulatedRevenueYoY, positiveRevenueMonths, latestQuarterEpsYoYPct,
+                returnOnEquityPct, bookValue, financialQualityScore, valuationScore, peg, nonOperatingRatioPct,
+                latestOperatingCashFlow, latestFreeCashFlow, positiveOperatingCashFlowQuarters,
+                positiveFreeCashFlowQuarters, debtRatioPct, currentRatio, grossMarginPct, operatingMarginPct,
+                selectionQualified, dataConfidence);
         double buyPointScore = scoreBuyPointComposite(scoreBuyPointProfile(selectionScore, momentumScore, qualityScore, currentPrice,
                 movingAverage20, movingAverage60, movingAverage120, return20DayPct, volumeRatio, drawdownFromHigh60Pct,
                 rsi14, stochasticK, stochasticD, eventRisk.getPenalty(), selectionQualified,
@@ -2172,7 +2209,8 @@ public class TaiwanStockAnalyzer {
                 return60DayPct, volumeRatio, drawdownFromHigh60Pct, rsi14, averageThreeMonthRevenueYoY,
                 positiveRevenueMonths, latestQuarterEps, latestQuarterEpsYoYPct, financialQualityScore,
                 latestForeignNetLots, brokerNetLots, fiveDayInstitutionalNetLots, structureProfile.label,
-                selectionScore, buyPointScore, chipsScore, result.getPostCloseAction()));
+                selectionScore, buyPointScore, chipsScore, newsScore, newsRiskScore, industry,
+                themeMatch.primaryTheme, themeMatch.themeTags, themeMatch.themeScore, result.getPostCloseAction()));
         result.setAnalysisNote(buildAnalysisNote(result));
         result.setScoreReason(buildScoreReason(result));
         result.setRevenueReason(buildRevenueReason(result));
@@ -2189,28 +2227,53 @@ public class TaiwanStockAnalyzer {
             double rsi14, double averageThreeMonthRevenueYoY, int positiveRevenueMonths, double latestQuarterEps,
             double latestQuarterEpsYoYPct, double financialQualityScore, long latestForeignNetLots, long brokerNetLots,
             long fiveDayInstitutionalNetLots, String structureLabel, double selectionScore, double buyPointScore,
-            double chipsScore, String postCloseAction) {
+            double chipsScore, double newsScore, double newsRiskScore, String industry, String primaryTheme,
+            String themeTags, double themeScore, String postCloseAction) {
         List<String> tags = new ArrayList<String>();
-        boolean aboveTrend = currentPrice > 0D && movingAverage20 > 0D && movingAverage60 > 0D
-                && currentPrice >= movingAverage20 && movingAverage20 >= movingAverage60;
-        boolean healthyRsi = rsi14 >= 50D && rsi14 <= 70D;
-        boolean healthyVolume = volumeRatio >= 0.8D && volumeRatio <= 2.0D;
-        boolean earlyReturn = return20DayPct >= 3D && return20DayPct <= 30D;
-        boolean notOverheated = healthyRsi && healthyVolume && return20DayPct <= 30D;
+        boolean aboveMa20 = currentPrice > 0D && movingAverage20 > 0D && currentPrice >= movingAverage20;
+        boolean ma20AboveMa60 = movingAverage20 > 0D && movingAverage60 > 0D && movingAverage20 >= movingAverage60;
+        boolean aboveTrend = aboveMa20 && ma20AboveMa60;
+        boolean trendBase = aboveMa20 || ma20AboveMa60 || return60DayPct > 0D;
+        boolean healthyRsi = rsi14 <= 78D;
+        boolean healthyVolume = volumeRatio >= 0.5D && volumeRatio <= 3.2D;
+        boolean earlyReturn = return20DayPct >= 0D && return20DayPct <= 35D;
+        boolean notOverheated = healthyRsi && volumeRatio <= 3.2D && return20DayPct <= 35D
+                && drawdownFromHigh60Pct <= 1D;
         boolean healthyPullback = aboveTrend && drawdownFromHigh60Pct <= -2D && drawdownFromHigh60Pct >= -25D
                 && ("回踩承接".equals(structureLabel) || "整理待確認".equals(structureLabel));
+        // 近期大漲股的起漲點，最穩定的是營收/EPS支撐與未過熱；
+        // 技術、籌碼、新聞多是共振加分，不宜全部設成硬門檻。
         boolean fundamentalSupport = averageThreeMonthRevenueYoY > 5D && positiveRevenueMonths >= 2
                 && financialQualityScore >= MIN_SELECTION_FINANCIAL_SCORE
                 && (latestQuarterEps > 0D || latestQuarterEpsYoYPct > 0D);
-        boolean chipsNotWeak = latestForeignNetLots > 0L || brokerNetLots > 0L || fiveDayInstitutionalNetLots > 0L;
-        boolean hot = return20DayPct > 30D || rsi14 >= 75D || volumeRatio > 2.8D || drawdownFromHigh60Pct > -1D;
+        boolean flowNotWeak = fiveDayInstitutionalNetLots >= 0L || latestForeignNetLots > 0L || brokerNetLots > 0L
+                || chipsScore >= 10D;
+        boolean healthyConsolidation = drawdownFromHigh60Pct <= 1D && drawdownFromHigh60Pct >= -28D;
+        boolean constructiveStructure = "回踩承接".equals(structureLabel) || "整理待確認".equals(structureLabel)
+                || "平台突破".equals(structureLabel) || "結構未完成".equals(structureLabel);
+        boolean newsSupport = newsScore >= 50D && newsRiskScore < 70D;
+        boolean hotThemeSupport = isHotLaunchTheme(industry, primaryTheme, themeTags, themeScore, newsScore);
+        boolean excludedIndustry = isExcludedLaunchResonanceIndustry(industry);
+        boolean hot = return20DayPct > 35D || rsi14 >= 78D || volumeRatio > 3.2D || drawdownFromHigh60Pct > 1D;
 
         if (isPreLaunchMode(currentPrice, movingAverage20, movingAverage60, selectionScore, buyPointScore,
                 financialQualityScore, chipsScore, latestForeignNetLots, return20DayPct, return60DayPct, volumeRatio,
                 rsi14, drawdownFromHigh60Pct, structureLabel, postCloseAction)) {
             tags.add("起漲前夜");
         }
-        if (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak) {
+        int resonanceSupportCount = 0;
+        if (trendBase) resonanceSupportCount++;
+        if (flowNotWeak) resonanceSupportCount++;
+        if (constructiveStructure) resonanceSupportCount++;
+        if (buyPointScore >= 40D) resonanceSupportCount++;
+        if (selectionScore >= 35D) resonanceSupportCount++;
+        if (financialQualityScore >= 10D) resonanceSupportCount++;
+        if (healthyVolume) resonanceSupportCount++;
+        if (newsSupport) resonanceSupportCount++;
+        if (hotThemeSupport) resonanceSupportCount++;
+        // 起漲共振：必須是目前熱門題材，並排除傳產/材料/航運。
+        if (!excludedIndustry && hotThemeSupport && earlyReturn && notOverheated && fundamentalSupport && healthyConsolidation
+                && resonanceSupportCount >= 5) {
             tags.add("起漲共振");
         }
         if (healthyPullback) {
@@ -2231,6 +2294,12 @@ public class TaiwanStockAnalyzer {
         } else if (fiveDayInstitutionalNetLots > 0L) {
             tags.add("法人籌碼未轉弱");
         }
+        if (newsSupport) {
+            tags.add("新聞催化不負向");
+        }
+        if (hotThemeSupport && !excludedIndustry) {
+            tags.add("熱門題材");
+        }
         if (aboveTrend && return20DayPct >= 3D && return20DayPct <= 25D && return60DayPct > 10D
                 && drawdownFromHigh60Pct >= -6D && drawdownFromHigh60Pct <= 1D && !hot) {
             tags.add("強勢續攻");
@@ -2239,6 +2308,25 @@ public class TaiwanStockAnalyzer {
             tags.add("已過熱勿追");
         }
         return join(tags, "、");
+    }
+
+    private boolean isExcludedLaunchResonanceIndustry(String industry) {
+        return containsAnyKeyword(emptyIfBlank(industry, ""),
+                "航運", "海運", "空運", "貨櫃", "散裝", "運輸",
+                "水泥", "食品", "紡織", "百貨", "觀光", "貿易百貨", "居家生活",
+                "塑膠", "化學", "鋼鐵", "橡膠", "玻璃", "造紙", "建材", "營建",
+                "油電燃氣", "電器電纜", "汽車", "材料");
+    }
+
+    private boolean isHotLaunchTheme(String industry, String primaryTheme, String themeTags, double themeScore,
+            double newsScore) {
+        String theme = emptyIfBlank(primaryTheme, "");
+        String text = emptyIfBlank(industry, "") + " " + theme + " " + emptyIfBlank(themeTags, "");
+        boolean keywordHit = containsAnyKeyword(text,
+                "AI", "CoWoS", "CoPoS", "BBU", "散熱", "液冷", "CPO", "矽光子",
+                "半導體", "先進封裝", "記憶體", "軍工", "低軌衛星", "重電", "機器人",
+                "電源", "伺服器", "ASIC", "光通訊", "PCB", "載板");
+        return keywordHit && (themeScore >= 55D || newsScore >= 50D || !"一般".equals(theme));
     }
 
     private boolean isPreLaunchMode(double currentPrice, double movingAverage20, double movingAverage60,
@@ -2254,7 +2342,7 @@ public class TaiwanStockAnalyzer {
                 && selectionScore >= 70D
                 && buyPointScore >= 85D
                 && financialQualityScore >= 14D
-                && chipsScore >= 18D
+                && chipsScore >= 20D
                 && latestForeignNetLots > 0L
                 && return20DayPct >= 3D && return20DayPct <= 15D
                 && return60DayPct >= 20D
@@ -2320,11 +2408,35 @@ public class TaiwanStockAnalyzer {
                 boolean positive = containsAny(title, POSITIVE_EVENT_KEYWORDS);
                 boolean negative = containsAny(title, NEGATIVE_EVENT_KEYWORDS);
                 boolean neutral = containsAny(title, NEUTRAL_EVENT_KEYWORDS);
-                if (positive) {
-                    positiveScore += weight;
-                    appendEventTypes(types, title);
+                // 組合否決：標題同時含正向詞與負面修飾詞 → 翻轉為負向（如「法說+下修」）
+                if (positive && !negative) {
+                    for (String[] pair : NEGATIVE_OVERRIDE_PAIRS) {
+                        if (containsAll(title, pair)) {
+                            positive = false;
+                            negative = true;
+                            negativeScore += weight * 1.5D;
+                            appendEventTypes(types, title);
+                            break;
+                        }
+                    }
                 }
-                if (negative) {
+                // 組合加乘：標題同時含兩個明確正向詞 → 正向信心加乘（如「法說+上修」）
+                if (positive && !negative) {
+                    boolean boosted = false;
+                    for (String[] pair : POSITIVE_BOOST_PAIRS) {
+                        if (containsAll(title, pair)) {
+                            positiveScore += weight * 1.4D;
+                            appendEventTypes(types, title);
+                            boosted = true;
+                            break;
+                        }
+                    }
+                    if (!boosted) {
+                        positiveScore += weight;
+                        appendEventTypes(types, title);
+                    }
+                }
+                if (negative && !positive) {
                     negativeScore += weight;
                     appendEventTypes(types, title);
                 }
@@ -2438,6 +2550,18 @@ public class TaiwanStockAnalyzer {
             }
         }
         return false;
+    }
+
+    private boolean containsAll(String text, String[] keywords) {
+        if (text == null || text.length() == 0 || keywords == null || keywords.length == 0) {
+            return false;
+        }
+        for (String keyword : keywords) {
+            if (keyword == null || keyword.length() == 0 || !text.contains(keyword.toUpperCase())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void applyMarketThemeNewsMetadata(List<StockAnalysisResultVO> results) {
@@ -2974,12 +3098,13 @@ public class TaiwanStockAnalyzer {
     }
 
     private FairValueProfile buildFairValueProfile(double currentPrice, String industry, double fairValueEps,
-            double trailingEps, double twoQuarterAnnualizedEps, double peerAveragePe, double latestQuarterEpsYoYPct,
-            double averageThreeMonthRevenueYoY, double returnOnEquityPct, double bookValue,
-            double financialQualityScore, double valuationScore, double peg, double nonOperatingRatioPct,
-            long latestOperatingCashFlow, long latestFreeCashFlow, int positiveOperatingCashFlowQuarters,
-            int positiveFreeCashFlowQuarters, double debtRatioPct, double currentRatio, boolean selectionQualified,
-            double dataConfidence) {
+            double trailingEps, double twoQuarterAnnualizedEps, double peerAveragePe, double latestRevenueYoY,
+            double averageThreeMonthRevenueYoY, double accumulatedRevenueYoY, int positiveRevenueMonths,
+            double latestQuarterEpsYoYPct, double returnOnEquityPct, double bookValue, double financialQualityScore,
+            double valuationScore, double peg, double nonOperatingRatioPct, long latestOperatingCashFlow,
+            long latestFreeCashFlow, int positiveOperatingCashFlowQuarters, int positiveFreeCashFlowQuarters,
+            double debtRatioPct, double currentRatio, double grossMarginPct, double operatingMarginPct,
+            boolean selectionQualified, double dataConfidence) {
         if (currentPrice <= 0D) {
             return FairValueProfile.empty();
         }
@@ -2995,6 +3120,12 @@ public class TaiwanStockAnalyzer {
         double qualityDiscount = computeFairValueQualityDiscount(latestOperatingCashFlow, latestFreeCashFlow,
                 positiveOperatingCashFlowQuarters, positiveFreeCashFlowQuarters, debtRatioPct, currentRatio,
                 nonOperatingRatioPct, style, discountNotes);
+        List<String> forwardNotes = new ArrayList<String>();
+        double forwardMultiplier = computeSemiconductorForwardEpsMultiplier(industry, fairValueEps, latestRevenueYoY,
+                averageThreeMonthRevenueYoY, accumulatedRevenueYoY, positiveRevenueMonths, latestQuarterEpsYoYPct,
+                latestOperatingCashFlow, latestFreeCashFlow, returnOnEquityPct, nonOperatingRatioPct, grossMarginPct,
+                operatingMarginPct, forwardNotes);
+        double pricingEps = fairValueEps > 0D ? fairValueEps * forwardMultiplier : fairValueEps;
         double qualityPeCap = computeFairValuePeCap(style, discountNotes.size(), debtRatioPct, nonOperatingRatioPct,
                 latestOperatingCashFlow, latestFreeCashFlow);
         double regimeDiscount = 1D;
@@ -3009,7 +3140,7 @@ public class TaiwanStockAnalyzer {
         double peerWeight = "growth".equals(style) ? 0.50D : "stable".equals(style) ? 0.40D : 0.40D;
         double pegWeight = "growth".equals(style) ? 0.45D : "stable".equals(style) ? 0.20D : 0.25D;
         double pbWeight = "stable".equals(style) ? 0.40D : 0.25D;
-        if (fairValueEps > 0D && peerAveragePe > 0D) {
+        if (pricingEps > 0D && peerAveragePe > 0D) {
             double peerFactor = 1D;
             if (latestQuarterEpsYoYPct >= 25D) {
                 peerFactor += 0.08D;
@@ -3028,13 +3159,13 @@ public class TaiwanStockAnalyzer {
             double peCap = Math.min(36D, qualityPeCap);
             double targetPe = NumberParser.clamp(peerAveragePe * peerFactor * regimeDiscount * qualityDiscount,
                     peFloor, peCap);
-            double peerValue = fairValueEps * targetPe;
+            double peerValue = pricingEps * targetPe;
             coreValues.add(Double.valueOf(peerValue));
             coreWeights.add(Double.valueOf(peerWeight));
             methodNotes.add("同業PE " + format(targetPe) + "倍");
         }
 
-        if (fairValueEps > 0D && latestQuarterEpsYoYPct > 0D) {
+        if (pricingEps > 0D && latestQuarterEpsYoYPct > 0D) {
             double targetPeg = "growth".equals(style) ? 0.95D : "stable".equals(style) ? 0.8D : 0.7D;
             if (financialQualityScore >= 15D) {
                 targetPeg += 0.05D;
@@ -3046,7 +3177,7 @@ public class TaiwanStockAnalyzer {
             double peFloor = 10D;
             double peCap = Math.min(40D, qualityPeCap + 2D);
             double targetPe = NumberParser.clamp(latestQuarterEpsYoYPct * targetPeg, peFloor, peCap);
-            double pegValue = fairValueEps * targetPe;
+            double pegValue = pricingEps * targetPe;
             coreValues.add(Double.valueOf(pegValue));
             coreWeights.add(Double.valueOf(pegWeight));
             methodNotes.add("PEG 推估 " + format(targetPe) + "倍");
@@ -3060,7 +3191,7 @@ public class TaiwanStockAnalyzer {
                 justifiedPb *= 0.94D;
             }
             double pbValue = bookValue * justifiedPb;
-            boolean recoveryPriced = fairValueEps <= 0D && (latestQuarterEpsYoYPct > 0D || averageThreeMonthRevenueYoY > 0D);
+            boolean recoveryPriced = pricingEps <= 0D && (latestQuarterEpsYoYPct > 0D || averageThreeMonthRevenueYoY > 0D);
             if (("growth".equals(style) && !coreValues.isEmpty())
                     || (recoveryPriced && pbValue < currentPrice * 0.6D)) {
                 supportNotes.add("PB/ROE " + format(justifiedPb) + "倍僅作資產面輔助");
@@ -3071,7 +3202,7 @@ public class TaiwanStockAnalyzer {
             }
         }
 
-        if (coreValues.isEmpty() && fairValueEps <= 0D
+        if (coreValues.isEmpty() && pricingEps <= 0D
                 && (latestQuarterEpsYoYPct > 0D || averageThreeMonthRevenueYoY > 0D)) {
             double recoveryFactor = 0.92D;
             if (latestQuarterEpsYoYPct > 0D) {
@@ -3099,11 +3230,12 @@ public class TaiwanStockAnalyzer {
         }
 
         if (coreValues.isEmpty()) {
-            double gapPct = currentPrice > 0D && fairValueEps > 0D ? (fairValueEps - currentPrice) * 100D / currentPrice
+            double gapPct = currentPrice > 0D && pricingEps > 0D ? (pricingEps - currentPrice) * 100D / currentPrice
                     : 0D;
-            String epsText = buildFairValueEpsText(fairValueEps, trailingEps, twoQuarterAnnualizedEps);
+            String epsText = buildFairValueEpsText(pricingEps, trailingEps, twoQuarterAnnualizedEps, fairValueEps,
+                    forwardMultiplier);
             List<String> blockedReasons = new ArrayList<String>();
-            if (fairValueEps <= 0D) {
+            if (pricingEps <= 0D) {
                 blockedReasons.add("估值EPS仍為負或不足");
             }
             if (peerAveragePe <= 0D) {
@@ -3170,26 +3302,86 @@ public class TaiwanStockAnalyzer {
         basePrice = NumberParser.clamp(basePrice, lowPrice, highPrice);
 
         double gapPct = currentPrice > 0D ? (basePrice - currentPrice) * 100D / currentPrice : 0D;
-        String method = fairValueEps <= 0D && !methodNotes.isEmpty() && methodNotes.get(0).indexOf("復甦期市場定價") >= 0
+        String method = pricingEps <= 0D && !methodNotes.isEmpty() && methodNotes.get(0).indexOf("復甦期市場定價") >= 0
                 ? "復甦期參考估值"
                 : "growth".equals(style) ? "成長混合估值" : "stable".equals(style) ? "品質資產混合估值"
                 : "均衡混合估值";
         String supportText = supportNotes.isEmpty() ? "" : "；" + joinReasonNotes(supportNotes);
         String discountText = discountNotes.isEmpty() ? "" : "；折價：" + joinReasonNotes(discountNotes);
-        String epsText = buildFairValueEpsText(fairValueEps, trailingEps, twoQuarterAnnualizedEps);
+        String forwardText = forwardNotes.isEmpty() ? "" : "；forward調整：" + joinReasonNotes(forwardNotes);
+        String epsText = buildFairValueEpsText(pricingEps, trailingEps, twoQuarterAnnualizedEps, fairValueEps,
+                forwardMultiplier);
         String reason = epsText + "；以 " + joinReasonNotes(methodNotes) + " 綜合估算" + supportText
-                + discountText + "，合理價中位 " + format(basePrice) + "，相對現價 " + formatSigned(gapPct)
+                + forwardText + discountText + "，合理價中位 " + format(basePrice) + "，相對現價 " + formatSigned(gapPct)
                 + "%，信心 " + format(confidence) + " 分";
         return new FairValueProfile(lowPrice, basePrice, highPrice, confidence, method, reason);
     }
 
-    private String buildFairValueEpsText(double fairValueEps, double trailingEps, double twoQuarterAnnualizedEps) {
+    private String buildFairValueEpsText(double pricingEps, double trailingEps, double twoQuarterAnnualizedEps,
+            double baseFairValueEps, double forwardMultiplier) {
+        String prefix = "估值EPS " + format(pricingEps);
+        if (forwardMultiplier > 1.0001D && baseFairValueEps > 0D) {
+            prefix += "（基礎 " + format(baseFairValueEps) + "×forward " + format(forwardMultiplier) + "）";
+        }
         if (trailingEps < 0D && twoQuarterAnnualizedEps > 0D) {
-            return "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
+            return prefix + "（近四季 " + format(trailingEps)
                     + " 為負，改用近兩季年化 " + format(twoQuarterAnnualizedEps) + "）";
         }
-        return "估值EPS " + format(fairValueEps) + "（近四季 " + format(trailingEps)
+        return prefix + "（近四季 " + format(trailingEps)
                 + "×40% + 近兩季年化 " + format(twoQuarterAnnualizedEps) + "×60%）";
+    }
+
+    private double computeSemiconductorForwardEpsMultiplier(String industry, double fairValueEps, double latestRevenueYoY,
+            double averageThreeMonthRevenueYoY, double accumulatedRevenueYoY, int positiveRevenueMonths,
+            double latestQuarterEpsYoYPct, long latestOperatingCashFlow, long latestFreeCashFlow,
+            double returnOnEquityPct, double nonOperatingRatioPct, double grossMarginPct, double operatingMarginPct,
+            List<String> notes) {
+        if (fairValueEps <= 0D || !containsAnyKeyword(industry, "半導體", "IC測試", "IC封裝", "封測")) {
+            return 1D;
+        }
+        if (latestRevenueYoY < 20D || averageThreeMonthRevenueYoY < 15D || accumulatedRevenueYoY < 10D
+                || positiveRevenueMonths < 2 || latestQuarterEpsYoYPct < 0D || latestOperatingCashFlow <= 0L
+                || nonOperatingRatioPct > 25D || grossMarginPct <= 0D || operatingMarginPct <= 0D) {
+            return 1D;
+        }
+
+        double boost = 0D;
+        boost += Math.min(0.10D, Math.max(0D, (averageThreeMonthRevenueYoY - 15D) / 100D * 0.5D));
+        boost += Math.min(0.05D, Math.max(0D, (accumulatedRevenueYoY - 10D) / 100D * 0.3D));
+        if (latestQuarterEpsYoYPct > 10D) {
+            boost += 0.03D;
+        }
+        if (operatingMarginPct >= 10D) {
+            boost += 0.02D;
+        }
+
+        List<String> haircuts = new ArrayList<String>();
+        if (latestFreeCashFlow < 0L) {
+            boost *= 0.70D;
+            haircuts.add("自由現金流為負打折");
+        }
+        if (returnOnEquityPct > 0D && returnOnEquityPct < 5D) {
+            boost *= 0.80D;
+            haircuts.add("ROE偏低打折");
+        }
+        if (nonOperatingRatioPct > 15D) {
+            boost *= 0.85D;
+            haircuts.add("非營業依賴偏高打折");
+        }
+        if (operatingMarginPct < 5D) {
+            boost *= 0.80D;
+            haircuts.add("營益率偏低打折");
+        }
+
+        boost = NumberParser.clamp(boost, 0D, 0.18D);
+        if (boost <= 0D) {
+            return 1D;
+        }
+        notes.add("半導體營收連續轉強上修EPS " + format(boost * 100D) + "%");
+        if (!haircuts.isEmpty()) {
+            notes.add(joinReasonNotes(haircuts));
+        }
+        return 1D + boost;
     }
 
     private double computeFairValuePeCap(String style, int discountRiskCount, double debtRatioPct,
@@ -4199,6 +4391,146 @@ public class TaiwanStockAnalyzer {
                 || (result.getPeg() > 0D && result.getPeg() <= 1.2D);
     }
 
+    private MarketValuationContext buildMarketValuationContext(List<StockAnalysisResultVO> results) {
+        double currentTurnover = 0D;
+        double averageTurnover = 0D;
+        int count = 0;
+        if (results != null) {
+            for (StockAnalysisResultVO result : results) {
+                if (result == null || result.getAverageTradeValue20Billion() <= 0D) {
+                    continue;
+                }
+                averageTurnover += result.getAverageTradeValue20Billion();
+                double volumeRatio = result.getVolumeRatio() > 0D ? result.getVolumeRatio() : 1D;
+                currentTurnover += result.getAverageTradeValue20Billion() * volumeRatio;
+                count++;
+            }
+        }
+        double ratio = averageTurnover > 0D ? currentTurnover / averageTurnover : 1D;
+        double factor = 1D;
+        if (currentTurnover >= 12000D) {
+            factor = 1.10D;
+        } else if (currentTurnover >= 9000D) {
+            factor = 1.08D;
+        } else if (currentTurnover >= 7000D) {
+            factor = 1.05D;
+        } else if (currentTurnover >= 5000D) {
+            factor = 1.02D;
+        } else if (currentTurnover > 0D && currentTurnover <= 3000D) {
+            factor = 0.96D;
+        }
+        if (ratio >= 1.30D) {
+            factor += 0.01D;
+        } else if (ratio <= 0.75D) {
+            factor -= 0.02D;
+        }
+        factor = NumberParser.clamp(factor, 0.94D, 1.12D);
+        return new MarketValuationContext(currentTurnover, averageTurnover, ratio, factor, count);
+    }
+
+    private void applyLiquidityFairValueAdjustment(StockAnalysisResultVO result, MarketValuationContext context) {
+        if (result == null || context == null || result.getFairValueBase() <= 0D || result.getCurrentPrice() <= 0D) {
+            return;
+        }
+        double baseToPrice = result.getFairValueBase() / result.getCurrentPrice();
+        double marketFactor = context.marketFactor;
+        if (marketFactor > 1D) {
+            if (baseToPrice > 1.80D) {
+                marketFactor = 1D;
+            } else if (baseToPrice > 1.30D) {
+                marketFactor = Math.min(marketFactor, 1.04D);
+            }
+            if (result.getFinancialQualityScore() < 8D || result.getDataConfidence() < 70D) {
+                marketFactor = Math.min(marketFactor, 1.02D);
+            }
+        }
+        double stockFactor = 1D;
+        double averageTradeValue = result.getAverageTradeValue20Billion();
+        if (averageTradeValue >= 20D) {
+            stockFactor += 0.04D;
+        } else if (averageTradeValue >= 10D) {
+            stockFactor += 0.03D;
+        } else if (averageTradeValue >= 5D) {
+            stockFactor += 0.02D;
+        } else if (averageTradeValue >= 1D) {
+            stockFactor += 0.01D;
+        } else if (averageTradeValue > 0D && averageTradeValue < 0.3D) {
+            stockFactor -= 0.03D;
+        }
+        if (result.getVolumeRatio() >= 0.8D && result.getVolumeRatio() <= 1.8D) {
+            stockFactor += 0.01D;
+        } else if (result.getVolumeRatio() > 3D) {
+            stockFactor -= 0.02D;
+        }
+
+        boolean overheated = result.getReturn20DayPct() > 30D && result.getVolumeRatio() > 2D;
+        if (overheated) {
+            stockFactor -= 0.03D;
+        }
+        if (result.getMarginBalance() > 0L && result.getMarginBalanceDelta() > result.getMarginBalance() * 0.08D) {
+            stockFactor -= 0.02D;
+        }
+        if (baseToPrice > 1.50D && stockFactor > 1D) {
+            stockFactor = 1D;
+        }
+        stockFactor = NumberParser.clamp(stockFactor, 0.94D, 1.06D);
+
+        double totalFactor = NumberParser.clamp(marketFactor * stockFactor, 0.90D, 1.18D);
+        if (Math.abs(totalFactor - 1D) < 0.005D) {
+            return;
+        }
+
+        double oldBase = result.getFairValueBase();
+        double low = result.getFairValueLow() > 0D ? result.getFairValueLow() * totalFactor : oldBase * totalFactor * 0.88D;
+        double base = oldBase * totalFactor;
+        double high = result.getFairValueHigh() > 0D ? result.getFairValueHigh() * totalFactor : base * 1.12D;
+        double confidence = result.getFairValueConfidence();
+        if (marketFactor > 1.03D) {
+            confidence += 1D;
+        }
+        if (stockFactor > 1.02D) {
+            confidence += 1D;
+        }
+        if (overheated) {
+            confidence -= 4D;
+            high = Math.min(high, base * 1.10D);
+        }
+        confidence = NumberParser.clamp(confidence, 35D, 92D);
+        low = NumberParser.clamp(low, 0D, base);
+        high = Math.max(base, high);
+        double gapPct = (base - result.getCurrentPrice()) * 100D / result.getCurrentPrice();
+
+        result.setFairValueLow(low);
+        result.setFairValueBase(base);
+        result.setFairValueHigh(high);
+        result.setFairValueConfidence(confidence);
+        String method = result.getFairValueMethod();
+        if (method == null || method.trim().length() == 0) {
+            method = "資金水位調整估值";
+        } else if (!method.contains("資金水位")) {
+            method = method + "+資金水位";
+        }
+        result.setFairValueMethod(method);
+
+        String reason = result.getFairValueReason();
+        if (reason == null) {
+            reason = "";
+        }
+        reason = reason.replaceAll("合理價中位 [-+0-9.]+，相對現價 [-+0-9.]+%",
+                "合理價中位 " + format(base) + "，相對現價 " + formatSigned(gapPct) + "%");
+        reason = reason.replaceAll("信心 [-+0-9.]+ 分", "信心 " + format(confidence) + " 分");
+        reason += "；資金水位調整：全市場估算成交值 " + format(context.currentTurnoverBillion)
+                + " 億元、20日均量比 " + format(context.turnoverRatio) + "，市場因子 "
+                + format(marketFactor) + "；個股20日均額 " + format(averageTradeValue) + " 億元、量比 "
+                + format(result.getVolumeRatio()) + "，流動性因子 " + format(stockFactor);
+        if (overheated) {
+            reason += "，短線過熱限制樂觀價";
+        }
+        reason += "，合計調整 " + formatSigned((totalFactor - 1D) * 100D) + "%；資金調整後三情境：保守 "
+                + format(low) + " / 基準 " + format(base) + " / 樂觀 " + format(high);
+        result.setFairValueReason(reason);
+    }
+
     private void applyFairValueBacktestCalibration(StockAnalysisResultVO result) {
         if (result == null || result.getFairValueBase() <= 0D || result.getFairValueConfidence() <= 0D
                 || result.getBacktestCohort() == null || result.getBacktestCohort().length() == 0
@@ -4304,6 +4636,17 @@ public class TaiwanStockAnalyzer {
             total += daily.get(i).getVolume();
         }
         return total;
+    }
+
+    private double adjustedFiveDayVolume(long fiveDayNetLots, double fiveDayRatioPct, long priorLatestNetLots,
+            double priorLatestRatioPct, long currentVolumeLots) {
+        if (fiveDayRatioPct == 0D || priorLatestRatioPct == 0D || currentVolumeLots <= 0L) {
+            return 0D;
+        }
+        double fiveDayVolume = Math.abs(fiveDayNetLots * 100D / fiveDayRatioPct);
+        double priorLatestVolume = Math.abs(priorLatestNetLots * 100D / priorLatestRatioPct);
+        double adjusted = fiveDayVolume - priorLatestVolume + currentVolumeLots;
+        return adjusted > 0D ? adjusted : 0D;
     }
 
     private double sumTrailingEps(List<EpsRecordVO> epsRecords, int count) {
@@ -5936,8 +6279,8 @@ public class TaiwanStockAnalyzer {
         }
         LocalDate today = LocalDate.now(TAIPEI_ZONE);
         int day = today.getDayOfMonth();
-        // 月營收在次月 10 日前公告，5-9 日尚未有新資料；同天已收過就不重複
-        if (day < 10 || day > 15) {
+        // 月營收多在次月 5-10 日陸續公告；同天已收過就不重複。
+        if (day < 5 || day > 15) {
             return false;
         }
         return !isRefreshedToday(entry);
@@ -6530,6 +6873,23 @@ public class TaiwanStockAnalyzer {
 
         private static FairValueProfile unavailable(String reason) {
             return new FairValueProfile(0D, 0D, 0D, 0D, "暫不估值", reason);
+        }
+    }
+
+    private static class MarketValuationContext {
+        private final double currentTurnoverBillion;
+        private final double averageTurnoverBillion;
+        private final double turnoverRatio;
+        private final double marketFactor;
+        private final int sampleCount;
+
+        private MarketValuationContext(double currentTurnoverBillion, double averageTurnoverBillion,
+                double turnoverRatio, double marketFactor, int sampleCount) {
+            this.currentTurnoverBillion = currentTurnoverBillion;
+            this.averageTurnoverBillion = averageTurnoverBillion;
+            this.turnoverRatio = turnoverRatio;
+            this.marketFactor = marketFactor;
+            this.sampleCount = sampleCount;
         }
     }
 

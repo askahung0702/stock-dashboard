@@ -15,6 +15,8 @@ public class OfficialInstitutionalTradingService {
 
     private static final String TWSE_T86_URL =
             "https://www.twse.com.tw/rwd/zh/fund/T86?date=%s&selectType=ALLBUT0999&response=json";
+    private static final String TPEX_3INSTI_DAILY_TRADING_URL =
+            "https://www.tpex.org.tw/openapi/v1/tpex_3insti_daily_trading";
 
     private final HttpTextFetcher fetcher = new HttpTextFetcher();
     private final JSONParser parser = new JSONParser();
@@ -25,6 +27,7 @@ public class OfficialInstitutionalTradingService {
             return rowsByCode;
         }
         loadTwse(rowsByCode, tradeDate);
+        loadTpex(rowsByCode, tradeDate);
         return rowsByCode;
     }
 
@@ -53,11 +56,53 @@ public class OfficialInstitutionalTradingService {
         }
     }
 
+    private void loadTpex(Map<String, InstitutionalTradingDailyVO> rowsByCode, String tradeDate) {
+        try {
+            JSONArray data = (JSONArray) parser.parse(fetcher.fetchJson(TPEX_3INSTI_DAILY_TRADING_URL, 15000, 2));
+            int loaded = 0;
+            String skippedDate = "";
+            for (Object rowObj : data) {
+                if (!(rowObj instanceof JSONObject)) {
+                    continue;
+                }
+                JSONObject fields = (JSONObject) rowObj;
+                String rowDate = rocDateToAdDate(textAt(fields, "Date"));
+                if (!tradeDate.equals(rowDate)) {
+                    skippedDate = rowDate;
+                    continue;
+                }
+                String code = textAt(fields, "SecuritiesCompanyCode");
+                if (!NumberParser.isFourDigitStockCode(code)) {
+                    continue;
+                }
+                rowsByCode.put(code, parseTpexRow(fields, tradeDate));
+                loaded++;
+            }
+            if (loaded > 0) {
+                System.out.println("TPEX 3-insti daily trading loaded: " + loaded);
+            } else if (skippedDate.length() > 0) {
+                System.out.println("TPEX 3-insti daily trading skipped: latest " + skippedDate
+                        + " does not match requested " + tradeDate);
+            }
+        } catch (Exception ex) {
+            System.out.println("TPEX 3-insti daily trading unavailable: " + ex.getMessage());
+        }
+    }
+
     private InstitutionalTradingDailyVO parseTwseRow(JSONArray fields, String tradeDate) {
         long foreignNetLots = sharesToLots(longAt(fields, 4));
         long trustNetLots = sharesToLots(longAt(fields, 10));
         long dealerNetLots = sharesToLots(longAt(fields, 11));
         long totalNetLots = sharesToLots(longAt(fields, 18));
+        return new InstitutionalTradingDailyVO(toDateText(tradeDate), foreignNetLots, trustNetLots, dealerNetLots,
+                totalNetLots, 0D, 0D, 0L);
+    }
+
+    private InstitutionalTradingDailyVO parseTpexRow(JSONObject fields, String tradeDate) {
+        long foreignNetLots = sharesToLots(longAt(fields, "ForeignInvestorsInclude MainlandAreaInvestors-Difference"));
+        long trustNetLots = sharesToLots(longAt(fields, "SecuritiesInvestmentTrustCompanies-Difference"));
+        long dealerNetLots = sharesToLots(longAt(fields, "Dealers-Difference"));
+        long totalNetLots = sharesToLots(longAt(fields, "TotalDifference"));
         return new InstitutionalTradingDailyVO(toDateText(tradeDate), foreignNetLots, trustNetLots, dealerNetLots,
                 totalNetLots, 0D, 0D, 0L);
     }
@@ -75,11 +120,35 @@ public class OfficialInstitutionalTradingService {
         return NumberParser.parseLong(textAt(fields, index));
     }
 
+    private long longAt(JSONObject fields, String key) {
+        return NumberParser.parseLong(textAt(fields, key));
+    }
+
     private String textAt(JSONArray fields, int index) {
         if (fields == null || index < 0 || index >= fields.size()) {
             return "";
         }
         Object value = fields.get(index);
         return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private String textAt(JSONObject fields, String key) {
+        if (fields == null || key == null) {
+            return "";
+        }
+        Object value = fields.get(key);
+        return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private String rocDateToAdDate(String rocDate) {
+        if (rocDate == null || !rocDate.matches("\\d{7}")) {
+            return "";
+        }
+        try {
+            int year = Integer.parseInt(rocDate.substring(0, 3)) + 1911;
+            return String.valueOf(year) + rocDate.substring(3);
+        } catch (NumberFormatException ex) {
+            return "";
+        }
     }
 }

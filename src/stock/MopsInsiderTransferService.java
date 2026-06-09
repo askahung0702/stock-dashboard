@@ -1,6 +1,7 @@
 package stock;
 
 import java.io.OutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -25,19 +26,24 @@ public class MopsInsiderTransferService {
             "https://mops.twse.com.tw/mops/web/ajax_t56sb21");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
-    public List<InsiderTransferEventVO> fetchDaily(String tradeDate) {
+    public List<InsiderTransferEventVO> fetchDaily(String tradeDate) throws Exception {
         String normalizedDate = normalizeDate(tradeDate);
         List<InsiderTransferEventVO> events = new ArrayList<InsiderTransferEventVO>();
         if (normalizedDate.length() == 0) {
             return events;
         }
-        try {
-            String html = postForm(MOPS_TRANSFER_AJAX_URL, buildDailyPayload(normalizedDate), 20000);
-            events.addAll(parseEvents(normalizedDate, html));
-        } catch (Exception ex) {
-            System.out.println("MOPS insider transfer unavailable: " + ex.getMessage());
+        String html = postForm(MOPS_TRANSFER_AJAX_URL, buildDailyPayload(normalizedDate), 20000);
+        if (isSecurityBlocked(html)) {
+            throw new IOException("MOPS security block page returned");
         }
+        events.addAll(parseEvents(normalizedDate, html));
         return events;
+    }
+
+    private boolean isSecurityBlocked(String html) {
+        String text = html == null ? "" : html;
+        return text.contains("FOR SECURITY REASONS") || text.contains("\u5b89\u5168\u6027\u8003\u91cf")
+                || text.contains("\u932f\u8aa4\u4ee3\u78bc");
     }
 
     private String buildDailyPayload(String yyyymmdd) {

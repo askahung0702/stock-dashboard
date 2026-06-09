@@ -39,11 +39,19 @@ public class ShareholderInsiderDailyUpdate {
             System.out.println("TDCC shareholder distribution failed: " + ex.getMessage());
         }
 
-        List<InsiderTransferEventVO> insiderEvents = new MopsInsiderTransferService().fetchDaily(date);
-        database.upsertInsiderTransferEvents(insiderEvents);
-        savedRows += insiderEvents.size();
-        note = (note.length() == 0 ? "" : note + "; ") + "insider events=" + insiderEvents.size();
-        database.upsertDailyRunStatus(date, STAGE_NAME, savedRows > 0 ? "completed" : "unavailable", savedRows, note);
+        boolean insiderAvailable = true;
+        try {
+            List<InsiderTransferEventVO> insiderEvents = new MopsInsiderTransferService().fetchDaily(date);
+            database.upsertInsiderTransferEvents(insiderEvents);
+            savedRows += insiderEvents.size();
+            note = (note.length() == 0 ? "" : note + "; ") + "insider events=" + insiderEvents.size();
+        } catch (Exception ex) {
+            insiderAvailable = false;
+            note = (note.length() == 0 ? "" : note + "; ") + "insider failed: " + ex.getMessage();
+            System.out.println("MOPS insider transfer failed: " + ex.getMessage());
+        }
+        String status = savedRows > 0 ? (insiderAvailable ? "completed" : "partial") : "unavailable";
+        database.upsertDailyRunStatus(date, STAGE_NAME, status, savedRows, note);
         System.out.println("Shareholder/insider daily update saved: " + note);
     }
 

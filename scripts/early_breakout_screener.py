@@ -39,10 +39,24 @@ DEFAULT_MIN_SELECTION_GATE = 60.0
 DEFAULT_MIN_SCREEN_SCORE = 72.0
 DEFAULT_FOCUS_BUY_POINT = 75.0
 DEFAULT_STRICT_MIN_REVENUE_YOY = 5.0
-DEFAULT_STRICT_RETURN20_MIN = 3.0
-DEFAULT_STRICT_RETURN20_MAX = 30.0
-DEFAULT_STRICT_DRAWDOWN_MIN = -25.0
-DEFAULT_STRICT_DRAWDOWN_MAX = -2.0
+DEFAULT_STRICT_RETURN20_MIN = 0.0
+DEFAULT_STRICT_RETURN20_MAX = 35.0
+DEFAULT_STRICT_DRAWDOWN_MIN = -28.0
+DEFAULT_STRICT_DRAWDOWN_MAX = 1.0
+DEFAULT_STRICT_VOLUME_MIN = 0.5
+DEFAULT_STRICT_VOLUME_MAX = 3.2
+DEFAULT_STRICT_FLOW_FLOOR = -5.0
+HOT_THEME_KEYWORDS = (
+    "AI", "CoWoS", "CoPoS", "BBU", "散熱", "液冷", "CPO", "矽光子",
+    "半導體", "先進封裝", "記憶體", "軍工", "低軌衛星", "重電", "機器人",
+    "電源", "伺服器", "ASIC", "光通訊", "PCB", "載板",
+)
+EXCLUDED_RESONANCE_INDUSTRY_KEYWORDS = (
+    "航運", "海運", "空運", "貨櫃", "散裝", "運輸",
+    "水泥", "食品", "紡織", "百貨", "觀光", "貿易百貨", "居家生活",
+    "塑膠", "化學", "鋼鐵", "橡膠", "玻璃", "造紙", "建材", "營建",
+    "油電燃氣", "電器電纜", "汽車", "材料",
+)
 DEFAULT_CONTINUATION_RETURN20_MIN = 3.0
 DEFAULT_CONTINUATION_RETURN20_MAX = 25.0
 DEFAULT_CONTINUATION_RETURN60_MIN = 10.0
@@ -110,13 +124,23 @@ CONDITIONS = [
     },
     {
         "key": "healthy_volume",
-        "label": "量比介於 0.8 到 2.5",
-        "gate": "0.8 <= volume_ratio <= 2.5",
+        "label": "量比介於 0.5 到 3.2",
+        "gate": "0.5 <= volume_ratio <= 3.2",
     },
     {
         "key": "flow_support",
         "label": "法人/主力籌碼未明顯轉弱",
-        "gate": "five_day_institutional_net_ratio_pct > -2 OR broker_net_ratio_pct > 0",
+        "gate": "five_day_institutional_net_ratio_pct > -5 OR broker_net_ratio_pct > 0",
+    },
+    {
+        "key": "news_support",
+        "label": "新聞/題材有催化且風險不高",
+        "gate": "news_score >= 50 AND news_risk_score < 70",
+    },
+    {
+        "key": "hot_theme_support",
+        "label": "命中目前熱門題材，且非傳產/材料/航運",
+        "gate": "hot theme keyword/theme_score >= 55 AND excluded industry = false",
     },
     {
         "key": "eps_support",
@@ -131,7 +155,7 @@ CONDITIONS = [
     {
         "key": "not_overheated",
         "label": "未過熱",
-        "gate": "return_20d_pct <= 35 AND volume_ratio <= 3.5 AND drawdown_from_high60_pct <= 1 AND rsi14 < 78",
+        "gate": "return_20d_pct <= 35 AND volume_ratio <= 3.2 AND drawdown_from_high60_pct <= 1 AND rsi14 < 78",
     },
 ]
 
@@ -410,6 +434,35 @@ def resolve_default_study_window(dates):
     return dates[start_idx], dates[end_idx]
 
 
+def contains_any(text, keywords):
+    source = str(text or "").lower()
+    return any(str(keyword).lower() in source for keyword in keywords)
+
+
+def excluded_resonance_industry(row):
+    text = " ".join([sv(row, "industry"), sv(row, "company_summary")])
+    return contains_any(text, EXCLUDED_RESONANCE_INDUSTRY_KEYWORDS)
+
+
+def hot_theme_support(row):
+    theme = sv(row, "primary_theme").strip()
+    text = " ".join(
+        [
+            theme,
+            sv(row, "theme_tags"),
+            sv(row, "industry"),
+            sv(row, "event_type_summary"),
+            sv(row, "company_summary"),
+        ]
+    )
+    theme_score = fv(row, "theme_score", 0.0)
+    if excluded_resonance_industry(row):
+        return False
+    if theme and theme != "一般" and (theme_score >= 55 or contains_any(theme, HOT_THEME_KEYWORDS)):
+        return True
+    return contains_any(text, HOT_THEME_KEYWORDS) and fv(row, "news_score", 0.0) >= 50
+
+
 def condition_map(row):
     trailing_eps = fv(row, "trailing_eps", 0.0)
     trailing_pe = fv(row, "trailing_pe", 0.0)
@@ -429,9 +482,11 @@ def condition_map(row):
         "return20_pos": fv(row, "return_20d_pct", 0.0) > 0,
         "return60_pos": fv(row, "return_60d_pct", 0.0) > 0,
         "healthy_drawdown": -12.0 <= fv(row, "drawdown_from_high60_pct", -999.0) <= 1.0,
-        "healthy_volume": 0.8 <= fv(row, "volume_ratio", 0.0) <= 2.5,
-        "flow_support": fv(row, "five_day_institutional_net_ratio_pct", 0.0) > -2
+        "healthy_volume": DEFAULT_STRICT_VOLUME_MIN <= fv(row, "volume_ratio", 0.0) <= DEFAULT_STRICT_VOLUME_MAX,
+        "flow_support": fv(row, "five_day_institutional_net_ratio_pct", 0.0) > DEFAULT_STRICT_FLOW_FLOOR
         or fv(row, "broker_net_ratio_pct", 0.0) > 0,
+        "news_support": fv(row, "news_score", 0.0) >= 50 and fv(row, "news_risk_score", 0.0) < 70,
+        "hot_theme_support": hot_theme_support(row),
         "eps_support": iv(row, "positive_eps_quarters", 0) >= 2
         or fv(row, "latest_quarter_eps_yoy_pct", 0.0) > 0,
         "valuation_not_extreme": (
@@ -441,7 +496,7 @@ def condition_map(row):
             and trailing_pe <= peer_pe * 1.15
         ) or (0 < trailing_pe <= 35),
         "not_overheated": fv(row, "return_20d_pct", 0.0) <= 35
-        and fv(row, "volume_ratio", 0.0) <= 3.5
+        and fv(row, "volume_ratio", 0.0) <= DEFAULT_STRICT_VOLUME_MAX
         and fv(row, "drawdown_from_high60_pct", 0.0) <= 1.0
         and fv(row, "rsi14", 0.0) < 78,
     }
@@ -473,16 +528,28 @@ def gate_for_key(key):
 
 
 def strict_breakout_ready(row):
+    trend_count = sum(
+        [
+            fv(row, "current_price", 0.0) > fv(row, "ma20", 0.0) > 0,
+            fv(row, "ma20", 0.0) > fv(row, "ma60", 0.0) > 0,
+            fv(row, "ma60", 0.0) > fv(row, "ma120", 0.0) > 0,
+        ]
+    )
     return (
         fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
         and iv(row, "positive_revenue_months", 0) >= 2
-        and fv(row, "ma20", 0.0) > fv(row, "ma60", 0.0) > 0
+        and hot_theme_support(row)
+        and trend_count >= 1
         and DEFAULT_STRICT_RETURN20_MIN <= fv(row, "return_20d_pct", 0.0) <= DEFAULT_STRICT_RETURN20_MAX
-        and fv(row, "return_60d_pct", 0.0) > 0
         and DEFAULT_STRICT_DRAWDOWN_MIN
         <= fv(row, "drawdown_from_high60_pct", -999.0)
         <= DEFAULT_STRICT_DRAWDOWN_MAX
-        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+        and DEFAULT_STRICT_VOLUME_MIN <= fv(row, "volume_ratio", 0.0) <= DEFAULT_STRICT_VOLUME_MAX
+        and (
+            fv(row, "five_day_institutional_net_ratio_pct", 0.0) > DEFAULT_STRICT_FLOW_FLOOR
+            or fv(row, "broker_net_ratio_pct", 0.0) > 0
+        )
+        and fv(row, "news_risk_score", 0.0) < 70
     )
 
 
@@ -490,6 +557,7 @@ def strong_continuation_ready(row):
     return (
         fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
         and iv(row, "positive_revenue_months", 0) >= 2
+        and hot_theme_support(row)
         and fv(row, "current_price", 0.0) > fv(row, "ma20", 0.0) > fv(row, "ma60", 0.0) > 0
         and DEFAULT_CONTINUATION_RETURN20_MIN
         <= fv(row, "return_20d_pct", 0.0)
@@ -503,16 +571,28 @@ def strong_continuation_ready(row):
 
 
 def strict_breakout_ready_1854(row):
+    trend_count = sum(
+        [
+            fv(row, "current_price", 0.0) > fv(row, "ma18", 0.0) > 0,
+            fv(row, "ma18", 0.0) > fv(row, "ma54", 0.0) > 0,
+            fv(row, "ma60", 0.0) > fv(row, "ma120", 0.0) > 0,
+        ]
+    )
     return (
         fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
         and iv(row, "positive_revenue_months", 0) >= 2
-        and fv(row, "ma18", 0.0) > fv(row, "ma54", 0.0) > 0
+        and hot_theme_support(row)
+        and trend_count >= 1
         and DEFAULT_STRICT_RETURN20_MIN <= fv(row, "return_18d_pct", 0.0) <= DEFAULT_STRICT_RETURN20_MAX
-        and fv(row, "return_54d_pct", 0.0) > 0
         and DEFAULT_STRICT_DRAWDOWN_MIN
         <= fv(row, "drawdown_from_high60_pct", -999.0)
         <= DEFAULT_STRICT_DRAWDOWN_MAX
-        and fv(row, "broker_net_ratio_pct", 0.0) > 0
+        and DEFAULT_STRICT_VOLUME_MIN <= fv(row, "volume_ratio", 0.0) <= DEFAULT_STRICT_VOLUME_MAX
+        and (
+            fv(row, "five_day_institutional_net_ratio_pct", 0.0) > DEFAULT_STRICT_FLOW_FLOOR
+            or fv(row, "broker_net_ratio_pct", 0.0) > 0
+        )
+        and fv(row, "news_risk_score", 0.0) < 70
     )
 
 
@@ -520,6 +600,7 @@ def strong_continuation_ready_1854(row):
     return (
         fv(row, "avg_3m_revenue_yoy_pct", 0.0) > DEFAULT_STRICT_MIN_REVENUE_YOY
         and iv(row, "positive_revenue_months", 0) >= 2
+        and hot_theme_support(row)
         and fv(row, "current_price", 0.0) > fv(row, "ma18", 0.0) > fv(row, "ma54", 0.0) > 0
         and DEFAULT_CONTINUATION_RETURN20_MIN
         <= fv(row, "return_18d_pct", 0.0)
@@ -702,15 +783,20 @@ def build_review_summary(
         exclude_keys={"selection_qualified"},
     )
     strict_rule_lines = [
+        "早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運",
         f"早期起漲：近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
-        f"早期起漲：MA20 > MA60，20日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
-        f"早期起漲：距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%，broker 主力買超 > 0",
+        f"早期起漲：MA20/MA60/MA120 至少一項轉強，20日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        f"早期起漲：距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%，量比 {DEFAULT_STRICT_VOLUME_MIN:.1f}~{DEFAULT_STRICT_VOLUME_MAX:.1f}",
+        f"早期起漲：5日法人占比 > {DEFAULT_STRICT_FLOW_FLOOR:.0f}% 或 broker 主力買超，新聞風險 < 70",
         f"強勢續攻：股價 > MA20 > MA60，20日報酬介於 {DEFAULT_CONTINUATION_RETURN20_MIN:.0f}% 到 {DEFAULT_CONTINUATION_RETURN20_MAX:.0f}%",
         f"強勢續攻：60日報酬 > {DEFAULT_CONTINUATION_RETURN60_MIN:.0f}% ，距60日高點介於 {DEFAULT_CONTINUATION_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_CONTINUATION_DRAWDOWN_MAX:.0f}%",
     ]
     strict_rule_lines_1854 = [
+        "早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運",
         f"早期起漲：近3月平均營收年增 > {DEFAULT_STRICT_MIN_REVENUE_YOY:.0f}% 且正成長月 >= 2",
-        f"早期起漲：MA18 > MA54，18日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        f"早期起漲：MA18/MA54/MA120 至少一項轉強，18日報酬介於 {DEFAULT_STRICT_RETURN20_MIN:.0f}% 到 {DEFAULT_STRICT_RETURN20_MAX:.0f}%",
+        f"早期起漲：距60日高點回檔介於 {DEFAULT_STRICT_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_STRICT_DRAWDOWN_MAX:.0f}%，量比 {DEFAULT_STRICT_VOLUME_MIN:.1f}~{DEFAULT_STRICT_VOLUME_MAX:.1f}",
+        f"早期起漲：5日法人占比 > {DEFAULT_STRICT_FLOW_FLOOR:.0f}% 或 broker 主力買超，新聞風險 < 70",
         f"強勢續攻：股價 > MA18 > MA54，18日報酬介於 {DEFAULT_CONTINUATION_RETURN20_MIN:.0f}% 到 {DEFAULT_CONTINUATION_RETURN20_MAX:.0f}%",
         f"強勢續攻：54日報酬 > {DEFAULT_CONTINUATION_RETURN60_MIN:.0f}% ，距60日高點介於 {DEFAULT_CONTINUATION_DRAWDOWN_MIN:.0f}% 到 {DEFAULT_CONTINUATION_DRAWDOWN_MAX:.0f}%",
     ]

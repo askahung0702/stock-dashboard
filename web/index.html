@@ -780,6 +780,18 @@ function loadWatchGroups() {
 
 const initialWatchState = loadWatchGroups();
 
+const RESONANCE_EXCLUDED_INDUSTRY_KEYWORDS = [
+  '航運','海運','空運','貨櫃','散裝','運輸',
+  '水泥','食品','紡織','百貨','觀光','貿易百貨','居家生活',
+  '塑膠','化學','鋼鐵','橡膠','玻璃','造紙','建材','營建',
+  '油電燃氣','電器電纜','汽車','材料'
+];
+const RESONANCE_HOT_THEME_KEYWORDS = [
+  'AI','CoWoS','CoPoS','BBU','散熱','液冷','CPO','矽光子',
+  '半導體','先進封裝','記憶體','軍工','低軌衛星','重電','機器人',
+  '電源','伺服器','ASIC','光通訊','PCB','載板'
+];
+
 // ── State ─────────────────────────────────────────────────────────────────────
 const S = {
   all: [], filtered: [],
@@ -791,6 +803,7 @@ const S = {
   wl: new Set(),
   wlEntries: {},
   meta: {},
+  hotThemes: new Set(),
   earlyBreakout: { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' },
   rc: null, hc: null
 };
@@ -1136,6 +1149,43 @@ function hasBusinessKeyword(text, keywords) {
   return keywords.some(keyword => text.includes(keyword));
 }
 
+function containsAnyText(text, keywords) {
+  const haystack = String(text || '').toLowerCase();
+  return keywords.some(keyword => haystack.includes(String(keyword).toLowerCase()));
+}
+
+function resonanceThemeText(s) {
+  return [
+    s?.primaryTheme, s?.themeTags, s?.industry, s?.companySummary,
+    s?.eventTypeSummary
+  ].filter(Boolean).join(' ');
+}
+
+function isExcludedResonanceIndustry(s) {
+  return containsAnyText([s?.industry, s?.companySummary].filter(Boolean).join(' '), RESONANCE_EXCLUDED_INDUSTRY_KEYWORDS);
+}
+
+function hotThemeNamesFromMeta(meta) {
+  const names = new Set(RESONANCE_HOT_THEME_KEYWORDS);
+  (meta?.themes || []).forEach(t => {
+    const heat = Number(t?.heatScore || 0);
+    const alert = String(t?.alert || '');
+    const name = String(t?.name || '').trim();
+    if (name && name !== '一般' && (heat >= 55 || alert.includes('升溫'))) names.add(name);
+  });
+  return names;
+}
+
+function hasHotResonanceTheme(s) {
+  const theme = String(s?.primaryTheme || '').trim();
+  const text = resonanceThemeText(s);
+  if (theme && theme !== '一般' && (Number(s?.themeScore || 0) >= 55 || S.hotThemes.has(theme))) return true;
+  for (const hot of S.hotThemes) {
+    if (hot && containsAnyText(text, [hot])) return true;
+  }
+  return containsAnyText(text, RESONANCE_HOT_THEME_KEYWORDS) && Number(s?.newsScore || 0) >= 50;
+}
+
 function matchedBusinessTags(text) {
   const groups = [
     ['記憶體', ['記憶體','DRAM','NAND','Flash','快閃','模組','利基型記憶體','NOR','儲存']],
@@ -1259,11 +1309,15 @@ function launchResonanceProfile(s) {
   const pe = Number(s.trailingPe || 0);
   const peerPe = Number(s.peerAveragePe || 0);
   const structure = String(s.structureLabel || '');
+  const hotTheme = hasHotResonanceTheme(s);
+  const excludedIndustry = isExcludedResonanceIndustry(s);
 
   const subfeatures = [];
   const missing = [];
   function add(ok, label) { (ok ? subfeatures : missing).push(label); }
 
+  add(hotTheme, '熱門題材主線');
+  if (excludedIndustry) missing.push('排除傳產/材料/航運');
   const revenue = avgRev > 8 && latestRev > 0 && posRev >= 2;
   const earnings = eps > 0 && (epsYoy > 0 || epsQuarters >= 2 || Number(s.financialQualityScore || 0) >= 12);
   const flow = inst5 > -2 || latestInst > 0 || broker > 0;
@@ -1292,7 +1346,7 @@ function launchResonanceProfile(s) {
   add(buyPointOk, '買點分達標');
   add(qualityGate, '流動性/財報門檻');
 
-  const coreCount = [revenue, earnings, earlyTrend, earlyReturn, notHot].filter(Boolean).length;
+  const coreCount = [hotTheme, revenue, earnings, earlyTrend, earlyReturn, notHot].filter(Boolean).length;
   const supportCount = [flow, trend, volumeOk, structureOk, valuationOk, buyPointOk, qualityGate].filter(Boolean).length;
   const score = coreCount * 12 + supportCount * 7
     + Math.max(0, Math.min(14, avgRev / 6))
@@ -1300,8 +1354,8 @@ function launchResonanceProfile(s) {
     + Math.max(0, Math.min(8, inst5 / 3))
     - Math.max(0, ret20 - 18) * 0.6
     - Math.max(0, ret60 - 45) * 0.45;
-  const qualified = coreCount === 5 && supportCount >= 4;
-  const watchQualified = coreCount >= 4 && supportCount >= 3;
+  const qualified = !excludedIndustry && coreCount === 6 && supportCount >= 4;
+  const watchQualified = !excludedIndustry && coreCount >= 5 && supportCount >= 3;
   const overheated = ret20 > 30 || ret60 > 70 || vol > 3.5 || dd60 > -1 || rsi >= 78;
   const label = qualified ? '起漲共振' : (watchQualified ? '共振觀察' : '');
   return {
@@ -1312,6 +1366,8 @@ function launchResonanceProfile(s) {
     score: Math.max(0, Math.min(100, score)),
     coreCount,
     supportCount,
+    hotTheme,
+    excludedIndustry,
     subfeatures,
     missing
   };
@@ -1442,7 +1498,8 @@ function buildLaunchTags(s) {
   function addTag(tag) { if (tag && !tags.includes(tag)) tags.push(tag); }
   if (isPreLaunchMode(s)) addTag('起漲前夜');
   if (resonance.qualified) addTag('起漲共振');
-  else if (resonance.watchQualified || (aboveTrend && earlyReturn && notOverheated && fundamentalSupport && chipsNotWeak)) addTag('共振觀察');
+  else if (resonance.watchQualified) addTag('共振觀察');
+  if (resonance.subfeatures.includes('熱門題材主線')) addTag('熱門題材');
   if (resonance.subfeatures.includes('營收剛轉強') && resonance.subfeatures.includes('EPS/獲利支撐')) addTag('營收EPS共振');
   if (resonance.subfeatures.includes('籌碼未轉弱')) addTag('籌碼未轉弱');
   if (resonance.subfeatures.includes('站上 MA20/60') && resonance.subfeatures.includes('漲幅仍在初升段')) addTag('技術初升段');
@@ -1469,6 +1526,7 @@ async function init() {
       loadEarlyBreakout().catch(() => null)
     ]);
     const d = latestResp;
+    S.hotThemes = hotThemeNamesFromMeta(d);
 
     // 預計算短線/中線分
     S.all = (d.rows || []).map(s => {
@@ -2899,7 +2957,7 @@ function renderDB(s, history) {
       <div class="rsn-hdr">
         <span class="rsn-lbl" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">起漲共振</span>
         <span class="rsn-score" style="color:${launchResonance.qualified && !launchResonance.overheated ? 'var(--green)' : 'var(--yellow)'}">${launchResonance.score.toFixed(1)}分</span>
-        <span class="rsn-pct">核心 ${launchResonance.coreCount}/5｜輔助 ${launchResonance.supportCount}/7</span>
+        <span class="rsn-pct">核心 ${launchResonance.coreCount}/6｜輔助 ${launchResonance.supportCount}/7</span>
       </div>
       <div class="rsn-txt">
         已符合：${launchResonance.subfeatures.join('、') || '—'}<br>

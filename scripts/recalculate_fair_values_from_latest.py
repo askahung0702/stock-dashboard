@@ -65,6 +65,169 @@ def market_discount(payload):
     return 1.0
 
 
+def market_valuation_context(rows):
+    current_turnover = 0.0
+    average_turnover = 0.0
+    sample_count = 0
+    for row in rows or []:
+        avg_value = number(row.get("averageTradeValue20Billion"))
+        if avg_value <= 0:
+            continue
+        volume_ratio = number(row.get("volumeRatio"), 1.0)
+        if volume_ratio <= 0:
+            volume_ratio = 1.0
+        average_turnover += avg_value
+        current_turnover += avg_value * volume_ratio
+        sample_count += 1
+    turnover_ratio = current_turnover / average_turnover if average_turnover > 0 else 1.0
+    factor = 1.0
+    if current_turnover >= 12000:
+        factor = 1.10
+    elif current_turnover >= 9000:
+        factor = 1.08
+    elif current_turnover >= 7000:
+        factor = 1.05
+    elif current_turnover >= 5000:
+        factor = 1.02
+    elif 0 < current_turnover <= 3000:
+        factor = 0.96
+    if turnover_ratio >= 1.30:
+        factor += 0.01
+    elif turnover_ratio <= 0.75:
+        factor -= 0.02
+    return {
+        "current_turnover": current_turnover,
+        "average_turnover": average_turnover,
+        "turnover_ratio": turnover_ratio,
+        "market_factor": clamp(factor, 0.94, 1.12),
+        "sample_count": sample_count,
+    }
+
+
+def semiconductor_forward_eps_multiplier(industry, fair_value_eps, latest_revenue_yoy, avg_3m_revenue_yoy,
+                                         accumulated_revenue_yoy, positive_revenue_months, latest_eps_yoy,
+                                         latest_ocf, latest_fcf, roe, non_op, gross_margin, operating_margin):
+    if fair_value_eps <= 0 or not contains_any(industry, "半導體", "IC測試", "IC封裝", "封測"):
+        return 1.0, []
+    if (
+        latest_revenue_yoy < 20
+        or avg_3m_revenue_yoy < 15
+        or accumulated_revenue_yoy < 10
+        or positive_revenue_months < 2
+        or latest_eps_yoy < 0
+        or latest_ocf <= 0
+        or non_op > 25
+        or gross_margin <= 0
+        or operating_margin <= 0
+    ):
+        return 1.0, []
+
+    boost = 0.0
+    boost += min(0.10, max(0.0, (avg_3m_revenue_yoy - 15) / 100 * 0.5))
+    boost += min(0.05, max(0.0, (accumulated_revenue_yoy - 10) / 100 * 0.3))
+    if latest_eps_yoy > 10:
+        boost += 0.03
+    if operating_margin >= 10:
+        boost += 0.02
+
+    haircuts = []
+    if latest_fcf < 0:
+        boost *= 0.70
+        haircuts.append("自由現金流為負打折")
+    if 0 < roe < 5:
+        boost *= 0.80
+        haircuts.append("ROE偏低打折")
+    if non_op > 15:
+        boost *= 0.85
+        haircuts.append("非營業依賴偏高打折")
+    if operating_margin < 5:
+        boost *= 0.80
+        haircuts.append("營益率偏低打折")
+
+    boost = clamp(boost, 0.0, 0.18)
+    if boost <= 0:
+        return 1.0, []
+    notes = [f"半導體營收連續轉強上修EPS {fmt(boost * 100)}%"]
+    if haircuts:
+        notes.append("、".join(haircuts))
+    return 1.0 + boost, notes
+
+
+def apply_liquidity_adjustment(row, base_price, low_price, high_price, confidence, context):
+    current_price = number(row.get("price"))
+    if current_price <= 0 or base_price <= 0 or not context:
+        return base_price, low_price, high_price, confidence, "", False
+
+    base_to_price = base_price / current_price
+    market_factor = number(context.get("market_factor"), 1.0)
+    if market_factor > 1:
+        if base_to_price > 1.80:
+            market_factor = 1.0
+        elif base_to_price > 1.30:
+            market_factor = min(market_factor, 1.04)
+        if number(row.get("financialQualityScore")) < 8 or number(row.get("dataConfidence")) < 70:
+            market_factor = min(market_factor, 1.02)
+    stock_factor = 1.0
+    avg_value = number(row.get("averageTradeValue20Billion"))
+    if avg_value >= 20:
+        stock_factor += 0.04
+    elif avg_value >= 10:
+        stock_factor += 0.03
+    elif avg_value >= 5:
+        stock_factor += 0.02
+    elif avg_value >= 1:
+        stock_factor += 0.01
+    elif 0 < avg_value < 0.3:
+        stock_factor -= 0.03
+
+    volume_ratio = number(row.get("volumeRatio"))
+    if 0.8 <= volume_ratio <= 1.8:
+        stock_factor += 0.01
+    elif volume_ratio > 3:
+        stock_factor -= 0.02
+
+    overheated = number(row.get("return20DayPct")) > 30 and volume_ratio > 2
+    if overheated:
+        stock_factor -= 0.03
+    margin_balance = number(row.get("marginBalance"))
+    if margin_balance > 0 and number(row.get("marginBalanceDelta")) > margin_balance * 0.08:
+        stock_factor -= 0.02
+    if base_to_price > 1.50 and stock_factor > 1:
+        stock_factor = 1.0
+
+    stock_factor = clamp(stock_factor, 0.94, 1.06)
+    total_factor = clamp(market_factor * stock_factor, 0.90, 1.18)
+    if abs(total_factor - 1.0) < 0.005:
+        return base_price, low_price, high_price, confidence, "", False
+
+    old_base = base_price
+    low_price = (low_price if low_price > 0 else old_base * 0.88) * total_factor
+    base_price = old_base * total_factor
+    high_price = (high_price if high_price > 0 else old_base * 1.12) * total_factor
+    if market_factor > 1.03:
+        confidence += 1
+    if stock_factor > 1.02:
+        confidence += 1
+    if overheated:
+        confidence -= 4
+        high_price = min(high_price, base_price * 1.10)
+    confidence = clamp(confidence, 35, 92)
+    low_price = clamp(low_price, 0, base_price)
+    high_price = max(base_price, high_price)
+    note = (
+        f"；資金水位調整：全市場估算成交值 {fmt(context.get('current_turnover', 0))} 億元、"
+        f"20日均量比 {fmt(context.get('turnover_ratio', 1))}，市場因子 {fmt(market_factor)}；"
+        f"個股20日均額 {fmt(avg_value)} 億元、量比 {fmt(volume_ratio)}，流動性因子 {fmt(stock_factor)}"
+    )
+    if overheated:
+        note += "，短線過熱限制樂觀價"
+    note += (
+        f"，合計調整 {signed((total_factor - 1) * 100)}%；資金調整後三情境：保守 "
+        f"{fmt(low_price)} / 基準 {fmt(base_price)} / 樂觀 {fmt(high_price)}"
+    )
+    return base_price, low_price, high_price, confidence, note, True
+
+
 def confidence_score(core_count, data_confidence, financial_quality, valuation_score, selection_qualified, support_notes, non_op, latest_eps_yoy):
     confidence = (
         40
@@ -392,7 +555,7 @@ def apply_backtest_confidence(row, confidence):
     return confidence, note
 
 
-def recalculate_row(row, cache, regime_discount, peer_stats=None):
+def recalculate_row(row, cache, regime_discount, peer_stats=None, market_context=None):
     current_price = number(row.get("price"))
     if current_price <= 0:
         return False
@@ -401,11 +564,12 @@ def recalculate_row(row, cache, regime_discount, peer_stats=None):
     latest_eps = number(cache.get("latestQuarterEps"))
     previous_eps = number(cache.get("previousQuarterEps"))
     two_quarter_annualized_eps = (latest_eps + previous_eps) * 2
-    fair_value_eps = trailing_eps * 0.40 + two_quarter_annualized_eps * 0.60
-
     peer_average_pe = number(cache.get("peerAveragePe"))
     latest_eps_yoy = number(cache.get("latestQuarterEpsYoYPct"))
     avg_3m_revenue_yoy = number(cache.get("averageThreeMonthRevenueYoY"))
+    latest_revenue_yoy = number(row.get("latestRevenueYoY"), number(cache.get("latestRevenueYoY")))
+    accumulated_revenue_yoy = number(row.get("accumulatedRevenueYoY"), number(cache.get("accumulatedRevenueYoY")))
+    positive_revenue_months = int(number(row.get("positiveRevenueMonths"), number(cache.get("positiveRevenueMonths"))))
     roe = number(cache.get("returnOnEquityPct"))
     book_value = number(cache.get("bookValue"))
     non_op = number(cache.get("nonOperatingRatioPct"))
@@ -420,9 +584,28 @@ def recalculate_row(row, cache, regime_discount, peer_stats=None):
     peg = number(row.get("peg"))
     data_confidence = number(row.get("dataConfidence"))
     selection_qualified = bool(row.get("selectionQualified"))
+    gross_margin = number(row.get("grossMarginPct"), number(cache.get("grossMarginPct")))
+    operating_margin = number(row.get("operatingMarginPct"), number(cache.get("operatingMarginPct")))
 
     industry = row.get("industry") or cache.get("industry")
     style = fair_value_style(industry, latest_eps_yoy, avg_3m_revenue_yoy, peg, roe, book_value)
+    base_fair_value_eps = trailing_eps * 0.40 + two_quarter_annualized_eps * 0.60
+    forward_multiplier, forward_notes = semiconductor_forward_eps_multiplier(
+        industry,
+        base_fair_value_eps,
+        latest_revenue_yoy,
+        avg_3m_revenue_yoy,
+        accumulated_revenue_yoy,
+        positive_revenue_months,
+        latest_eps_yoy,
+        latest_ocf,
+        latest_fcf,
+        roe,
+        non_op,
+        gross_margin,
+        operating_margin,
+    )
+    fair_value_eps = base_fair_value_eps * forward_multiplier if base_fair_value_eps > 0 else base_fair_value_eps
     quality_disc, discount_notes = quality_discount(
         latest_ocf,
         latest_fcf,
@@ -540,6 +723,9 @@ def recalculate_row(row, cache, regime_discount, peer_stats=None):
         row, cache, peer_stats, base_price, low_price, high_price, confidence, fair_value_eps
     )
     confidence, backtest_note = apply_backtest_confidence(row, confidence)
+    base_price, low_price, high_price, confidence, liquidity_note, liquidity_adjusted = apply_liquidity_adjustment(
+        row, base_price, low_price, high_price, confidence, market_context
+    )
     gap_pct = (base_price - current_price) * 100 / current_price
 
     method = (
@@ -553,13 +739,20 @@ def recalculate_row(row, cache, regime_discount, peer_stats=None):
     )
     if peer_note and "同業比較" not in method:
         method += "+同業比較"
+    if liquidity_adjusted and "資金水位" not in method:
+        method += "+資金水位"
     support_text = "" if not support_notes else "；" + "、".join(support_notes)
+    forward_text = "" if not forward_notes else "；forward調整：" + "、".join(forward_notes)
     discount_text = "" if not discount_notes else "；折價：" + "、".join(discount_notes)
+    eps_text = f"估值EPS {fmt(fair_value_eps)}"
+    if forward_multiplier > 1.0001 and base_fair_value_eps > 0:
+        eps_text += f"（基礎 {fmt(base_fair_value_eps)}×forward {fmt(forward_multiplier)}）"
+    eps_text += f"（近四季 {fmt(trailing_eps)}×40% + 近兩季年化 {fmt(two_quarter_annualized_eps)}×60%）"
     reason = (
-        f"估值EPS {fmt(fair_value_eps)}（近四季 {fmt(trailing_eps)}×40% + "
-        f"近兩季年化 {fmt(two_quarter_annualized_eps)}×60%）；以 "
-        f"{'、'.join(method_notes)} 綜合估算{support_text}{discount_text}，合理價中位 {fmt(base_price)}，"
-        f"相對現價 {signed(gap_pct)}%，信心 {fmt(confidence)} 分{peer_note}{backtest_note}"
+        f"{eps_text}；以 "
+        f"{'、'.join(method_notes)} 綜合估算{support_text}{forward_text}{discount_text}，"
+        f"合理價中位 {fmt(base_price)}，相對現價 {signed(gap_pct)}%，信心 {fmt(confidence)} 分"
+        f"{peer_note}{backtest_note}{liquidity_note}"
     )
 
     row["fairValueLow"] = low_price
@@ -576,11 +769,12 @@ def update_latest(path, cache_entries):
     discount = market_discount(payload)
     rows = payload.get("rows", [])
     peer_stats = build_peer_stats(rows, cache_entries)
+    valuation_context = market_valuation_context(rows)
     updated = 0
     skipped = 0
     for row in rows:
         cache = cache_entries.get(str(row.get("code"))) or {}
-        if cache and recalculate_row(row, cache, discount, peer_stats):
+        if cache and recalculate_row(row, cache, discount, peer_stats, valuation_context):
             updated += 1
         else:
             skipped += 1

@@ -191,8 +191,12 @@ set "EXIT_CODE=%ERRORLEVEL%"
 goto after_primary_run
 
 :run_market_data
+if exist bin\stock\StockMarketDataOnlyAnalysis.class (
+    echo Reusing compiled StockMarketDataOnlyAnalysis.class...
+    goto run_market_data_execute
+)
 echo Compiling StockMarketDataOnlyAnalysis.java...
-"%JAVAC_CMD%" -encoding UTF-8 -cp "%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockMarketDataOnlyAnalysis.java
+"%JAVAC_CMD%" -encoding UTF-8 -cp "bin;%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockMarketDataOnlyAnalysis.java
 if errorlevel 1 (
     echo.
     echo Compile failed.
@@ -200,6 +204,7 @@ if errorlevel 1 (
     goto cleanup
 )
 
+:run_market_data_execute
 echo.
 echo Running stock.StockMarketDataOnlyAnalysis %RUN_MODE%
 "%JAVA_CMD%" -cp "bin;%APP_CLASSPATH%" stock.StockMarketDataOnlyAnalysis %RUN_MODE%
