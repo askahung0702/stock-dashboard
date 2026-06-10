@@ -598,12 +598,6 @@ const REASON_MAP = {revenueScore:'revenueReason',chipsScore:'chipsReason',liquid
 const WL_GROUPS_KEY = '_wlg_v2';
 const DEFAULT_GROUP_NAME = '預設群組';
 const CATALYST_KEYWORDS = ['擴產','漲價','報價','接單','訂單','認證','量產','合作','簽約','新廠','產能','法說','需求','受惠','切入','商機'];
-const CATALYST_THEME_KEYWORDS = [
-  'AI','BBU','CoWoS','CoPoS','CPO','ASIC','GPU','HBM','DDR','NAND',
-  '資料中心','伺服器','水冷','液冷','散熱','矽光子','光通訊',
-  '存儲記憶體','記憶體','重電','軍工','機器人','低軌衛星',
-  '半導體設備','先進封裝','被動元件','光學','電動車','儲能'
-];
 
 function isStaticPagesMode() {
   const host = window.location.hostname || '';
@@ -2670,21 +2664,6 @@ function hasCatalystKeyword(text) {
   const source = String(text || '').toLowerCase();
   return CATALYST_KEYWORDS.some(k => source.includes(k.toLowerCase()));
 }
-function hasCatalystTheme(s) {
-  const text = [
-    s.primaryTheme,
-    s.themeTags,
-    s.launchTags,
-    s.postCloseCategory,
-    s.recentNewsBrief,
-    s.newsSummary,
-    s.buyPointReason,
-    s.scoreReason
-  ].filter(Boolean).join(' ').toLowerCase();
-  const hasThemeKeyword = CATALYST_THEME_KEYWORDS.some(k => text.includes(k.toLowerCase()));
-  const hasModelCatalyst = String(s.postCloseCategory || '') === '催化觀察' || String(s.launchTags || '').includes('熱門題材');
-  return hasThemeKeyword || hasModelCatalyst;
-}
 function hasTurnaroundSignal(s) {
   const label = String(s.turnaroundLabel || '');
   return ['業績成長','業績翻轉','轉虧為盈','高品質翻轉'].includes(label) || (s.turnaroundScore || 0) >= 55;
@@ -2712,8 +2691,7 @@ function isCatalystGrowth(s) {
   const fundFlowPositive = (s.latestInstitutionalNetRatioPct || 0) > 0 || (s.fiveDayInstitutionalNetRatioPct || 0) > 0 ||
     (s.brokerNetLots || 0) > 0 || (s.brokerNetRatioPct || 0) > 0;
   const catalystNews = hasCatalystKeyword(s.newsSummary) || hasCatalystKeyword(s.buyPointReason) || hasCatalystKeyword(s.scoreReason);
-  const catalystTheme = hasCatalystTheme(s);
-  return revenueStrong && chipsStrong && strategyReady && entryHealthy && hasTurnaroundSignal(s) && fundFlowPositive && (catalystNews || catalystTheme);
+  return revenueStrong && chipsStrong && strategyReady && entryHealthy && hasTurnaroundSignal(s) && fundFlowPositive && catalystNews;
 }
 function explainBuyPointLabel(s) {
   const label = String(s.buyPointLabel || '');

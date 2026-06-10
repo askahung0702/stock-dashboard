@@ -577,6 +577,14 @@ public class TaiwanStockAnalyzer {
     }
 
     private LocalDate resolveRunTradingDate() {
+        String override = System.getProperty("stock.runDate");
+        if (override == null || override.trim().length() == 0) {
+            override = System.getenv("STOCK_RUN_DATE");
+        }
+        if (override != null && override.trim().length() > 0) {
+            String normalized = override.trim().replace("-", "");
+            return LocalDate.parse(normalized, DATE_STAMP_FORMATTER);
+        }
         LocalDate date = LocalDate.now(TAIPEI_ZONE);
         if (LocalTime.now(TAIPEI_ZONE).isBefore(NIGHT_RUN_TRADING_DATE_CUTOFF)) {
             date = date.minusDays(1);

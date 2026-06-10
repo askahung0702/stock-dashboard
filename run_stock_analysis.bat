@@ -213,7 +213,7 @@ goto after_primary_run
 
 :run_news_event
 echo Compiling StockNewsOnlyAnalysis.java...
-"%JAVAC_CMD%" -encoding UTF-8 -cp "%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockNewsOnlyAnalysis.java
+"%JAVAC_CMD%" -encoding UTF-8 -cp "bin;%APP_CLASSPATH%" -d bin -sourcepath src src\stock\StockNewsOnlyAnalysis.java
 if errorlevel 1 (
     echo.
     echo Compile failed.
