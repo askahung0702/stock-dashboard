@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260508",
-  "latest_track_date": "20260610",
+  "latest_track_date": "20260611",
   "stock_count": 12,
   "groups": {
     "all": [
@@ -178,6 +178,14 @@
         "stock_count": 12,
         "avg_return_pct": 18.63,
         "median_return_pct": 8.78,
+        "win_rate_pct": 58.33
+      },
+      {
+        "track_date": "20260611",
+        "days_since_buy": 34,
+        "stock_count": 12,
+        "avg_return_pct": 19.08,
+        "median_return_pct": 12.12,
         "win_rate_pct": 58.33
       }
     ],
@@ -357,6 +365,14 @@
         "avg_return_pct": -0.31,
         "median_return_pct": -5.19,
         "win_rate_pct": 25.0
+      },
+      {
+        "track_date": "20260611",
+        "days_since_buy": 34,
+        "stock_count": 4,
+        "avg_return_pct": 0.94,
+        "median_return_pct": -4.9,
+        "win_rate_pct": 25.0
       }
     ],
     "continuation_focus": [
@@ -534,6 +550,14 @@
         "stock_count": 2,
         "avg_return_pct": -12.27,
         "median_return_pct": -12.27,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260611",
+        "days_since_buy": 34,
+        "stock_count": 2,
+        "avg_return_pct": -12.31,
+        "median_return_pct": -12.31,
         "win_rate_pct": 0.0
       }
     ],
@@ -713,6 +737,14 @@
         "avg_return_pct": 28.1,
         "median_return_pct": 23.19,
         "win_rate_pct": 75.0
+      },
+      {
+        "track_date": "20260611",
+        "days_since_buy": 34,
+        "stock_count": 8,
+        "avg_return_pct": 28.15,
+        "median_return_pct": 22.36,
+        "win_rate_pct": 75.0
       }
     ],
     "early_focus": [
@@ -890,6 +922,14 @@
         "stock_count": 7,
         "avg_return_pct": 27.6,
         "median_return_pct": 14.83,
+        "win_rate_pct": 71.43
+      },
+      {
+        "track_date": "20260611",
+        "days_since_buy": 34,
+        "stock_count": 7,
+        "avg_return_pct": 28.81,
+        "median_return_pct": 21.19,
         "win_rate_pct": 71.43
       }
     ]
