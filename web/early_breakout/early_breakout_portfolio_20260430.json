@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260430",
-  "latest_track_date": "20260611",
+  "latest_track_date": "20260612",
   "stock_count": 27,
   "groups": {
     "all": [
@@ -234,6 +234,14 @@
         "stock_count": 27,
         "avg_return_pct": 11.75,
         "median_return_pct": 15.64,
+        "win_rate_pct": 62.96
+      },
+      {
+        "track_date": "20260612",
+        "days_since_buy": 43,
+        "stock_count": 27,
+        "avg_return_pct": 14.73,
+        "median_return_pct": 19.04,
         "win_rate_pct": 62.96
       }
     ],
@@ -469,6 +477,14 @@
         "avg_return_pct": 22.91,
         "median_return_pct": 29.07,
         "win_rate_pct": 87.5
+      },
+      {
+        "track_date": "20260612",
+        "days_since_buy": 43,
+        "stock_count": 8,
+        "avg_return_pct": 26.43,
+        "median_return_pct": 29.62,
+        "win_rate_pct": 87.5
       }
     ],
     "continuation_focus": [
@@ -702,6 +718,14 @@
         "stock_count": 7,
         "avg_return_pct": 20.83,
         "median_return_pct": 29.07,
+        "win_rate_pct": 85.71
+      },
+      {
+        "track_date": "20260612",
+        "days_since_buy": 43,
+        "stock_count": 7,
+        "avg_return_pct": 24.28,
+        "median_return_pct": 27.67,
         "win_rate_pct": 85.71
       }
     ],
@@ -937,6 +961,14 @@
         "avg_return_pct": 7.06,
         "median_return_pct": 1.04,
         "win_rate_pct": 52.63
+      },
+      {
+        "track_date": "20260612",
+        "days_since_buy": 43,
+        "stock_count": 19,
+        "avg_return_pct": 9.81,
+        "median_return_pct": 4.86,
+        "win_rate_pct": 52.63
       }
     ],
     "early_focus": [
@@ -1170,6 +1202,14 @@
         "stock_count": 15,
         "avg_return_pct": 9.21,
         "median_return_pct": 4.52,
+        "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260612",
+        "days_since_buy": 43,
+        "stock_count": 15,
+        "avg_return_pct": 12.21,
+        "median_return_pct": 6.12,
         "win_rate_pct": 60.0
       }
     ]
