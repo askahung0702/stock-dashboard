@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260427",
-  "latest_track_date": "20260617",
+  "latest_track_date": "20260618",
   "stock_count": 25,
   "groups": {
     "all": [
@@ -282,6 +282,14 @@
         "stock_count": 25,
         "avg_return_pct": 18.25,
         "median_return_pct": 11.38,
+        "win_rate_pct": 64.0
+      },
+      {
+        "track_date": "20260618",
+        "days_since_buy": 52,
+        "stock_count": 25,
+        "avg_return_pct": 20.57,
+        "median_return_pct": 13.02,
         "win_rate_pct": 64.0
       }
     ],
@@ -565,6 +573,14 @@
         "avg_return_pct": 6.05,
         "median_return_pct": 1.06,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260618",
+        "days_since_buy": 52,
+        "stock_count": 6,
+        "avg_return_pct": 6.78,
+        "median_return_pct": 2.23,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation_focus": [
@@ -846,6 +862,14 @@
         "stock_count": 6,
         "avg_return_pct": 6.05,
         "median_return_pct": 1.06,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260618",
+        "days_since_buy": 52,
+        "stock_count": 6,
+        "avg_return_pct": 6.78,
+        "median_return_pct": 2.23,
         "win_rate_pct": 50.0
       }
     ],
@@ -1129,6 +1153,14 @@
         "avg_return_pct": 22.1,
         "median_return_pct": 14.04,
         "win_rate_pct": 68.42
+      },
+      {
+        "track_date": "20260618",
+        "days_since_buy": 52,
+        "stock_count": 19,
+        "avg_return_pct": 24.92,
+        "median_return_pct": 13.33,
+        "win_rate_pct": 68.42
       }
     ],
     "early_focus": [
@@ -1410,6 +1442,14 @@
         "stock_count": 18,
         "avg_return_pct": 24.06,
         "median_return_pct": 14.05,
+        "win_rate_pct": 72.22
+      },
+      {
+        "track_date": "20260618",
+        "days_since_buy": 52,
+        "stock_count": 18,
+        "avg_return_pct": 27.05,
+        "median_return_pct": 14.94,
         "win_rate_pct": 72.22
       }
     ]
