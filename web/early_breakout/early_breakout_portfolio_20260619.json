@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260619",
-  "latest_track_date": "20260630",
+  "latest_track_date": "20260701",
   "stock_count": 16,
   "groups": {
     "all": [
@@ -58,6 +58,14 @@
         "stock_count": 16,
         "avg_return_pct": -6.21,
         "median_return_pct": -5.5,
+        "win_rate_pct": 6.25
+      },
+      {
+        "track_date": "20260701",
+        "days_since_buy": 12,
+        "stock_count": 16,
+        "avg_return_pct": -7.56,
+        "median_return_pct": -7.12,
         "win_rate_pct": 6.25
       }
     ],
@@ -117,6 +125,14 @@
         "avg_return_pct": -12.33,
         "median_return_pct": -13.0,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260701",
+        "days_since_buy": 12,
+        "stock_count": 3,
+        "avg_return_pct": -13.61,
+        "median_return_pct": -12.87,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -174,6 +190,14 @@
         "stock_count": 2,
         "avg_return_pct": -11.99,
         "median_return_pct": -11.99,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260701",
+        "days_since_buy": 12,
+        "stock_count": 2,
+        "avg_return_pct": -15.63,
+        "median_return_pct": -15.63,
         "win_rate_pct": 0.0
       }
     ],
@@ -233,6 +257,14 @@
         "avg_return_pct": -4.8,
         "median_return_pct": -4.52,
         "win_rate_pct": 7.69
+      },
+      {
+        "track_date": "20260701",
+        "days_since_buy": 12,
+        "stock_count": 13,
+        "avg_return_pct": -6.16,
+        "median_return_pct": -5.17,
+        "win_rate_pct": 7.69
       }
     ],
     "early_focus": [
@@ -290,6 +322,14 @@
         "stock_count": 11,
         "avg_return_pct": -5.17,
         "median_return_pct": -5.28,
+        "win_rate_pct": 9.09
+      },
+      {
+        "track_date": "20260701",
+        "days_since_buy": 12,
+        "stock_count": 11,
+        "avg_return_pct": -6.42,
+        "median_return_pct": -5.17,
         "win_rate_pct": 9.09
       }
     ]
