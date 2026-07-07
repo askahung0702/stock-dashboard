@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260427",
-  "latest_track_date": "20260706",
+  "latest_track_date": "20260707",
   "stock_count": 25,
   "groups": {
     "all": [
@@ -378,6 +378,14 @@
         "stock_count": 25,
         "avg_return_pct": 19.74,
         "median_return_pct": 8.51,
+        "win_rate_pct": 64.0
+      },
+      {
+        "track_date": "20260707",
+        "days_since_buy": 71,
+        "stock_count": 25,
+        "avg_return_pct": 16.89,
+        "median_return_pct": 7.29,
         "win_rate_pct": 64.0
       }
     ],
@@ -757,6 +765,14 @@
         "avg_return_pct": 3.18,
         "median_return_pct": 0.26,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260707",
+        "days_since_buy": 71,
+        "stock_count": 6,
+        "avg_return_pct": -0.34,
+        "median_return_pct": -2.21,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation_focus": [
@@ -1134,6 +1150,14 @@
         "stock_count": 6,
         "avg_return_pct": 3.18,
         "median_return_pct": 0.26,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260707",
+        "days_since_buy": 71,
+        "stock_count": 6,
+        "avg_return_pct": -0.34,
+        "median_return_pct": -2.21,
         "win_rate_pct": 50.0
       }
     ],
@@ -1513,6 +1537,14 @@
         "avg_return_pct": 24.97,
         "median_return_pct": 8.51,
         "win_rate_pct": 68.42
+      },
+      {
+        "track_date": "20260707",
+        "days_since_buy": 71,
+        "stock_count": 19,
+        "avg_return_pct": 22.34,
+        "median_return_pct": 7.29,
+        "win_rate_pct": 68.42
       }
     ],
     "early_focus": [
@@ -1890,6 +1922,14 @@
         "stock_count": 18,
         "avg_return_pct": 27.39,
         "median_return_pct": 8.51,
+        "win_rate_pct": 72.22
+      },
+      {
+        "track_date": "20260707",
+        "days_since_buy": 71,
+        "stock_count": 18,
+        "avg_return_pct": 24.79,
+        "median_return_pct": 8.21,
         "win_rate_pct": 72.22
       }
     ]
