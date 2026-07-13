@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260427",
-  "latest_track_date": "20260710",
+  "latest_track_date": "20260713",
   "stock_count": 25,
   "groups": {
     "all": [
@@ -410,6 +410,14 @@
         "stock_count": 25,
         "avg_return_pct": 15.22,
         "median_return_pct": 1.4,
+        "win_rate_pct": 56.0
+      },
+      {
+        "track_date": "20260713",
+        "days_since_buy": 77,
+        "stock_count": 25,
+        "avg_return_pct": 13.0,
+        "median_return_pct": 0.7,
         "win_rate_pct": 56.0
       }
     ],
@@ -821,6 +829,14 @@
         "avg_return_pct": -1.57,
         "median_return_pct": -5.67,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260713",
+        "days_since_buy": 77,
+        "stock_count": 6,
+        "avg_return_pct": -2.25,
+        "median_return_pct": -5.73,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation_focus": [
@@ -1230,6 +1246,14 @@
         "stock_count": 6,
         "avg_return_pct": -1.57,
         "median_return_pct": -5.67,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260713",
+        "days_since_buy": 77,
+        "stock_count": 6,
+        "avg_return_pct": -2.25,
+        "median_return_pct": -5.73,
         "win_rate_pct": 50.0
       }
     ],
@@ -1641,6 +1665,14 @@
         "avg_return_pct": 20.52,
         "median_return_pct": 1.4,
         "win_rate_pct": 57.89
+      },
+      {
+        "track_date": "20260713",
+        "days_since_buy": 77,
+        "stock_count": 19,
+        "avg_return_pct": 17.82,
+        "median_return_pct": 0.7,
+        "win_rate_pct": 57.89
       }
     ],
     "early_focus": [
@@ -2050,6 +2082,14 @@
         "stock_count": 18,
         "avg_return_pct": 22.71,
         "median_return_pct": 3.75,
+        "win_rate_pct": 61.11
+      },
+      {
+        "track_date": "20260713",
+        "days_since_buy": 77,
+        "stock_count": 18,
+        "avg_return_pct": 20.07,
+        "median_return_pct": 3.16,
         "win_rate_pct": 61.11
       }
     ]
