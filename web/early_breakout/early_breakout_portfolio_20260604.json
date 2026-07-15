@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260604",
-  "latest_track_date": "20260714",
+  "latest_track_date": "20260715",
   "stock_count": 12,
   "groups": {
     "all": [
@@ -210,6 +210,14 @@
         "stock_count": 12,
         "avg_return_pct": 1.76,
         "median_return_pct": -6.0,
+        "win_rate_pct": 41.67
+      },
+      {
+        "track_date": "20260715",
+        "days_since_buy": 41,
+        "stock_count": 12,
+        "avg_return_pct": 5.76,
+        "median_return_pct": -2.54,
         "win_rate_pct": 41.67
       }
     ],
@@ -421,6 +429,14 @@
         "avg_return_pct": -6.97,
         "median_return_pct": -14.79,
         "win_rate_pct": 20.0
+      },
+      {
+        "track_date": "20260715",
+        "days_since_buy": 41,
+        "stock_count": 5,
+        "avg_return_pct": -4.76,
+        "median_return_pct": -11.97,
+        "win_rate_pct": 20.0
       }
     ],
     "continuation_focus": [
@@ -630,6 +646,14 @@
         "stock_count": 2,
         "avg_return_pct": 9.12,
         "median_return_pct": 9.12,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260715",
+        "days_since_buy": 41,
+        "stock_count": 2,
+        "avg_return_pct": 12.11,
+        "median_return_pct": 12.11,
         "win_rate_pct": 50.0
       }
     ],
@@ -841,6 +865,14 @@
         "avg_return_pct": 7.99,
         "median_return_pct": 8.06,
         "win_rate_pct": 57.14
+      },
+      {
+        "track_date": "20260715",
+        "days_since_buy": 41,
+        "stock_count": 7,
+        "avg_return_pct": 13.27,
+        "median_return_pct": 18.62,
+        "win_rate_pct": 57.14
       }
     ],
     "early_focus": [
@@ -1050,6 +1082,14 @@
         "stock_count": 4,
         "avg_return_pct": 18.45,
         "median_return_pct": 21.32,
+        "win_rate_pct": 75.0
+      },
+      {
+        "track_date": "20260715",
+        "days_since_buy": 41,
+        "stock_count": 4,
+        "avg_return_pct": 22.57,
+        "median_return_pct": 28.42,
         "win_rate_pct": 75.0
       }
     ]
