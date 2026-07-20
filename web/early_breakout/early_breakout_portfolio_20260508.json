@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260508",
-  "latest_track_date": "20260716",
+  "latest_track_date": "20260720",
   "stock_count": 12,
   "groups": {
     "all": [
@@ -379,6 +379,14 @@
         "avg_return_pct": 13.03,
         "median_return_pct": 12.44,
         "win_rate_pct": 54.55
+      },
+      {
+        "track_date": "20260720",
+        "days_since_buy": 73,
+        "stock_count": 12,
+        "avg_return_pct": -0.33,
+        "median_return_pct": -5.28,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation": [
@@ -757,6 +765,14 @@
         "avg_return_pct": -6.93,
         "median_return_pct": -12.5,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260720",
+        "days_since_buy": 73,
+        "stock_count": 4,
+        "avg_return_pct": -13.12,
+        "median_return_pct": -15.6,
+        "win_rate_pct": 25.0
       }
     ],
     "continuation_focus": [
@@ -1134,6 +1150,14 @@
         "stock_count": 1,
         "avg_return_pct": -20.74,
         "median_return_pct": -20.74,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260720",
+        "days_since_buy": 73,
+        "stock_count": 2,
+        "avg_return_pct": -19.9,
+        "median_return_pct": -19.9,
         "win_rate_pct": 0.0
       }
     ],
@@ -1513,6 +1537,14 @@
         "avg_return_pct": 20.52,
         "median_return_pct": 26.89,
         "win_rate_pct": 62.5
+      },
+      {
+        "track_date": "20260720",
+        "days_since_buy": 73,
+        "stock_count": 8,
+        "avg_return_pct": 6.06,
+        "median_return_pct": 12.83,
+        "win_rate_pct": 62.5
       }
     ],
     "early_focus": [
@@ -1890,6 +1922,14 @@
         "stock_count": 7,
         "avg_return_pct": 17.95,
         "median_return_pct": 23.78,
+        "win_rate_pct": 57.14
+      },
+      {
+        "track_date": "20260720",
+        "days_since_buy": 73,
+        "stock_count": 7,
+        "avg_return_pct": 4.49,
+        "median_return_pct": 8.56,
         "win_rate_pct": 57.14
       }
     ]
