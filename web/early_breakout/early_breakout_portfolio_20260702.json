@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260702",
-  "latest_track_date": "20260720",
+  "latest_track_date": "20260721",
   "stock_count": 14,
   "groups": {
     "all": [
@@ -98,6 +98,14 @@
         "stock_count": 14,
         "avg_return_pct": -18.91,
         "median_return_pct": -19.86,
+        "win_rate_pct": 7.14
+      },
+      {
+        "track_date": "20260721",
+        "days_since_buy": 19,
+        "stock_count": 14,
+        "avg_return_pct": -14.74,
+        "median_return_pct": -16.22,
         "win_rate_pct": 7.14
       }
     ],
@@ -197,6 +205,14 @@
         "avg_return_pct": -12.97,
         "median_return_pct": -18.19,
         "win_rate_pct": 25.0
+      },
+      {
+        "track_date": "20260721",
+        "days_since_buy": 19,
+        "stock_count": 4,
+        "avg_return_pct": -7.4,
+        "median_return_pct": -15.42,
+        "win_rate_pct": 25.0
       }
     ],
     "continuation_focus": [
@@ -294,6 +310,14 @@
         "stock_count": 3,
         "avg_return_pct": -20.4,
         "median_return_pct": -20.68,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260721",
+        "days_since_buy": 19,
+        "stock_count": 3,
+        "avg_return_pct": -16.62,
+        "median_return_pct": -15.66,
         "win_rate_pct": 0.0
       }
     ],
@@ -393,6 +417,14 @@
         "avg_return_pct": -21.28,
         "median_return_pct": -19.86,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260721",
+        "days_since_buy": 19,
+        "stock_count": 10,
+        "avg_return_pct": -17.68,
+        "median_return_pct": -17.76,
+        "win_rate_pct": 0.0
       }
     ],
     "early_focus": [
@@ -490,6 +522,14 @@
         "stock_count": 8,
         "avg_return_pct": -20.97,
         "median_return_pct": -19.86,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260721",
+        "days_since_buy": 19,
+        "stock_count": 8,
+        "avg_return_pct": -17.65,
+        "median_return_pct": -17.76,
         "win_rate_pct": 0.0
       }
     ]
