@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260427",
-  "latest_track_date": "20260724",
+  "latest_track_date": "20260727",
   "stock_count": 25,
   "groups": {
     "all": [
@@ -482,6 +482,14 @@
         "stock_count": 25,
         "avg_return_pct": 8.6,
         "median_return_pct": 6.14,
+        "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 91,
+        "stock_count": 25,
+        "avg_return_pct": 9.03,
+        "median_return_pct": 4.95,
         "win_rate_pct": 60.0
       }
     ],
@@ -965,6 +973,14 @@
         "avg_return_pct": -5.05,
         "median_return_pct": -9.66,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 91,
+        "stock_count": 6,
+        "avg_return_pct": -4.41,
+        "median_return_pct": -8.78,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation_focus": [
@@ -1446,6 +1462,14 @@
         "stock_count": 6,
         "avg_return_pct": -5.05,
         "median_return_pct": -9.66,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 91,
+        "stock_count": 6,
+        "avg_return_pct": -4.41,
+        "median_return_pct": -8.78,
         "win_rate_pct": 50.0
       }
     ],
@@ -1929,6 +1953,14 @@
         "avg_return_pct": 12.91,
         "median_return_pct": 6.9,
         "win_rate_pct": 63.16
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 91,
+        "stock_count": 19,
+        "avg_return_pct": 13.28,
+        "median_return_pct": 5.73,
+        "win_rate_pct": 63.16
       }
     ],
     "early_focus": [
@@ -2410,6 +2442,14 @@
         "stock_count": 18,
         "avg_return_pct": 15.32,
         "median_return_pct": 8.4,
+        "win_rate_pct": 66.67
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 91,
+        "stock_count": 18,
+        "avg_return_pct": 15.8,
+        "median_return_pct": 8.75,
         "win_rate_pct": 66.67
       }
     ]

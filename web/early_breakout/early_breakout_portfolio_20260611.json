@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260611",
-  "latest_track_date": "20260724",
+  "latest_track_date": "20260727",
   "stock_count": 28,
   "groups": {
     "all": [
@@ -242,6 +242,14 @@
         "stock_count": 28,
         "avg_return_pct": -4.75,
         "median_return_pct": -6.4,
+        "win_rate_pct": 28.57
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 46,
+        "stock_count": 28,
+        "avg_return_pct": -5.05,
+        "median_return_pct": -6.39,
         "win_rate_pct": 28.57
       }
     ],
@@ -485,6 +493,14 @@
         "avg_return_pct": -0.04,
         "median_return_pct": -3.21,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 46,
+        "stock_count": 3,
+        "avg_return_pct": 1.29,
+        "median_return_pct": -1.38,
+        "win_rate_pct": 33.33
       }
     ],
     "continuation_focus": [
@@ -726,6 +742,14 @@
         "stock_count": 2,
         "avg_return_pct": -6.86,
         "median_return_pct": -6.86,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 46,
+        "stock_count": 2,
+        "avg_return_pct": -6.24,
+        "median_return_pct": -6.24,
         "win_rate_pct": 0.0
       }
     ],
@@ -969,6 +993,14 @@
         "avg_return_pct": -5.32,
         "median_return_pct": -6.49,
         "win_rate_pct": 28.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 46,
+        "stock_count": 25,
+        "avg_return_pct": -5.81,
+        "median_return_pct": -6.69,
+        "win_rate_pct": 28.0
       }
     ],
     "early_focus": [
@@ -1210,6 +1242,14 @@
         "stock_count": 11,
         "avg_return_pct": -4.81,
         "median_return_pct": -6.32,
+        "win_rate_pct": 18.18
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 46,
+        "stock_count": 11,
+        "avg_return_pct": -4.76,
+        "median_return_pct": -6.08,
         "win_rate_pct": 18.18
       }
     ]

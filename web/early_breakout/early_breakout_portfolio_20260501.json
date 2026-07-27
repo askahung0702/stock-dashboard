@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260501",
-  "latest_track_date": "20260724",
+  "latest_track_date": "20260727",
   "stock_count": 26,
   "groups": {
     "all": [
@@ -458,6 +458,14 @@
         "stock_count": 26,
         "avg_return_pct": 7.73,
         "median_return_pct": 3.91,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 87,
+        "stock_count": 26,
+        "avg_return_pct": 6.73,
+        "median_return_pct": 4.35,
         "win_rate_pct": 50.0
       }
     ],
@@ -917,6 +925,14 @@
         "avg_return_pct": 24.44,
         "median_return_pct": 25.71,
         "win_rate_pct": 88.89
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 87,
+        "stock_count": 9,
+        "avg_return_pct": 21.7,
+        "median_return_pct": 23.15,
+        "win_rate_pct": 88.89
       }
     ],
     "continuation_focus": [
@@ -1374,6 +1390,14 @@
         "stock_count": 8,
         "avg_return_pct": 19.02,
         "median_return_pct": 25.08,
+        "win_rate_pct": 87.5
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 87,
+        "stock_count": 8,
+        "avg_return_pct": 17.44,
+        "median_return_pct": 22.38,
         "win_rate_pct": 87.5
       }
     ],
@@ -1833,6 +1857,14 @@
         "avg_return_pct": -1.12,
         "median_return_pct": -12.36,
         "win_rate_pct": 29.41
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 87,
+        "stock_count": 17,
+        "avg_return_pct": -1.2,
+        "median_return_pct": -11.52,
+        "win_rate_pct": 29.41
       }
     ],
     "early_focus": [
@@ -2290,6 +2322,14 @@
         "stock_count": 10,
         "avg_return_pct": 4.21,
         "median_return_pct": -18.46,
+        "win_rate_pct": 40.0
+      },
+      {
+        "track_date": "20260727",
+        "days_since_buy": 87,
+        "stock_count": 10,
+        "avg_return_pct": 4.15,
+        "median_return_pct": -17.08,
         "win_rate_pct": 40.0
       }
     ]
