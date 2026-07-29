@@ -1,0 +1,279 @@
+{
+  "snapshot_start": "20260317",
+  "snapshot_end": "20260729",
+  "snapshot_count": 98,
+  "candidate_rows": 2040,
+  "weeks": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "latest_snapshot_pending": "20260729",
+  "groups": {
+    "ma2060_early_all": {
+      "variant": "ma2060",
+      "variant_label": "MA20/60",
+      "screen_style": "early",
+      "screen_style_label": "早期起漲",
+      "scope": "all",
+      "scope_label": "全部候選",
+      "sample_count_max": 1604,
+      "1w": {
+        "count": 1604,
+        "avg_return_pct": 2.95,
+        "median_return_pct": 0.36,
+        "win_rate_pct": 51.06
+      },
+      "2w": {
+        "count": 1591,
+        "avg_return_pct": 5.06,
+        "median_return_pct": 1.85,
+        "win_rate_pct": 55.12
+      },
+      "3w": {
+        "count": 1485,
+        "avg_return_pct": 9.43,
+        "median_return_pct": 4.19,
+        "win_rate_pct": 61.08
+      },
+      "4w": {
+        "count": 1355,
+        "avg_return_pct": 12.71,
+        "median_return_pct": 6.47,
+        "win_rate_pct": 63.39
+      }
+    },
+    "ma2060_early_focus": {
+      "variant": "ma2060",
+      "variant_label": "MA20/60",
+      "screen_style": "early",
+      "screen_style_label": "早期起漲",
+      "scope": "focus",
+      "scope_label": "Focus",
+      "sample_count_max": 1069,
+      "1w": {
+        "count": 1069,
+        "avg_return_pct": 1.31,
+        "median_return_pct": 0.0,
+        "win_rate_pct": 49.67
+      },
+      "2w": {
+        "count": 1060,
+        "avg_return_pct": 3.17,
+        "median_return_pct": 0.99,
+        "win_rate_pct": 53.11
+      },
+      "3w": {
+        "count": 988,
+        "avg_return_pct": 6.88,
+        "median_return_pct": 3.13,
+        "win_rate_pct": 59.31
+      },
+      "4w": {
+        "count": 898,
+        "avg_return_pct": 10.39,
+        "median_return_pct": 5.68,
+        "win_rate_pct": 61.69
+      }
+    },
+    "ma2060_continuation_all": {
+      "variant": "ma2060",
+      "variant_label": "MA20/60",
+      "screen_style": "continuation",
+      "screen_style_label": "強勢續攻",
+      "scope": "all",
+      "scope_label": "全部候選",
+      "sample_count_max": 370,
+      "1w": {
+        "count": 370,
+        "avg_return_pct": 1.61,
+        "median_return_pct": -0.37,
+        "win_rate_pct": 47.84
+      },
+      "2w": {
+        "count": 368,
+        "avg_return_pct": 3.38,
+        "median_return_pct": 2.03,
+        "win_rate_pct": 57.34
+      },
+      "3w": {
+        "count": 352,
+        "avg_return_pct": 7.77,
+        "median_return_pct": 6.63,
+        "win_rate_pct": 65.62
+      },
+      "4w": {
+        "count": 332,
+        "avg_return_pct": 8.82,
+        "median_return_pct": 6.53,
+        "win_rate_pct": 62.35
+      }
+    },
+    "ma2060_continuation_focus": {
+      "variant": "ma2060",
+      "variant_label": "MA20/60",
+      "screen_style": "continuation",
+      "screen_style_label": "強勢續攻",
+      "scope": "focus",
+      "scope_label": "Focus",
+      "sample_count_max": 297,
+      "1w": {
+        "count": 297,
+        "avg_return_pct": 1.14,
+        "median_return_pct": -0.52,
+        "win_rate_pct": 46.46
+      },
+      "2w": {
+        "count": 296,
+        "avg_return_pct": 2.52,
+        "median_return_pct": 1.4,
+        "win_rate_pct": 55.74
+      },
+      "3w": {
+        "count": 280,
+        "avg_return_pct": 6.59,
+        "median_return_pct": 5.32,
+        "win_rate_pct": 63.21
+      },
+      "4w": {
+        "count": 262,
+        "avg_return_pct": 7.85,
+        "median_return_pct": 5.35,
+        "win_rate_pct": 60.31
+      }
+    },
+    "ma1854_early_all": {
+      "variant": "ma1854",
+      "variant_label": "MA18/54",
+      "screen_style": "early",
+      "screen_style_label": "早期起漲",
+      "scope": "all",
+      "scope_label": "全部候選",
+      "sample_count_max": 1574,
+      "1w": {
+        "count": 1574,
+        "avg_return_pct": 2.0,
+        "median_return_pct": 0.81,
+        "win_rate_pct": 52.67
+      },
+      "2w": {
+        "count": 1562,
+        "avg_return_pct": 4.07,
+        "median_return_pct": 2.17,
+        "win_rate_pct": 57.04
+      },
+      "3w": {
+        "count": 1478,
+        "avg_return_pct": 7.98,
+        "median_return_pct": 5.34,
+        "win_rate_pct": 63.19
+      },
+      "4w": {
+        "count": 1351,
+        "avg_return_pct": 11.34,
+        "median_return_pct": 7.63,
+        "win_rate_pct": 64.99
+      }
+    },
+    "ma1854_early_focus": {
+      "variant": "ma1854",
+      "variant_label": "MA18/54",
+      "screen_style": "early",
+      "screen_style_label": "早期起漲",
+      "scope": "focus",
+      "scope_label": "Focus",
+      "sample_count_max": 1088,
+      "1w": {
+        "count": 1088,
+        "avg_return_pct": 1.74,
+        "median_return_pct": 0.3,
+        "win_rate_pct": 51.1
+      },
+      "2w": {
+        "count": 1080,
+        "avg_return_pct": 3.47,
+        "median_return_pct": 1.21,
+        "win_rate_pct": 55.09
+      },
+      "3w": {
+        "count": 1020,
+        "avg_return_pct": 7.14,
+        "median_return_pct": 3.88,
+        "win_rate_pct": 61.37
+      },
+      "4w": {
+        "count": 924,
+        "avg_return_pct": 10.76,
+        "median_return_pct": 6.55,
+        "win_rate_pct": 63.85
+      }
+    },
+    "ma1854_continuation_all": {
+      "variant": "ma1854",
+      "variant_label": "MA18/54",
+      "screen_style": "continuation",
+      "screen_style_label": "強勢續攻",
+      "scope": "all",
+      "scope_label": "全部候選",
+      "sample_count_max": 283,
+      "1w": {
+        "count": 283,
+        "avg_return_pct": 0.27,
+        "median_return_pct": -1.06,
+        "win_rate_pct": 42.76
+      },
+      "2w": {
+        "count": 281,
+        "avg_return_pct": 2.41,
+        "median_return_pct": 0.33,
+        "win_rate_pct": 51.25
+      },
+      "3w": {
+        "count": 264,
+        "avg_return_pct": 6.79,
+        "median_return_pct": 3.46,
+        "win_rate_pct": 60.61
+      },
+      "4w": {
+        "count": 247,
+        "avg_return_pct": 7.33,
+        "median_return_pct": 2.92,
+        "win_rate_pct": 57.49
+      }
+    },
+    "ma1854_continuation_focus": {
+      "variant": "ma1854",
+      "variant_label": "MA18/54",
+      "screen_style": "continuation",
+      "screen_style_label": "強勢續攻",
+      "scope": "focus",
+      "scope_label": "Focus",
+      "sample_count_max": 221,
+      "1w": {
+        "count": 221,
+        "avg_return_pct": -0.01,
+        "median_return_pct": -1.06,
+        "win_rate_pct": 42.99
+      },
+      "2w": {
+        "count": 220,
+        "avg_return_pct": 1.28,
+        "median_return_pct": -0.18,
+        "win_rate_pct": 48.64
+      },
+      "3w": {
+        "count": 204,
+        "avg_return_pct": 5.76,
+        "median_return_pct": 2.64,
+        "win_rate_pct": 57.84
+      },
+      "4w": {
+        "count": 191,
+        "avg_return_pct": 6.58,
+        "median_return_pct": 2.19,
+        "win_rate_pct": 54.97
+      }
+    }
+  }
+}
