@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260622",
-  "latest_track_date": "20260731",
+  "latest_track_date": "20260803",
   "stock_count": 17,
   "groups": {
     "all": [
@@ -227,6 +227,14 @@
         "avg_return_pct": -25.65,
         "median_return_pct": -27.15,
         "win_rate_pct": 5.88
+      },
+      {
+        "track_date": "20260803",
+        "days_since_buy": 42,
+        "stock_count": 17,
+        "avg_return_pct": -22.17,
+        "median_return_pct": -22.52,
+        "win_rate_pct": 11.76
       }
     ],
     "continuation": [
@@ -452,6 +460,14 @@
         "stock_count": 4,
         "avg_return_pct": -21.04,
         "median_return_pct": -25.9,
+        "win_rate_pct": 25.0
+      },
+      {
+        "track_date": "20260803",
+        "days_since_buy": 42,
+        "stock_count": 4,
+        "avg_return_pct": -14.08,
+        "median_return_pct": -18.53,
         "win_rate_pct": 25.0
       }
     ],
@@ -679,6 +695,14 @@
         "avg_return_pct": -17.15,
         "median_return_pct": -24.64,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260803",
+        "days_since_buy": 42,
+        "stock_count": 3,
+        "avg_return_pct": -8.91,
+        "median_return_pct": -17.12,
+        "win_rate_pct": 33.33
       }
     ],
     "early": [
@@ -905,6 +929,14 @@
         "avg_return_pct": -27.07,
         "median_return_pct": -28.33,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260803",
+        "days_since_buy": 42,
+        "stock_count": 13,
+        "avg_return_pct": -24.66,
+        "median_return_pct": -26.62,
+        "win_rate_pct": 7.69
       }
     ],
     "early_focus": [
@@ -1130,6 +1162,14 @@
         "stock_count": 8,
         "avg_return_pct": -26.86,
         "median_return_pct": -27.59,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260803",
+        "days_since_buy": 42,
+        "stock_count": 8,
+        "avg_return_pct": -24.75,
+        "median_return_pct": -24.57,
         "win_rate_pct": 0.0
       }
     ]
