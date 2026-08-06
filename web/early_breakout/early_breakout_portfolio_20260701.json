@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260701",
-  "latest_track_date": "20260805",
+  "latest_track_date": "20260806",
   "stock_count": 6,
   "groups": {
     "all": [
@@ -202,6 +202,14 @@
         "stock_count": 6,
         "avg_return_pct": -16.7,
         "median_return_pct": -18.07,
+        "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20260806",
+        "days_since_buy": 36,
+        "stock_count": 6,
+        "avg_return_pct": -14.9,
+        "median_return_pct": -18.01,
         "win_rate_pct": 16.67
       }
     ],
@@ -405,6 +413,14 @@
         "avg_return_pct": -6.96,
         "median_return_pct": -6.96,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260806",
+        "days_since_buy": 36,
+        "stock_count": 2,
+        "avg_return_pct": -6.47,
+        "median_return_pct": -6.47,
+        "win_rate_pct": 50.0
       }
     ],
     "continuation_focus": [
@@ -606,6 +622,14 @@
         "stock_count": 2,
         "avg_return_pct": -6.96,
         "median_return_pct": -6.96,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260806",
+        "days_since_buy": 36,
+        "stock_count": 2,
+        "avg_return_pct": -6.47,
+        "median_return_pct": -6.47,
         "win_rate_pct": 50.0
       }
     ],
@@ -809,6 +833,14 @@
         "avg_return_pct": -21.58,
         "median_return_pct": -21.57,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260806",
+        "days_since_buy": 36,
+        "stock_count": 4,
+        "avg_return_pct": -19.12,
+        "median_return_pct": -19.65,
+        "win_rate_pct": 0.0
       }
     ],
     "early_focus": [
@@ -1010,6 +1042,14 @@
         "stock_count": 4,
         "avg_return_pct": -21.58,
         "median_return_pct": -21.57,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260806",
+        "days_since_buy": 36,
+        "stock_count": 4,
+        "avg_return_pct": -19.12,
+        "median_return_pct": -19.65,
         "win_rate_pct": 0.0
       }
     ]
