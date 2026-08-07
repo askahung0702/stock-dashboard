@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260703",
-  "latest_track_date": "20260806",
+  "latest_track_date": "20260807",
   "stock_count": 28,
   "groups": {
     "all": [
@@ -194,6 +194,14 @@
         "stock_count": 28,
         "avg_return_pct": -13.5,
         "median_return_pct": -14.45,
+        "win_rate_pct": 7.14
+      },
+      {
+        "track_date": "20260807",
+        "days_since_buy": 35,
+        "stock_count": 28,
+        "avg_return_pct": -15.3,
+        "median_return_pct": -17.67,
         "win_rate_pct": 7.14
       }
     ],
@@ -389,6 +397,14 @@
         "avg_return_pct": -15.6,
         "median_return_pct": -14.37,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260807",
+        "days_since_buy": 35,
+        "stock_count": 7,
+        "avg_return_pct": -17.14,
+        "median_return_pct": -18.21,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -582,6 +598,14 @@
         "stock_count": 4,
         "avg_return_pct": -17.62,
         "median_return_pct": -18.17,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260807",
+        "days_since_buy": 35,
+        "stock_count": 4,
+        "avg_return_pct": -16.09,
+        "median_return_pct": -17.1,
         "win_rate_pct": 0.0
       }
     ],
@@ -777,6 +801,14 @@
         "avg_return_pct": -12.8,
         "median_return_pct": -14.53,
         "win_rate_pct": 9.52
+      },
+      {
+        "track_date": "20260807",
+        "days_since_buy": 35,
+        "stock_count": 21,
+        "avg_return_pct": -14.69,
+        "median_return_pct": -17.34,
+        "win_rate_pct": 9.52
       }
     ],
     "early_focus": [
@@ -970,6 +1002,14 @@
         "stock_count": 8,
         "avg_return_pct": -11.1,
         "median_return_pct": -14.28,
+        "win_rate_pct": 12.5
+      },
+      {
+        "track_date": "20260807",
+        "days_since_buy": 35,
+        "stock_count": 8,
+        "avg_return_pct": -13.33,
+        "median_return_pct": -17.08,
         "win_rate_pct": 12.5
       }
     ]
