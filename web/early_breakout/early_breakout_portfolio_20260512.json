@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260512",
-  "latest_track_date": "20260807",
+  "latest_track_date": "20260810",
   "stock_count": 40,
   "groups": {
     "all": [
@@ -482,6 +482,14 @@
         "stock_count": 40,
         "avg_return_pct": 2.59,
         "median_return_pct": 6.17,
+        "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260810",
+        "days_since_buy": 90,
+        "stock_count": 40,
+        "avg_return_pct": 5.33,
+        "median_return_pct": 8.44,
         "win_rate_pct": 60.0
       }
     ],
@@ -965,6 +973,14 @@
         "avg_return_pct": 5.46,
         "median_return_pct": 8.73,
         "win_rate_pct": 70.0
+      },
+      {
+        "track_date": "20260810",
+        "days_since_buy": 90,
+        "stock_count": 20,
+        "avg_return_pct": 7.81,
+        "median_return_pct": 9.67,
+        "win_rate_pct": 70.0
       }
     ],
     "continuation_focus": [
@@ -1446,6 +1462,14 @@
         "stock_count": 18,
         "avg_return_pct": 3.72,
         "median_return_pct": 7.31,
+        "win_rate_pct": 66.67
+      },
+      {
+        "track_date": "20260810",
+        "days_since_buy": 90,
+        "stock_count": 18,
+        "avg_return_pct": 6.08,
+        "median_return_pct": 8.56,
         "win_rate_pct": 66.67
       }
     ],
@@ -1929,6 +1953,14 @@
         "avg_return_pct": -0.28,
         "median_return_pct": -2.12,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260810",
+        "days_since_buy": 90,
+        "stock_count": 20,
+        "avg_return_pct": 2.85,
+        "median_return_pct": -0.14,
+        "win_rate_pct": 50.0
       }
     ],
     "early_focus": [
@@ -2410,6 +2442,14 @@
         "stock_count": 17,
         "avg_return_pct": -0.42,
         "median_return_pct": -11.9,
+        "win_rate_pct": 47.06
+      },
+      {
+        "track_date": "20260810",
+        "days_since_buy": 90,
+        "stock_count": 17,
+        "avg_return_pct": 2.82,
+        "median_return_pct": -8.42,
         "win_rate_pct": 47.06
       }
     ]
