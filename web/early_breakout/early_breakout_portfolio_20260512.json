@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260512",
-  "latest_track_date": "20260810",
+  "latest_track_date": "20260811",
   "stock_count": 40,
   "groups": {
     "all": [
@@ -490,6 +490,14 @@
         "stock_count": 40,
         "avg_return_pct": 5.33,
         "median_return_pct": 8.44,
+        "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260811",
+        "days_since_buy": 91,
+        "stock_count": 40,
+        "avg_return_pct": 5.18,
+        "median_return_pct": 7.66,
         "win_rate_pct": 60.0
       }
     ],
@@ -981,6 +989,14 @@
         "avg_return_pct": 7.81,
         "median_return_pct": 9.67,
         "win_rate_pct": 70.0
+      },
+      {
+        "track_date": "20260811",
+        "days_since_buy": 91,
+        "stock_count": 20,
+        "avg_return_pct": 7.34,
+        "median_return_pct": 8.66,
+        "win_rate_pct": 70.0
       }
     ],
     "continuation_focus": [
@@ -1470,6 +1486,14 @@
         "stock_count": 18,
         "avg_return_pct": 6.08,
         "median_return_pct": 8.56,
+        "win_rate_pct": 66.67
+      },
+      {
+        "track_date": "20260811",
+        "days_since_buy": 91,
+        "stock_count": 18,
+        "avg_return_pct": 5.98,
+        "median_return_pct": 7.66,
         "win_rate_pct": 66.67
       }
     ],
@@ -1961,6 +1985,14 @@
         "avg_return_pct": 2.85,
         "median_return_pct": -0.14,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260811",
+        "days_since_buy": 91,
+        "stock_count": 20,
+        "avg_return_pct": 3.02,
+        "median_return_pct": -0.55,
+        "win_rate_pct": 50.0
       }
     ],
     "early_focus": [
@@ -2450,6 +2482,14 @@
         "stock_count": 17,
         "avg_return_pct": 2.82,
         "median_return_pct": -8.42,
+        "win_rate_pct": 47.06
+      },
+      {
+        "track_date": "20260811",
+        "days_since_buy": 91,
+        "stock_count": 17,
+        "avg_return_pct": 3.1,
+        "median_return_pct": -5.88,
         "win_rate_pct": 47.06
       }
     ]
