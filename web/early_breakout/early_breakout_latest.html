@@ -48,10 +48,10 @@
   <div class="metric"><div class="label">已辨識起漲點</div><div class="value">17</div></div>
   <div class="metric"><div class="label">窗起點命中</div><div class="value">3</div></div>
   <div class="metric"><div class="label">回退代理點</div><div class="value">0</div></div>
-  <div class="metric"><div class="label">目前候選數</div><div class="value">45</div></div>
-  <div class="metric"><div class="label">Focus 候選</div><div class="value">26</div></div>
-  <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">較平衡</div></div>
-  <div class="metric"><div class="label">寬版學習</div><div class="value">140</div></div>
+  <div class="metric"><div class="label">目前候選數</div><div class="value">5</div></div>
+  <div class="metric"><div class="label">Focus 候選</div><div class="value">3</div></div>
+  <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">偏窄</div></div>
+  <div class="metric"><div class="label">寬版學習</div><div class="value">127</div></div>
 </div>
 
 <div class="panel">
@@ -71,7 +71,7 @@
 
 <div class="panel">
   <b>月檢視判讀</b><br>
-  研究區間 20260702 → 20260814 的前 20 大漲股中，identified 17 檔、window_start 3 檔、fallback 0 檔。<br>真正 identified 樣本最穩的共同特徵：量比介於 0.5 到 3.2 100.0%；未過熱 100.0%；新聞/題材有催化且風險不高 94.1%；最新月營收年增 &gt; 0 82.3%<br>寬版學習名單 140 檔；MA20/60 strict 主名單 45 檔，其中早期起漲 42 檔、強勢續攻 3 檔；MA18/54 strict 主名單 39 檔，其中早期起漲 36 檔、強勢續攻 3 檔；合併前端主名單 45 檔。判定為「較平衡」。目前名單 45 檔，占全市場 2.3% ，約為 identified 樣本的 2.6 倍，整體寬鬆度在可操作範圍。<br>MA20/60 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20/MA60/MA120 至少一項轉強，20日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 1/20、identified 1/17。<br>MA18/54 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA18/MA54/MA120 至少一項轉強，18日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA18 &gt; MA54，18日報酬介於 3% 到 25%；強勢續攻：54日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 1/20、identified 1/17。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。<br>前次可比較區間：20260731 → 20260806。
+  研究區間 20260702 → 20260814 的前 20 大漲股中，identified 17 檔、window_start 3 檔、fallback 0 檔。<br>真正 identified 樣本最穩的共同特徵：量比介於 0.5 到 3.2 100.0%；未過熱 100.0%；新聞/題材有催化且風險不高 94.1%；最新月營收年增 &gt; 0 82.3%<br>寬版學習名單 127 檔；MA20/60 strict 主名單 5 檔，其中早期起漲 5 檔、強勢續攻 0 檔；MA18/54 strict 主名單 5 檔，其中早期起漲 5 檔、強勢續攻 0 檔；合併前端主名單 5 檔。判定為「偏窄」。目前名單 5 檔，占全市場 0.2% ，篩選很尖，但要留意是否過度過濾而漏掉新啟動標的。<br>MA20/60 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20/MA60/MA120 至少一項轉強，20日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 1/20、identified 1/17。<br>MA18/54 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA18/MA54/MA120 至少一項轉強，18日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA18 &gt; MA54，18日報酬介於 3% 到 25%；強勢續攻：54日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 1/20、identified 1/17。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。<br>前次可比較區間：20260731 → 20260806。
 </div>
 
 <table>
@@ -101,273 +101,13 @@
 <tr>
   <td>1</td>
   <td><span class="grade grade-a">A</span></td>
-  <td><b>3706</b></td>
-  <td>神達</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>92.70</td>
-  <td class="score-hi">94.78</td>
-  <td>83.46</td>
-  <td>94.58</td>
-  <td>+60.0%</td>
-  <td>+4.9%</td>
-  <td>+5.6%</td>
-  <td>1.53</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>2</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6206</b></td>
-  <td>飛捷</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>143.00</td>
-  <td class="score-hi">91.64</td>
-  <td>77.24</td>
-  <td>86.64</td>
-  <td>+36.6%</td>
-  <td>+22.2%</td>
-  <td>+2.1%</td>
-  <td>1.14</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">存儲記憶體</span></td>
-  <td><span class="tag tag-signal">5-10日波段</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>3</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2408</b></td>
-  <td>南亞科</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>512.00</td>
-  <td class="score-hi">91.59</td>
-  <td>81.17</td>
-  <td>81.49</td>
-  <td>+690.4%</td>
-  <td>+34.4%</td>
-  <td>+64.9%</td>
-  <td>1.22</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">存儲記憶體</span></td>
-  <td><span class="tag tag-signal">5-10日波段</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>4</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2890</b></td>
-  <td>永豐金</td>
-  <td>MA20/60 強勢續攻 / MA18/54 早期起漲</td>
-  <td>40.55</td>
-  <td class="score-hi">91.15</td>
-  <td>70.80</td>
-  <td>92.26</td>
-  <td>+61.6%</td>
-  <td>+4.2%</td>
-  <td>+42.1%</td>
-  <td>1.00</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AUTO:AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>5</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>8046</b></td>
-  <td>南電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>1,305.00</td>
-  <td class="score-hi">90.97</td>
-  <td>75.71</td>
-  <td>85.22</td>
-  <td>+45.4%</td>
-  <td>+18.1%</td>
-  <td>+39.7%</td>
-  <td>1.89</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">①長線建倉</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>6</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4566</b></td>
-  <td>時碩工業</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>75.60</td>
-  <td class="score-hi">90.34</td>
-  <td>71.01</td>
-  <td>87.94</td>
-  <td>+28.8%</td>
-  <td>+13.5%</td>
-  <td>+19.6%</td>
-  <td>0.95</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">散熱</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>7</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3231</b></td>
-  <td>緯創</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>193.50</td>
-  <td class="score-hi">90.17</td>
-  <td>76.34</td>
-  <td>80.42</td>
-  <td>+51.3%</td>
-  <td>+34.8%</td>
-  <td>+33.9%</td>
-  <td>0.90</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>8</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3029</b></td>
-  <td>零壹</td>
-  <td>MA20/60 強勢續攻 / MA18/54 早期起漲</td>
-  <td>111.50</td>
-  <td class="score-hi">90.16</td>
-  <td>67.11</td>
-  <td>91.93</td>
-  <td>+33.4%</td>
-  <td>+7.7%</td>
-  <td>+14.9%</td>
-  <td>1.34</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>9</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6446</b></td>
-  <td>藥華藥</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>1,500.00</td>
-  <td class="score-hi">89.78</td>
-  <td>75.94</td>
-  <td>78.97</td>
-  <td>+98.7%</td>
-  <td>+27.7%</td>
-  <td>+105.4%</td>
-  <td>1.21</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">光學</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>10</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2344</b></td>
-  <td>華邦電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>183.50</td>
-  <td class="score-hi">89.56</td>
-  <td>90.23</td>
-  <td>84.04</td>
-  <td>+221.1%</td>
-  <td>+21.5%</td>
-  <td>+46.8%</td>
-  <td>1.65</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">存儲記憶體</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>11</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4938</b></td>
-  <td>和碩</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>94.80</td>
-  <td class="score-hi">89.29</td>
-  <td>68.43</td>
-  <td>85.93</td>
-  <td>+13.2%</td>
-  <td>+18.5%</td>
-  <td>+17.5%</td>
-  <td>1.32</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>12</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2376</b></td>
-  <td>技嘉</td>
-  <td>MA20/60 強勢續攻 / MA18/54 早期起漲</td>
-  <td>397.50</td>
-  <td class="score-hi">89.11</td>
-  <td>74.14</td>
-  <td>77.87</td>
-  <td>+44.4%</td>
-  <td>+20.1%</td>
-  <td>+23.3%</td>
-  <td>1.64</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>13</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3406</b></td>
-  <td>玉晶光</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>615.00</td>
-  <td class="score-hi">85.10</td>
-  <td>76.77</td>
-  <td>78.57</td>
-  <td>+12.1%</td>
-  <td>+23.0%</td>
-  <td>+6.8%</td>
-  <td>2.05</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">光學</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>14</td>
-  <td><span class="grade grade-a">A</span></td>
   <td><b>3264</b></td>
   <td>欣銓</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>225.50</td>
-  <td class="score-hi">85.00</td>
-  <td>76.22</td>
-  <td>78.75</td>
+  <td class="score-hi">84.99</td>
+  <td>76.20</td>
+  <td>78.73</td>
   <td>+40.6%</td>
   <td>+14.2%</td>
   <td>+1.8%</td>
@@ -379,95 +119,15 @@
   <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
 </tr>
 <tr>
-  <td>15</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2454</b></td>
-  <td>聯發科</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>4,210.00</td>
-  <td class="score-hi">84.93</td>
-  <td>77.25</td>
-  <td>77.09</td>
-  <td>+6.7%</td>
-  <td>+26.1%</td>
-  <td>+9.1%</td>
-  <td>1.18</td>
-  <td><span class="tag tag-structure">追高風險</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>16</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2317</b></td>
-  <td>鴻海</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>259.50</td>
-  <td class="score-hi">84.83</td>
-  <td>73.58</td>
-  <td>81.19</td>
-  <td>+48.6%</td>
-  <td>+10.7%</td>
-  <td>+3.8%</td>
-  <td>0.89</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>17</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4916</b></td>
-  <td>事欣科</td>
-  <td>MA20/60 早期起漲</td>
-  <td>106.00</td>
-  <td class="score-hi">83.62</td>
-  <td>70.85</td>
-  <td>78.55</td>
-  <td>+104.6%</td>
-  <td>+8.5%</td>
-  <td>+7.8%</td>
-  <td>1.63</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">光學</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>18</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3046</b></td>
-  <td>建碁</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>59.80</td>
-  <td class="score-hi">83.38</td>
-  <td>67.47</td>
-  <td>81.56</td>
-  <td>+36.3%</td>
-  <td>+15.2%</td>
-  <td>+12.0%</td>
-  <td>0.98</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>19</td>
+  <td>2</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>6121</b></td>
   <td>新普</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>412.00</td>
-  <td class="score-hi">83.28</td>
-  <td>67.56</td>
-  <td>80.97</td>
+  <td class="score-hi">83.27</td>
+  <td>67.55</td>
+  <td>80.94</td>
   <td>+9.3%</td>
   <td>+13.7%</td>
   <td>+8.4%</td>
@@ -479,115 +139,15 @@
   <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
 </tr>
 <tr>
-  <td>20</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>1513</b></td>
-  <td>中興電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>170.00</td>
-  <td class="score-hi">82.96</td>
-  <td>64.51</td>
-  <td>83.18</td>
-  <td>+5.2%</td>
-  <td>+7.9%</td>
-  <td>+8.6%</td>
-  <td>1.09</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">重電</span></td>
-  <td><span class="tag tag-signal">5-10日波段</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>21</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2436</b></td>
-  <td>偉詮電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>69.10</td>
-  <td class="score-hi">82.07</td>
-  <td>80.91</td>
-  <td>84.43</td>
-  <td>+29.1%</td>
-  <td>+22.1%</td>
-  <td>-10.9%</td>
-  <td>1.28</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>22</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2049</b></td>
-  <td>上銀</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>373.50</td>
-  <td class="score-mid">81.95</td>
-  <td>80.47</td>
-  <td>84.34</td>
-  <td>+31.2%</td>
-  <td>+24.5%</td>
-  <td>-0.8%</td>
-  <td>0.94</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">機器人</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">①長線建倉</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>23</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>1504</b></td>
-  <td>東元</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>70.60</td>
-  <td class="score-mid">80.83</td>
-  <td>75.73</td>
-  <td>84.67</td>
-  <td>+8.2%</td>
-  <td>+6.5%</td>
-  <td>-2.1%</td>
-  <td>2.08</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>24</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2345</b></td>
-  <td>智邦</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>2,300.00</td>
-  <td class="score-mid">80.51</td>
-  <td>77.48</td>
-  <td>80.89</td>
-  <td>+63.1%</td>
-  <td>+10.1%</td>
-  <td>-6.9%</td>
-  <td>1.16</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>25</td>
+  <td>3</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3265</b></td>
   <td>台星科</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>173.00</td>
-  <td class="score-mid">78.96</td>
-  <td>70.88</td>
-  <td>81.38</td>
+  <td class="score-mid">78.95</td>
+  <td>70.87</td>
+  <td>81.36</td>
   <td>+10.7%</td>
   <td>+14.9%</td>
   <td>-7.0%</td>
@@ -599,215 +159,15 @@
   <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
 </tr>
 <tr>
-  <td>26</td>
-  <td><span class="grade grade-b">B</span></td>
-  <td><b>2362</b></td>
-  <td>藍天</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>49.90</td>
-  <td class="score-mid">81.59</td>
-  <td>64.28</td>
-  <td>89.72</td>
-  <td>+10.6%</td>
-  <td>+19.1%</td>
-  <td>+22.1%</td>
-  <td>1.67</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>27</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6214</b></td>
-  <td>精誠</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>172.00</td>
-  <td class="score-hi">85.25</td>
-  <td>63.71</td>
-  <td>71.61</td>
-  <td>+51.5%</td>
-  <td>+25.1%</td>
-  <td>+32.3%</td>
-  <td>0.85</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>28</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2395</b></td>
-  <td>研華</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>683.00</td>
-  <td class="score-hi">83.66</td>
-  <td>68.54</td>
-  <td>57.60</td>
-  <td>+64.4%</td>
-  <td>+32.4%</td>
-  <td>+45.6%</td>
-  <td>0.62</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>29</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>8016</b></td>
-  <td>矽創</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>306.00</td>
-  <td class="score-hi">82.98</td>
-  <td>73.18</td>
-  <td>72.41</td>
-  <td>+33.6%</td>
-  <td>+11.7%</td>
-  <td>+4.8%</td>
-  <td>0.91</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AUTO:AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>30</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2330</b></td>
-  <td>台積電</td>
-  <td>MA20/60 早期起漲</td>
-  <td>2,395.00</td>
-  <td class="score-hi">82.88</td>
-  <td>71.63</td>
-  <td>73.86</td>
-  <td>+47.5%</td>
-  <td>+3.2%</td>
-  <td>+6.2%</td>
-  <td>0.68</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">AUTO:AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>31</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2356</b></td>
-  <td>英業達</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>69.90</td>
-  <td class="score-hi">82.55</td>
-  <td>69.81</td>
-  <td>74.48</td>
-  <td>+54.2%</td>
-  <td>+22.2%</td>
-  <td>+17.5%</td>
-  <td>1.61</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>32</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2382</b></td>
-  <td>廣達</td>
-  <td>MA20/60 早期起漲</td>
-  <td>327.50</td>
-  <td class="score-hi">82.26</td>
-  <td>76.46</td>
-  <td>64.71</td>
-  <td>+109.5%</td>
-  <td>+3.6%</td>
-  <td>+3.6%</td>
-  <td>1.65</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">矽光子</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">①長線建倉</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>33</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3034</b></td>
-  <td>聯詠</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>512.00</td>
-  <td class="score-mid">81.95</td>
-  <td>71.60</td>
-  <td>69.27</td>
-  <td>+18.4%</td>
-  <td>+11.8%</td>
-  <td>+5.5%</td>
-  <td>0.88</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>34</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>6770</b></td>
-  <td>力積電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>78.40</td>
-  <td class="score-mid">81.05</td>
-  <td>69.51</td>
-  <td>67.38</td>
-  <td>+66.0%</td>
-  <td>+24.4%</td>
-  <td>+22.9%</td>
-  <td>2.40</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">AUTO:AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>35</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2441</b></td>
-  <td>超豐</td>
-  <td>MA20/60 早期起漲</td>
-  <td>120.00</td>
-  <td class="score-mid">80.14</td>
-  <td>67.06</td>
-  <td>65.88</td>
-  <td>+31.9%</td>
-  <td>+0.8%</td>
-  <td>+2.6%</td>
-  <td>0.92</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">CoWoS</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>36</td>
+  <td>4</td>
   <td><span class="grade grade-a">A</span></td>
   <td><b>3260</b></td>
   <td>威剛</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>402.00</td>
-  <td class="score-mid">78.25</td>
-  <td>74.86</td>
-  <td>72.85</td>
+  <td class="score-mid">78.23</td>
+  <td>74.84</td>
+  <td>72.82</td>
   <td>+251.3%</td>
   <td>+15.3%</td>
   <td>-3.7%</td>
@@ -819,175 +179,15 @@
   <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
 </tr>
 <tr>
-  <td>37</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4967</b></td>
-  <td>十銓</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>275.00</td>
-  <td class="score-mid">78.17</td>
-  <td>60.24</td>
-  <td>64.54</td>
-  <td>+82.1%</td>
-  <td>+31.9%</td>
-  <td>+1.7%</td>
-  <td>0.99</td>
-  <td><span class="tag tag-structure">追高風險</span></td>
-  <td><span class="tag tag-theme">存儲記憶體</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>38</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2308</b></td>
-  <td>台達電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>1,885.00</td>
-  <td class="score-mid">77.60</td>
-  <td>74.46</td>
-  <td>70.11</td>
-  <td>+48.9%</td>
-  <td>+10.6%</td>
-  <td>-10.0%</td>
-  <td>1.01</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AUTO:AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>39</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2302</b></td>
-  <td>麗正</td>
-  <td>MA20/60 早期起漲</td>
-  <td>42.20</td>
-  <td class="score-mid">77.21</td>
-  <td>61.19</td>
-  <td>58.59</td>
-  <td>+49.7%</td>
-  <td>+7.8%</td>
-  <td>+50.2%</td>
-  <td>0.96</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td></td>
-  <td></td>
-  <td><span class="tag tag-signal">①長線建倉</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>40</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>3661</b></td>
-  <td>世芯-KY</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>4,210.00</td>
-  <td class="score-mid">76.36</td>
-  <td>70.92</td>
-  <td>68.37</td>
-  <td>+54.6%</td>
-  <td>+25.1%</td>
-  <td>-14.0%</td>
-  <td>1.63</td>
-  <td><span class="tag tag-structure">追高風險</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>41</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4958</b></td>
-  <td>臻鼎-KY</td>
-  <td>MA20/60 早期起漲</td>
-  <td>489.50</td>
-  <td class="score-mid">75.72</td>
-  <td>70.33</td>
-  <td>65.89</td>
-  <td>+34.0%</td>
-  <td>+2.3%</td>
-  <td>-5.1%</td>
-  <td>1.56</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>42</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>2421</b></td>
-  <td>建準</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>146.00</td>
-  <td class="score-lo">74.88</td>
-  <td>66.94</td>
-  <td>65.91</td>
-  <td>+21.7%</td>
-  <td>+16.3%</td>
-  <td>-7.9%</td>
-  <td>0.78</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">散熱</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>43</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>7769</b></td>
-  <td>鴻勁</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>6,590.00</td>
-  <td class="score-lo">74.20</td>
-  <td>61.83</td>
-  <td>68.91</td>
-  <td>+97.0%</td>
-  <td>+9.7%</td>
-  <td>-14.8%</td>
-  <td>0.89</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>44</td>
-  <td><span class="grade grade-a">A</span></td>
-  <td><b>4576</b></td>
-  <td>大銀微系統</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>221.00</td>
-  <td class="score-lo">72.71</td>
-  <td>61.41</td>
-  <td>61.99</td>
-  <td>+56.9%</td>
-  <td>+17.9%</td>
-  <td>-15.5%</td>
-  <td>0.65</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">CoPoS</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">新聞/題材有催化且風險不高；量比介於 0.5 到 3.2；最新月營收年增 &gt; 0</td>
-</tr>
-<tr>
-  <td>45</td>
+  <td>5</td>
   <td><span class="grade grade-b">B</span></td>
   <td><b>6510</b></td>
   <td>精測</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>2,990.00</td>
-  <td class="score-lo">73.94</td>
-  <td>81.71</td>
-  <td>73.33</td>
+  <td class="score-lo">73.93</td>
+  <td>81.69</td>
+  <td>73.30</td>
   <td>+41.4%</td>
   <td>+16.6%</td>
   <td>-12.2%</td>
