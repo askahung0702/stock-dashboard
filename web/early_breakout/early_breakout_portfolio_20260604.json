@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260604",
-  "latest_track_date": "20260820",
+  "latest_track_date": "20260821",
   "stock_count": 12,
   "groups": {
     "all": [
@@ -410,6 +410,14 @@
         "stock_count": 12,
         "avg_return_pct": -3.6,
         "median_return_pct": -9.83,
+        "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 78,
+        "stock_count": 12,
+        "avg_return_pct": -4.46,
+        "median_return_pct": -11.93,
         "win_rate_pct": 33.33
       }
     ],
@@ -821,6 +829,14 @@
         "avg_return_pct": -11.25,
         "median_return_pct": -12.7,
         "win_rate_pct": 20.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 78,
+        "stock_count": 5,
+        "avg_return_pct": -11.46,
+        "median_return_pct": -13.21,
+        "win_rate_pct": 20.0
       }
     ],
     "continuation_focus": [
@@ -1230,6 +1246,14 @@
         "stock_count": 2,
         "avg_return_pct": -4.19,
         "median_return_pct": -4.19,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 78,
+        "stock_count": 2,
+        "avg_return_pct": -6.21,
+        "median_return_pct": -6.21,
         "win_rate_pct": 50.0
       }
     ],
@@ -1641,6 +1665,14 @@
         "avg_return_pct": 1.86,
         "median_return_pct": -4.89,
         "win_rate_pct": 42.86
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 78,
+        "stock_count": 7,
+        "avg_return_pct": 0.54,
+        "median_return_pct": -5.08,
+        "win_rate_pct": 42.86
       }
     ],
     "early_focus": [
@@ -2050,6 +2082,14 @@
         "stock_count": 4,
         "avg_return_pct": 6.21,
         "median_return_pct": 1.38,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 78,
+        "stock_count": 4,
+        "avg_return_pct": 6.13,
+        "median_return_pct": -0.47,
         "win_rate_pct": 50.0
       }
     ]

@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260610",
-  "latest_track_date": "20260820",
+  "latest_track_date": "20260821",
   "stock_count": 24,
   "groups": {
     "all": [
@@ -395,6 +395,14 @@
         "avg_return_pct": 1.11,
         "median_return_pct": -4.72,
         "win_rate_pct": 41.67
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 72,
+        "stock_count": 24,
+        "avg_return_pct": -0.09,
+        "median_return_pct": -4.48,
+        "win_rate_pct": 33.33
       }
     ],
     "continuation": [
@@ -788,6 +796,14 @@
         "stock_count": 1,
         "avg_return_pct": -4.23,
         "median_return_pct": -4.23,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 72,
+        "stock_count": 1,
+        "avg_return_pct": -3.76,
+        "median_return_pct": -3.76,
         "win_rate_pct": 0.0
       }
     ],
@@ -1183,6 +1199,14 @@
         "avg_return_pct": -4.23,
         "median_return_pct": -4.23,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 72,
+        "stock_count": 1,
+        "avg_return_pct": -3.76,
+        "median_return_pct": -3.76,
+        "win_rate_pct": 0.0
       }
     ],
     "early": [
@@ -1577,6 +1601,14 @@
         "avg_return_pct": 1.34,
         "median_return_pct": -5.21,
         "win_rate_pct": 43.48
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 72,
+        "stock_count": 23,
+        "avg_return_pct": 0.07,
+        "median_return_pct": -5.21,
+        "win_rate_pct": 34.78
       }
     ],
     "early_focus": [
@@ -1970,6 +2002,14 @@
         "stock_count": 10,
         "avg_return_pct": -0.23,
         "median_return_pct": -8.6,
+        "win_rate_pct": 20.0
+      },
+      {
+        "track_date": "20260821",
+        "days_since_buy": 72,
+        "stock_count": 10,
+        "avg_return_pct": -0.25,
+        "median_return_pct": -8.75,
         "win_rate_pct": 20.0
       }
     ]
