@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260701",
-  "latest_track_date": "20260831",
+  "latest_track_date": "20260901",
   "stock_count": 6,
   "groups": {
     "all": [
@@ -339,6 +339,14 @@
         "avg_return_pct": -7.54,
         "median_return_pct": -12.97,
         "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20260901",
+        "days_since_buy": 62,
+        "stock_count": 6,
+        "avg_return_pct": -5.36,
+        "median_return_pct": -9.65,
+        "win_rate_pct": 33.33
       }
     ],
     "continuation": [
@@ -676,6 +684,14 @@
         "stock_count": 2,
         "avg_return_pct": 8.96,
         "median_return_pct": 8.96,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260901",
+        "days_since_buy": 62,
+        "stock_count": 2,
+        "avg_return_pct": 9.43,
+        "median_return_pct": 9.43,
         "win_rate_pct": 50.0
       }
     ],
@@ -1015,6 +1031,14 @@
         "avg_return_pct": 8.96,
         "median_return_pct": 8.96,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260901",
+        "days_since_buy": 62,
+        "stock_count": 2,
+        "avg_return_pct": 9.43,
+        "median_return_pct": 9.43,
+        "win_rate_pct": 50.0
       }
     ],
     "early": [
@@ -1353,6 +1377,14 @@
         "avg_return_pct": -15.8,
         "median_return_pct": -12.97,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260901",
+        "days_since_buy": 62,
+        "stock_count": 4,
+        "avg_return_pct": -12.76,
+        "median_return_pct": -9.65,
+        "win_rate_pct": 25.0
       }
     ],
     "early_focus": [
@@ -1691,6 +1723,14 @@
         "avg_return_pct": -15.8,
         "median_return_pct": -12.97,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260901",
+        "days_since_buy": 62,
+        "stock_count": 4,
+        "avg_return_pct": -12.76,
+        "median_return_pct": -9.65,
+        "win_rate_pct": 25.0
       }
     ]
   }
