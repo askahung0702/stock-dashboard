@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260421",
-  "latest_track_date": "20260909",
+  "latest_track_date": "20260910",
   "stock_count": 30,
   "groups": {
     "all": [
@@ -771,6 +771,14 @@
         "avg_return_pct": 19.67,
         "median_return_pct": 9.33,
         "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260910",
+        "days_since_buy": 142,
+        "stock_count": 30,
+        "avg_return_pct": 19.16,
+        "median_return_pct": 7.88,
+        "win_rate_pct": 56.67
       }
     ],
     "continuation": [
@@ -1541,6 +1549,14 @@
         "avg_return_pct": 25.29,
         "median_return_pct": 12.65,
         "win_rate_pct": 70.59
+      },
+      {
+        "track_date": "20260910",
+        "days_since_buy": 142,
+        "stock_count": 17,
+        "avg_return_pct": 25.11,
+        "median_return_pct": 9.55,
+        "win_rate_pct": 64.71
       }
     ],
     "continuation_focus": [
@@ -2311,6 +2327,14 @@
         "avg_return_pct": 22.34,
         "median_return_pct": 2.53,
         "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20260910",
+        "days_since_buy": 142,
+        "stock_count": 10,
+        "avg_return_pct": 22.45,
+        "median_return_pct": 1.77,
+        "win_rate_pct": 50.0
       }
     ],
     "early": [
@@ -3081,6 +3105,14 @@
         "avg_return_pct": 12.31,
         "median_return_pct": -0.35,
         "win_rate_pct": 46.15
+      },
+      {
+        "track_date": "20260910",
+        "days_since_buy": 142,
+        "stock_count": 13,
+        "avg_return_pct": 11.38,
+        "median_return_pct": -1.04,
+        "win_rate_pct": 46.15
       }
     ],
     "early_focus": [
@@ -3850,6 +3882,14 @@
         "stock_count": 11,
         "avg_return_pct": 8.94,
         "median_return_pct": -0.35,
+        "win_rate_pct": 45.45
+      },
+      {
+        "track_date": "20260910",
+        "days_since_buy": 142,
+        "stock_count": 11,
+        "avg_return_pct": 7.63,
+        "median_return_pct": -1.04,
         "win_rate_pct": 45.45
       }
     ]
