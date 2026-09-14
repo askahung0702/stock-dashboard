@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260703",
-  "latest_track_date": "20260911",
+  "latest_track_date": "20260914",
   "stock_count": 28,
   "groups": {
     "all": [
@@ -387,6 +387,14 @@
         "avg_return_pct": -13.66,
         "median_return_pct": -15.55,
         "win_rate_pct": 10.71
+      },
+      {
+        "track_date": "20260914",
+        "days_since_buy": 73,
+        "stock_count": 28,
+        "avg_return_pct": -13.37,
+        "median_return_pct": -14.02,
+        "win_rate_pct": 17.86
       }
     ],
     "continuation": [
@@ -772,6 +780,14 @@
         "stock_count": 7,
         "avg_return_pct": -20.43,
         "median_return_pct": -19.46,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260914",
+        "days_since_buy": 73,
+        "stock_count": 7,
+        "avg_return_pct": -20.38,
+        "median_return_pct": -20.27,
         "win_rate_pct": 0.0
       }
     ],
@@ -1159,6 +1175,14 @@
         "avg_return_pct": -16.81,
         "median_return_pct": -15.55,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260914",
+        "days_since_buy": 73,
+        "stock_count": 4,
+        "avg_return_pct": -16.27,
+        "median_return_pct": -13.85,
+        "win_rate_pct": 0.0
       }
     ],
     "early": [
@@ -1545,6 +1569,14 @@
         "avg_return_pct": -11.4,
         "median_return_pct": -11.61,
         "win_rate_pct": 14.29
+      },
+      {
+        "track_date": "20260914",
+        "days_since_buy": 73,
+        "stock_count": 21,
+        "avg_return_pct": -11.04,
+        "median_return_pct": -12.09,
+        "win_rate_pct": 23.81
       }
     ],
     "early_focus": [
@@ -1930,6 +1962,14 @@
         "stock_count": 8,
         "avg_return_pct": -14.07,
         "median_return_pct": -14.93,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260914",
+        "days_since_buy": 73,
+        "stock_count": 8,
+        "avg_return_pct": -14.68,
+        "median_return_pct": -15.95,
         "win_rate_pct": 0.0
       }
     ]
