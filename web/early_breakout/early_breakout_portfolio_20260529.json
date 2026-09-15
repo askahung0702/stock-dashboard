@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260529",
-  "latest_track_date": "20260914",
+  "latest_track_date": "20260915",
   "stock_count": 8,
   "groups": {
     "all": [
@@ -570,6 +570,14 @@
         "stock_count": 8,
         "avg_return_pct": -5.99,
         "median_return_pct": -6.56,
+        "win_rate_pct": 12.5
+      },
+      {
+        "track_date": "20260915",
+        "days_since_buy": 109,
+        "stock_count": 8,
+        "avg_return_pct": -8.27,
+        "median_return_pct": -9.37,
         "win_rate_pct": 12.5
       }
     ],
@@ -1141,6 +1149,14 @@
         "avg_return_pct": -7.41,
         "median_return_pct": -5.84,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260915",
+        "days_since_buy": 109,
+        "stock_count": 4,
+        "avg_return_pct": -8.88,
+        "median_return_pct": -8.39,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -1710,6 +1726,14 @@
         "stock_count": 3,
         "avg_return_pct": -4.17,
         "median_return_pct": -5.12,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260915",
+        "days_since_buy": 109,
+        "stock_count": 3,
+        "avg_return_pct": -5.87,
+        "median_return_pct": -7.55,
         "win_rate_pct": 0.0
       }
     ],
@@ -2281,6 +2305,14 @@
         "avg_return_pct": -4.57,
         "median_return_pct": -8.2,
         "win_rate_pct": 25.0
+      },
+      {
+        "track_date": "20260915",
+        "days_since_buy": 109,
+        "stock_count": 4,
+        "avg_return_pct": -7.66,
+        "median_return_pct": -12.06,
+        "win_rate_pct": 25.0
       }
     ],
     "early_focus": [
@@ -2850,6 +2882,14 @@
         "stock_count": 3,
         "avg_return_pct": 2.19,
         "median_return_pct": -6.55,
+        "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260915",
+        "days_since_buy": 109,
+        "stock_count": 3,
+        "avg_return_pct": -1.74,
+        "median_return_pct": -9.5,
         "win_rate_pct": 33.33
       }
     ]
