@@ -7,6 +7,7 @@ public class MarketIndexSnapshot {
     private final String name;
     private final String source;
     private final String errorMessage;
+    private final String dataDate;
     private final double currentPrice;
     private final double movingAverage20;
     private final double movingAverage60;
@@ -23,6 +24,7 @@ public class MarketIndexSnapshot {
     private final String divergenceLabel;
 
     public MarketIndexSnapshot(boolean available, String symbol, String name, String source, String errorMessage,
+            String dataDate,
             double currentPrice, double movingAverage20, double movingAverage60, double return20DayPct,
             double volumeRatio, double macd, double macdSignal, double macdHistogram, double ma20Slope,
             boolean recent20High, double atr20Pct, double atr60Pct, String trendLabel, String divergenceLabel) {
@@ -31,6 +33,7 @@ public class MarketIndexSnapshot {
         this.name = name;
         this.source = source;
         this.errorMessage = errorMessage;
+        this.dataDate = dataDate == null ? "" : dataDate;
         this.currentPrice = currentPrice;
         this.movingAverage20 = movingAverage20;
         this.movingAverage60 = movingAverage60;
@@ -48,7 +51,7 @@ public class MarketIndexSnapshot {
     }
 
     public static MarketIndexSnapshot unavailable(String symbol, String name, String source, String errorMessage) {
-        return new MarketIndexSnapshot(false, symbol, name, source, errorMessage, 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D,
+        return new MarketIndexSnapshot(false, symbol, name, source, errorMessage, "", 0D, 0D, 0D, 0D, 0D, 0D, 0D, 0D,
                 0D, false, 0D, 0D, "資料不足", "未提供");
     }
 
@@ -70,6 +73,10 @@ public class MarketIndexSnapshot {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    public String getDataDate() {
+        return dataDate;
     }
 
     public double getCurrentPrice() {

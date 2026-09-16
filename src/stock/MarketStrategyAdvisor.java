@@ -40,22 +40,22 @@ public class MarketStrategyAdvisor {
             exposureMax = 30;
             summary = "市場進入修正，應先守資金與流動性。";
             exposureGuidance = "建議總資金水位 30% 以下，保留現金，汰弱留強，只保留高把握度部位。";
-            preferredTabs = Arrays.asList("🏆 highWinMode", "⭐ 自選清單");
+            preferredTabs = Arrays.asList("⭐ 自選清單", "防守觀察");
             avoidTabs = Arrays.asList("🚀 催化成長", "🔥 強勢續攻", "🌱 早期起漲");
             strategyGuidance = "暫停突破追價，改做高防禦與錯殺回穩股，沒有明顯優勢就不出手。";
-            atrMultiplier = 1.35D;
-            riskGuidance = "修正盤將停損收緊到 ATR 1.35 倍；只要跌破動態停利或出現轉弱賣訊，就不宜戀戰。";
+            atrMultiplier = 1.75D;
+            riskGuidance = "修正盤以 ATR 1.75 倍作風險距離參考，並同步降低股數；停損仍應優先放在型態失效或支撐跌破處。";
             break;
         case PANIC_SELLOFF:
             exposureMin = 0;
             exposureMax = 20;
             summary = "恐慌波動主導盤面，重點是活下來，不是找最低點。";
             exposureGuidance = "建議總資金水位 0% - 20%，以現金為主，若要試單只能極小部位。";
-            preferredTabs = Arrays.asList("🏆 highWinMode");
+            preferredTabs = Arrays.asList("僅觀察", "⭐ 自選清單");
             avoidTabs = Arrays.asList("🚀 催化成長", "🔥 強勢續攻", "🌱 早期起漲", "⚡ 強勢續攻 18/54");
             strategyGuidance = "暫停一切突破策略，等待恐慌退潮與內部結構修復後再回到進攻模式。";
-            atrMultiplier = 1.25D;
-            riskGuidance = "高波動恐慌期將 ATR 停損收緊至 1.25 倍；若 sellSignalLabel 顯示『轉弱出場』，請無條件執行。";
+            atrMultiplier = 2.00D;
+            riskGuidance = "恐慌期不以收緊停損換取安全感；若極小部位試單，ATR 2.0 倍僅作風險距離參考，必須按距離反向縮小股數。";
             break;
         case RANGE_BOUND:
         default:

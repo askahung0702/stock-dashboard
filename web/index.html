@@ -1849,6 +1849,10 @@ function renderEarlyBreakoutPanel() {
   const earlyCount1854 = Number(summary?.early_candidate_count_1854) || S.earlyBreakout.earlyCount1854 || 0;
   const continuationCount1854 = Number(summary?.continuation_candidate_count_1854) || S.earlyBreakout.continuationCount1854 || 0;
   const unionCount = Number(summary?.candidate_union_count) || rows.length || 0;
+  const identifiedHit = Number(summary?.strict_identified_hit) || 0;
+  const identifiedTotal = Number(summary?.strict_identified_total) || identifiedCount || 0;
+  const identifiedHitRate = identifiedTotal > 0 ? identifiedHit * 100 / identifiedTotal : 0;
+  const candidateRatio = Number(summary?.candidate_ratio_pct) || 0;
   const reviewLine = Array.isArray(summary?.review_lines) && summary.review_lines.length ? summary.review_lines[0] : '';
   const featureChips = Array.isArray(summary?.identified_feature_lines) && summary.identified_feature_lines.length
     ? summary.identified_feature_lines
@@ -1884,9 +1888,9 @@ function renderEarlyBreakoutPanel() {
     ['18/54 起漲', earlyCount1854 || '—'],
     ['18/54 續攻', continuationCount1854 || '—'],
     ['Focus', S.earlyBreakout.focusCount],
-    ['已辨識起漲', identifiedCount || '—'],
+    ['真正起漲命中', identifiedTotal ? `${identifiedHit}/${identifiedTotal} (${identifiedHitRate.toFixed(0)}%)` : '—'],
     [summary ? '寬版學習' : '最高 Screen', summary ? (broadCount || '—') : (rows[0] ? rows[0].screenScore.toFixed(1) : '—')],
-    [summary ? '寬鬆度' : '研究基準', summary ? breadthLabel : '近一月起漲']
+    [summary ? '篩選寬度' : '研究基準', summary ? `${breadthLabel}${candidateRatio ? ` · ${candidateRatio.toFixed(2)}%` : ''}` : '近一月起漲']
   ].map(([label, value]) => `
     <div class="eb-stat">
       <div class="eb-stat-lbl">${label}</div>
@@ -1900,7 +1904,7 @@ function renderEarlyBreakoutPanel() {
   ].map(([role, text]) => `<span class="eb-chip ${role === '保護' ? 'guard' : role !== '核心' ? 'support' : ''}">${role} · ${text}</span>`).join('');
   document.getElementById('eb-note').textContent =
     summary
-      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
+      ? `${reviewLine || '每月會重新檢查上月前20大漲股的共同特徵。'}${identifiedTotal && identifiedHitRate < 40 ? ` 真正起漲命中率僅 ${identifiedHitRate.toFixed(0)}%，目前 strict 門檻偏窄，先保留寬版觀察池，不直接鎖死門檻。` : ''}${summary.backtest_recommended ? ' 這版條件建議持續做 rolling backtest。' : ''}`
       : '這裡顯示的是前端版摘要；完整條件命中、缺少條件與候選名單可點右上角完整報表。';
   panel.style.display = '';
 }
@@ -1941,19 +1945,68 @@ async function loadAndRenderStageDiffPanel() {
 }
 
 // ── Market Banner ─────────────────────────────────────────────────────────────
+function normalizedDate(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.length >= 8 ? digits.slice(0, 8) : digits;
+}
+function sameSnapshotDate(expected, actual) {
+  const a = normalizedDate(expected), b = normalizedDate(actual);
+  return a.length === 8 && a === b;
+}
+function resolvedMarketDataQuality(d) {
+  if (d.marketDataQuality && d.marketDataQuality.available === true) return d.marketDataQuality;
+  const target = d.date || '';
+  const index = d.marketIndex || {};
+  const futures = d.marketFutures || {};
+  const liquidity = d.marketLiquidity || {};
+  const issues = [];
+  let score = Number(d.count || 0) > 0 ? 30 : 0;
+  const stockReady = !!d.confidenceReady;
+  if (stockReady) score += Math.min(10, Math.max(0, Number(d.averageConfidence || 0) / 10));
+  const indexFresh = !!index.available && sameSnapshotDate(target, index.dataDate);
+  const futuresPriceFresh = !!futures.priceAvailable && sameSnapshotDate(target, futures.marketTime);
+  const futuresPositionFresh = !!futures.positionAvailable && sameSnapshotDate(target, futures.dataDate);
+  const nightFresh = !!futures.nightPriceAvailable && sameSnapshotDate(target, futures.nightTradeDate || futures.nightMarketTime);
+  const liquidityFresh = !!liquidity.available && sameSnapshotDate(target, liquidity.date);
+  if (indexFresh) score += 25; else issues.push('加權指數資料日期未提供或不一致');
+  if (futuresPriceFresh) score += 10; else issues.push('台指期日盤資料缺失或過期');
+  if (futuresPositionFresh) score += 15; else issues.push('外資期貨部位缺失或日期不一致');
+  if (nightFresh) score += 5; else issues.push('夜盤資料尚未取得或已過期');
+  if (liquidityFresh) score += 5; else issues.push('融資／量能資料缺失或日期不一致');
+  return {
+    available: true,
+    score,
+    status: score >= 95 ? '完整' : score >= 80 ? '部分資料待補' : score >= 60 ? '警告' : '不足',
+    recommendationReady: indexFresh && score >= 75,
+    indexFresh,
+    futuresPriceFresh,
+    futuresPositionFresh,
+    nightFresh,
+    liquidityFresh,
+    issues
+  };
+}
 function renderMarketBanner(d) {
   const sigMap = { '偏強':'sig-strong', '中性':'sig-neutral', '偏弱':'sig-weak', '警戒':'sig-danger' };
   const banner = document.getElementById('mkt-banner');
   const cls = sigMap[d.marketSignal] || 'sig-neutral';
   const confidenceReady = !!d.confidenceReady;
+  const marketQuality = resolvedMarketDataQuality(d);
+  const marketQualityKnown = marketQuality.available === true;
+  const marketAdviceReady = !marketQualityKnown || marketQuality.recommendationReady === true;
+  const futuresPriceFresh = !marketQualityKnown || marketQuality.futuresPriceFresh === true;
+  const futuresPositionFresh = !marketQualityKnown || marketQuality.futuresPositionFresh === true;
+  const nightFresh = !marketQualityKnown || marketQuality.nightFresh === true;
   const futures = d.marketFutures || {};
   const futuresSignal = futures.signal || {};
+  const futuresSignalFresh = !marketQualityKnown || (futuresPositionFresh && (!futures.priceAvailable || futuresPriceFresh));
   const liquidity = d.marketLiquidity || {};
   const marketText = d.marketSignalText || '';
   banner.className = 'mkt-banner ' + cls;
-  document.getElementById('mkt-signal').textContent = '市場環境：' + (d.marketSignal || '—') + ` (${(d.marketScore||0).toFixed(1)}分)`;
+  document.getElementById('mkt-signal').textContent = '選股環境：' + (d.marketSignal || '—') + ` (${(d.marketScore||0).toFixed(1)}分)`;
   document.getElementById('mkt-text').textContent   = confidenceReady
-    ? [marketText, (d.marketAlert ? `警報：${d.marketAlert} ${(d.marketDangerScore||0).toFixed(1)}分` : ''), d.marketAlertText || ''].filter(Boolean).join('；')
+    ? [marketText, (d.marketAlert ? `警報：${d.marketAlert} ${(d.marketDangerScore||0).toFixed(1)}分` : ''), d.marketAlertText || '',
+       (!marketAdviceReady ? '核心市場資料日期不一致，暫停產生新的操作建議' : '')].filter(Boolean).join('；')
     : (marketText ? marketText + '；資料信心欄位尚未刷新' : '資料信心欄位尚未刷新，請重跑新版分析');
   document.getElementById('mkt-chips').innerHTML =
     `<div class="mkt-chip">分數上升 <b>${(d.scoreUpPct||0).toFixed(1)}%</b></div>` +
@@ -1961,12 +2014,13 @@ function renderMarketBanner(d) {
     `<div class="mkt-chip">好買點 <b>${(d.buyPointPct||0).toFixed(1)}%</b></div>` +
     `<div class="mkt-chip">危險警報 <b>${d.marketAlert || '中性'}</b></div>` +
     `<div class="mkt-chip">爆量股 <b>${fmtMetricWithDelta(`${(d.volumeSurgePct||0).toFixed(1)}%`, fmtDeltaTag(Number(d.volumeSurgePctDelta || 0), '%', 1))}</b></div>` +
-    `<div class="mkt-chip">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(fmt1(futures.currentPrice), fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
-    `<div class="mkt-chip">夜盤 <b>${futures.nightPriceAvailable ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : '未更新'}</b></div>` +
-    `<div class="mkt-chip">外資台指期空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '未更新'}</b></div>` +
-    `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></div>` +
+    `<div class="mkt-chip">台指期 <b>${futures.priceAvailable && futuresPriceFresh ? fmtMetricWithDelta(fmt1(futures.currentPrice), fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : (futures.priceAvailable ? `過期 ${escapeHtml(futures.marketTime || '')}` : '未更新')}</b></div>` +
+    `<div class="mkt-chip">夜盤 <b>${futures.nightPriceAvailable && nightFresh ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : (futures.nightPriceAvailable ? '資料過期' : '未更新')}</b></div>` +
+    `<div class="mkt-chip">外資期貨空單（總） <b>${futures.positionAvailable && futuresPositionFresh ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : (futures.positionAvailable ? '資料過期' : '未更新')}</b></div>` +
+    `<div class="mkt-chip">期貨風控 <b>${futuresSignal.available && futuresSignalFresh ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : (futuresSignal.available ? '輸入資料過期' : '資料不足')}</b></div>` +
     `<div class="mkt-chip">融資量能 <b>${liquidity.available ? `${escapeHtml(liquidity.signalLabel || '—')} ${fmt1(liquidity.signalScore)}` : '資料不足'}</b></div>` +
-    `<div class="mkt-chip">資料信心 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
+    `<div class="mkt-chip">市場資料品質 <b>${marketQualityKnown ? `${Number(marketQuality.score || 0).toFixed(1)} · ${escapeHtml(marketQuality.status || '')}` : '未刷新'}</b></div>` +
+    `<div class="mkt-chip">個股資料完整度 <b>${confidenceReady ? (d.averageConfidence||0).toFixed(1) : '未刷新'}</b></div>`;
 }
 
 function calcWeaknessLevel(d) {
@@ -2008,7 +2062,7 @@ function renderWeaknessBar(d) {
   if (d.marketSignal) parts.push(`大盤 ${d.marketSignal}`);
   if (danger > 0)     parts.push(`警報分 ${danger.toFixed(1)}`);
   if (wCount > 0)     parts.push(`轉弱 ${wCount} 項`);
-  if (revScore > 0)   parts.push(`反轉風險 ${revScore.toFixed(1)}`);
+  if (revScore > 0)   parts.push(`趨勢惡化分數 ${revScore.toFixed(1)}（非機率）`);
   if (liquidity.available && (liquidity.signalLabel === '量縮融資升溫' || liquidity.signalLabel === '量能轉弱')) parts.push(`融資量能 ${liquidity.signalLabel}`);
   if (alerts.length)  parts.push(...alerts);
 
@@ -2035,44 +2089,59 @@ function renderMarketAdvisor(d) {
   const reversal = d.marketReversal || {};
   const weakness = d.marketWeakness || {};
   const liquidity = d.marketLiquidity || {};
+  const marketQuality = resolvedMarketDataQuality(d);
+  const marketQualityKnown = marketQuality.available === true;
+  const adviceReady = !marketQualityKnown || marketQuality.recommendationReady === true;
+  const futuresPriceFresh = !marketQualityKnown || marketQuality.futuresPriceFresh === true;
+  const futuresPositionFresh = !marketQualityKnown || marketQuality.futuresPositionFresh === true;
+  const nightFresh = !marketQualityKnown || marketQuality.nightFresh === true;
+  const futuresSignalFresh = !marketQualityKnown || (futuresPositionFresh && (!futures.priceAvailable || futuresPriceFresh));
+  const strategyMode = {
+    BULL_TREND: 'Trend 順勢模式',
+    RANGE_BOUND: 'Probe 分批模式',
+    BEAR_CORRECTION: 'Watch 防守觀察',
+    PANIC_SELLOFF: 'RiskOff 風險關閉'
+  }[advisor.regime || d.marketRegime] || 'Watch 觀察模式';
   panel.style.display = '';
   document.getElementById('ma-regime').textContent = advisor.regimeLabel || d.marketRegimeLabel || '—';
   document.getElementById('ma-sub').textContent =
-    `${advisor.summary || '—'}${reversal.available ? `｜大盤反轉：${reversal.label || '—'} ${(reversal.score || 0).toFixed(1)}分` : ''}${weakness.available ? `｜轉弱警示 ${weakness.warningCount || 0} 項` : ''}`;
-  document.getElementById('ma-exposure').textContent = `${advisor.exposureMinPct || 0}% - ${advisor.exposureMaxPct || 0}%`;
-  document.getElementById('ma-exposure-text').textContent = advisor.exposureGuidance || '';
+    `${advisor.summary || '—'}${reversal.available ? `｜趨勢惡化：${reversal.label || '—'} ${(reversal.score || 0).toFixed(1)}分（非機率）` : ''}${weakness.available ? `｜轉弱警示 ${weakness.warningCount || 0} 項` : ''}`;
+  document.getElementById('ma-exposure').textContent = adviceReady ? `${advisor.exposureMinPct || 0}% - ${advisor.exposureMaxPct || 0}%` : '暫停建議';
+  document.getElementById('ma-exposure-text').textContent = adviceReady ? (advisor.exposureGuidance || '') : '核心市場資料缺失或日期不一致，先補齊資料再決定資金水位。';
 
   const preferred = advisor.preferredTabs || [];
   const avoid = advisor.avoidTabs || [];
-  document.getElementById('ma-rotation').textContent = preferred.length ? preferred[0] : '—';
-  document.getElementById('ma-rotation-text').textContent = advisor.strategyGuidance || '';
-  document.getElementById('ma-risk').textContent = `ATR x ${(advisor.atrMultiplier || 0).toFixed(2)}`;
-  document.getElementById('ma-risk-text').textContent = advisor.riskGuidance || '';
+  document.getElementById('ma-rotation').textContent = adviceReady ? strategyMode : 'DataHold 資料待補';
+  document.getElementById('ma-rotation-text').textContent = adviceReady ? (advisor.strategyGuidance || '') : '不沿用過期期貨或指數資料產生新交易模式。';
+  document.getElementById('ma-risk').textContent = adviceReady ? `ATR x ${(advisor.atrMultiplier || 0).toFixed(2)}` : '暫停計算';
+  document.getElementById('ma-risk-text').textContent = adviceReady ? (advisor.riskGuidance || '') : '資料恢復後，再依型態失效點、ATR 距離與單筆風險反推股數。';
 
-  document.getElementById('ma-tabs').innerHTML =
-    preferred.map(t => `<span class="ma-tag safe">${escapeHtml(t)}</span>`).join('') +
-    avoid.map(t => `<span class="ma-tag warn">${escapeHtml(t)}</span>`).join('');
+  document.getElementById('ma-tabs').innerHTML = adviceReady
+    ? preferred.map(t => `<span class="ma-tag safe">${escapeHtml(t)}</span>`).join('') +
+      avoid.map(t => `<span class="ma-tag warn">${escapeHtml(t)}</span>`).join('')
+    : `<span class="ma-tag warn">資料未對齊，停止新訊號</span>`;
 
   document.getElementById('ma-metrics').innerHTML =
     `<span class="ma-metric">ADR <b>${fmt1(breadth.adr)}</b></span>` +
     `<span class="ma-metric">站上 MA20 <b>${fmtMetricWithDelta(`${fmt1(breadth.aboveMa20Pct)}%`, fmtDeltaTag(Number(breadth.aboveMa20PctDelta || 0), '%', 1))}</b></span>` +
     `<span class="ma-metric">站上 MA18 <b>${fmtMetricWithDelta(`${fmt1(breadth.aboveMa18Pct)}%`, fmtDeltaTag(Number(breadth.aboveMa18PctDelta || 0), '%', 1))}</b></span>` +
     `<span class="ma-metric">跌破 MA20 <b>${fmtMetricWithDelta(`${fmt1(breadth.belowMa20Pct)}%`, fmtDeltaTag(Number(breadth.belowMa20PctDelta || 0), '%', 1))}</b></span>` +
-    `<span class="ma-metric">反轉風險 <b>${escapeHtml(reversal.label || '未提供')}</b></span>` +
+    `<span class="ma-metric">趨勢惡化分數（非機率） <b>${reversal.available ? `${fmt1(reversal.score)} · ${escapeHtml(reversal.label || '')}` : '未提供'}</b></span>` +
     `<span class="ma-metric">寬度背離 <b>${weakness.breadthDivergence ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">動能破位 <b>${weakness.momentumBreakdown ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">新低擴張 <b>${weakness.newLowExpansion ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">波動擴張 <b>${weakness.volatilityExpansion ? '是' : '否'}</b></span>` +
     `<span class="ma-metric">指數趨勢 <b>${escapeHtml(index.trendLabel || '資料不足')}</b></span>` +
+    `<span class="ma-metric">指數資料日期 <b>${escapeHtml(index.dataDate || '未提供')}</b></span>` +
     `<span class="ma-metric">量價關係 <b>${escapeHtml(index.divergenceLabel || '未提供')}</b></span>` +
-    `<span class="ma-metric">台指期 <b>${futures.priceAvailable ? fmtMetricWithDelta(`${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)`, fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : '未更新'}</b></span>` +
+    `<span class="ma-metric">台指期 <b>${futures.priceAvailable && futuresPriceFresh ? fmtMetricWithDelta(`${fmt1(futures.currentPrice)} (${fmt1(futures.changePct)}%)`, fmtDeltaTag(Number(futures.currentPriceDelta || 0), '', 1)) : (futures.priceAvailable ? `過期 ${escapeHtml(futures.marketTime || '')}` : '未更新')}</b></span>` +
     `<span class="ma-metric">台指期時間 <b>${futures.priceAvailable ? escapeHtml(futures.marketTime || '已更新') : '—'}</b></span>` +
-    `<span class="ma-metric">夜盤收盤 <b>${futures.nightPriceAvailable ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : '未更新'}</b></span>` +
+    `<span class="ma-metric">夜盤收盤 <b>${futures.nightPriceAvailable && nightFresh ? fmtMetricWithDelta(`${fmt1(futures.nightCurrentPrice)} (${fmt1(futures.nightChangePct)}%)`, fmtDeltaTag(Number(futures.nightCurrentPriceDelta || 0), '', 1)) : (futures.nightPriceAvailable ? '資料過期' : '未更新')}</b></span>` +
     `<span class="ma-metric">夜盤時間 <b>${futures.nightPriceAvailable ? escapeHtml(futures.nightMarketTime || '已更新') : '—'}</b></span>` +
-    `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable ? escapeHtml(futures.dataDate || '已更新') : '未更新'}</b></span>` +
-    `<span class="ma-metric">外資期貨空單 <b>${futures.positionAvailable ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '—'}</b></span>` +
-    `<span class="ma-metric">外資期貨淨額 <b>${futures.positionAvailable ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
-    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : '資料不足'}</b></span>` +
+    `<span class="ma-metric">外資空單日期 <b>${futures.positionAvailable && futuresPositionFresh ? escapeHtml(futures.dataDate || '已更新') : '未更新或過期'}</b></span>` +
+    `<span class="ma-metric">外資期貨空單（總） <b>${futures.positionAvailable && futuresPositionFresh ? fmtMetricWithDelta(fmtAbsLots(futures.foreignOpenInterestShortLots || 0), fmtDeltaTag(Number(futures.foreignOpenInterestShortLotsDelta || 0), '口', 0)) : '—'}</b></span>` +
+    `<span class="ma-metric">外資期貨淨部位 <b>${futures.positionAvailable && futuresPositionFresh ? fmtLots(futures.foreignOpenInterestNetLots || 0) : '—'}</b></span>` +
+    `<span class="ma-metric">期貨風控 <b>${futuresSignal.available && futuresSignalFresh ? fmtMetricWithDelta(`${escapeHtml(futuresSignal.label || '—')} ${fmt1(futuresSignal.riskScore)}分`, fmtDeltaTag(Number(futures.signalRiskScoreDelta || 0), '分', 1)) : (futuresSignal.available ? '輸入資料過期' : '資料不足')}</b></span>` +
     `<span class="ma-metric">融資量能 <b>${liquidity.available ? `${escapeHtml(liquidity.signalLabel || '—')} ${fmt1(liquidity.signalScore)}分` : '資料不足'}</b></span>` +
     `<span class="ma-metric">大盤量/15日 <b>${liquidity.available ? `${fmt1(liquidity.marketVolumeRatio15Day)}倍` : '—'}</b></span>` +
     `<span class="ma-metric">融資水位/15日 <b>${liquidity.available ? fmtSignedPlain(Number(liquidity.marginBalanceVs15DayPct || 0), '%', 1) : '—'}</b></span>` +
@@ -2084,8 +2153,9 @@ function renderMarketAdvisor(d) {
   if (weakness.available && weakness.alerts && weakness.alerts.length) mergedAlerts.push(...weakness.alerts);
   if (liquidity.available && liquidity.signalText) mergedAlerts.push(`融資量能：${liquidity.signalText}`);
   if (liquidity.available && liquidity.alerts && liquidity.alerts.length) mergedAlerts.push(...liquidity.alerts.slice(0, 2));
-  if (futuresSignal.available && futuresSignal.action) mergedAlerts.push(`期貨風控：${futuresSignal.action}`);
-  if (futuresSignal.available && futuresSignal.reasons && futuresSignal.reasons.length) mergedAlerts.push(...futuresSignal.reasons.slice(0, 2));
+  if (futuresSignal.available && futuresSignalFresh && futuresSignal.action) mergedAlerts.push(`期貨風控：${futuresSignal.action}`);
+  if (futuresSignal.available && futuresSignalFresh && futuresSignal.reasons && futuresSignal.reasons.length) mergedAlerts.push(...futuresSignal.reasons.slice(0, 2));
+  if (marketQualityKnown && marketQuality.issues && marketQuality.issues.length) mergedAlerts.push(...marketQuality.issues.slice(0, 4).map(x => `資料品質：${x}`));
   mergedAlerts.push(...alerts);
   document.getElementById('ma-alerts').innerHTML = mergedAlerts
     .map(a => `<div class="ma-alert">${escapeHtml(a)}</div>`)

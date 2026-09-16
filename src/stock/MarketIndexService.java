@@ -1,5 +1,10 @@
 package stock;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,10 +17,16 @@ import stock.common.NumberParser;
 
 public class MarketIndexService {
 
+    private static final ZoneId TAIPEI_ZONE = ZoneId.of("Asia/Taipei");
+    private static final DateTimeFormatter DATE_STAMP_FORMAT = DateTimeFormatter.BASIC_ISO_DATE;
     private final HttpTextFetcher fetcher = new HttpTextFetcher();
     private final JSONParser parser = new JSONParser();
 
     public MarketIndexSnapshot fetchTaiwanWeightedIndex() {
+        return fetchTaiwanWeightedIndex(null);
+    }
+
+    public MarketIndexSnapshot fetchTaiwanWeightedIndex(String targetDateStamp) {
         try {
             String symbol = "^TWII";
             String name = "加權指數";
@@ -30,25 +41,40 @@ public class MarketIndexService {
             }
 
             JSONObject result = (JSONObject) results.get(0);
-            JSONObject meta = (JSONObject) result.get("meta");
+            JSONArray timestamps = (JSONArray) result.get("timestamp");
             JSONObject indicators = (JSONObject) result.get("indicators");
             JSONArray quoteArray = indicators == null ? null : (JSONArray) indicators.get("quote");
             if (quoteArray == null || quoteArray.isEmpty()) {
                 return MarketIndexSnapshot.unavailable(symbol, name, "Yahoo Chart", "quote series missing");
             }
             JSONObject quote = (JSONObject) quoteArray.get(0);
-            List<Double> closes = extractDoubleSeries((JSONArray) quote.get("close"));
-            List<Double> highs = extractDoubleSeries((JSONArray) quote.get("high"));
-            List<Double> lows = extractDoubleSeries((JSONArray) quote.get("low"));
-            List<Long> volumes = extractLongSeries((JSONArray) quote.get("volume"));
-            if (closes.size() < 60) {
+            List<DailyBar> bars = extractDailyBars(timestamps, (JSONArray) quote.get("close"),
+                    (JSONArray) quote.get("high"), (JSONArray) quote.get("low"), (JSONArray) quote.get("volume"),
+                    parseTargetDate(targetDateStamp));
+            if (bars.size() < 60) {
                 return MarketIndexSnapshot.unavailable(symbol, name, "Yahoo Chart", "not enough chart data");
             }
 
-            double currentPrice = toDouble(meta == null ? null : meta.get("regularMarketPrice"));
-            if (currentPrice <= 0D) {
-                currentPrice = closes.get(closes.size() - 1).doubleValue();
+            DailyBar latestBar = bars.get(bars.size() - 1);
+            String dataDate = latestBar.date.format(DATE_STAMP_FORMAT);
+            if (targetDateStamp != null && targetDateStamp.trim().length() > 0
+                    && !normalizeDate(targetDateStamp).equals(dataDate)) {
+                return MarketIndexSnapshot.unavailable(symbol, name, "Yahoo Chart",
+                        "latest index date " + dataDate + " does not match snapshot " + normalizeDate(targetDateStamp));
             }
+
+            List<Double> closes = new ArrayList<Double>();
+            List<Double> highs = new ArrayList<Double>();
+            List<Double> lows = new ArrayList<Double>();
+            List<Long> volumes = new ArrayList<Long>();
+            for (DailyBar bar : bars) {
+                closes.add(Double.valueOf(bar.close));
+                highs.add(Double.valueOf(bar.high));
+                lows.add(Double.valueOf(bar.low));
+                volumes.add(Long.valueOf(bar.volume));
+            }
+
+            double currentPrice = latestBar.close;
             double movingAverage20 = averageLast(closes, 20);
             double movingAverage60 = averageLast(closes, 60);
             double return20DayPct = percentChange(valueDaysAgo(closes, 20), currentPrice);
@@ -67,11 +93,86 @@ public class MarketIndexService {
             String trendLabel = resolveTrendLabel(currentPrice, movingAverage20, movingAverage60, macdSeries[2]);
             String divergenceLabel = resolveDivergenceLabel(return20DayPct, volumeRatio);
 
-            return new MarketIndexSnapshot(true, symbol, name, "Yahoo Chart", "", currentPrice, movingAverage20,
+            return new MarketIndexSnapshot(true, symbol, name, "Yahoo Chart", "", dataDate, currentPrice, movingAverage20,
                     movingAverage60, return20DayPct, volumeRatio, macdSeries[0], macdSeries[1], macdSeries[2],
                     ma20Slope, recent20High, atr20Pct, atr60Pct, trendLabel, divergenceLabel);
         } catch (Exception ex) {
             return MarketIndexSnapshot.unavailable("^TWII", "加權指數", "Yahoo Chart", ex.getMessage());
+        }
+    }
+
+    private List<DailyBar> extractDailyBars(JSONArray timestamps, JSONArray closes, JSONArray highs, JSONArray lows,
+            JSONArray volumes, LocalDate targetDate) {
+        List<DailyBar> bars = new ArrayList<DailyBar>();
+        if (timestamps == null || closes == null) {
+            return bars;
+        }
+        int size = Math.min(timestamps.size(), closes.size());
+        for (int i = 0; i < size; i++) {
+            if (!(timestamps.get(i) instanceof Number) || !(closes.get(i) instanceof Number)) {
+                continue;
+            }
+            LocalDate date = Instant.ofEpochSecond(((Number) timestamps.get(i)).longValue())
+                    .atZone(TAIPEI_ZONE).toLocalDate();
+            if (targetDate != null && date.isAfter(targetDate)) {
+                continue;
+            }
+            double close = toDouble(closes.get(i));
+            if (close <= 0D) {
+                continue;
+            }
+            double high = numericAt(highs, i, close);
+            double low = numericAt(lows, i, close);
+            long volume = longAt(volumes, i);
+            bars.add(new DailyBar(date, close, high, low, volume));
+        }
+        return bars;
+    }
+
+    private LocalDate parseTargetDate(String value) {
+        String normalized = normalizeDate(value);
+        if (normalized.length() != 8) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(normalized, DATE_STAMP_FORMAT);
+        } catch (DateTimeParseException ignored) {
+            return null;
+        }
+    }
+
+    private String normalizeDate(String value) {
+        return value == null ? "" : value.replaceAll("[^0-9]", "");
+    }
+
+    private double numericAt(JSONArray values, int index, double fallback) {
+        if (values == null || index >= values.size() || !(values.get(index) instanceof Number)) {
+            return fallback;
+        }
+        double value = toDouble(values.get(index));
+        return value > 0D ? value : fallback;
+    }
+
+    private long longAt(JSONArray values, int index) {
+        if (values == null || index >= values.size() || !(values.get(index) instanceof Number)) {
+            return 0L;
+        }
+        return ((Number) values.get(index)).longValue();
+    }
+
+    private static final class DailyBar {
+        private final LocalDate date;
+        private final double close;
+        private final double high;
+        private final double low;
+        private final long volume;
+
+        private DailyBar(LocalDate date, double close, double high, double low, long volume) {
+            this.date = date;
+            this.close = close;
+            this.high = high;
+            this.low = low;
+            this.volume = volume;
         }
     }
 

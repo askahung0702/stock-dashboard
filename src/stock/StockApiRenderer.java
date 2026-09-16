@@ -118,10 +118,12 @@ public class StockApiRenderer {
                 ? new MarketBreadthAnalyzer().analyzeRows(snapshots.get(prevDate).rows, new HashMap<String, SnapshotRow>(),
                         snapshots, prevDate, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD)
                 : null;
-        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex(snapshot.date);
         JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, latestDate);
         MarketLiquiditySnapshot marketLiquidity = new MarketLiquidityAnalyzer().analyze(snapshots, snapshot.date,
                 snapshot.rows);
+        JSONObject marketDataQuality = buildMarketDataQuality(snapshot.date, total, confidenceReadyCount,
+                averageConfidence, marketIndexSnapshot, marketFuturesSnapshot, marketLiquidity);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(snapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot, marketLiquidity);
@@ -195,6 +197,7 @@ public class StockApiRenderer {
         result.put("marketIndex",       marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures",     marketFuturesSnapshot);
         result.put("marketLiquidity",   marketLiquidityToJson(marketLiquidity));
+        result.put("marketDataQuality", marketDataQuality);
         result.put("marketAdvisor",     marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal",    marketReversalToJson(marketReversal));
         result.put("marketWeakness",    marketWeaknessToJson(marketWeakness));
@@ -322,10 +325,12 @@ public class StockApiRenderer {
                 ? new MarketBreadthAnalyzer().analyzeRows(snapshots.get(prevDate).rows, new HashMap<String, SnapshotRow>(),
                         snapshots, prevDate, WATCHLIST_THRESHOLD, LIKELY_THRESHOLD)
                 : null;
-        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex();
+        MarketIndexSnapshot marketIndexSnapshot = new MarketIndexService().fetchTaiwanWeightedIndex(currentSnapshot.date);
         JSONObject marketFuturesSnapshot = loadMarketFuturesJson(breadthSnapshot, currentSnapshot.date);
         MarketLiquiditySnapshot marketLiquidity = new MarketLiquidityAnalyzer().analyze(snapshots, currentSnapshot.date,
                 currentSnapshot.rows);
+        JSONObject marketDataQuality = buildMarketDataQuality(currentSnapshot.date, total, confidenceReadyCount,
+                averageConfidence, marketIndexSnapshot, marketFuturesSnapshot, marketLiquidity);
         MarketRegime marketRegime = resolveSnapshotMarketRegime(currentSnapshot.rows, breadthSnapshot);
         MarketAdvisorReport marketAdvisor = new MarketStrategyAdvisor().advise(marketRegime, breadthSnapshot,
                 marketIndexSnapshot, marketLiquidity);
@@ -398,6 +403,7 @@ public class StockApiRenderer {
         result.put("marketIndex", marketIndexToJson(marketIndexSnapshot));
         result.put("marketFutures", marketFuturesSnapshot);
         result.put("marketLiquidity", marketLiquidityToJson(marketLiquidity));
+        result.put("marketDataQuality", marketDataQuality);
         result.put("marketAdvisor", marketAdvisorToJson(marketAdvisor));
         result.put("marketReversal", marketReversalToJson(marketReversal));
         result.put("marketWeakness", marketWeaknessToJson(marketWeakness));
@@ -457,6 +463,7 @@ public class StockApiRenderer {
         payload.put("marketIndex", root.getOrDefault("marketIndex", new JSONObject()));
         payload.put("marketFutures", root.getOrDefault("marketFutures", new JSONObject()));
         payload.put("marketLiquidity", root.getOrDefault("marketLiquidity", new JSONObject()));
+        payload.put("marketDataQuality", root.getOrDefault("marketDataQuality", new JSONObject()));
         payload.put("marketAdvisor", root.getOrDefault("marketAdvisor", new JSONObject()));
         payload.put("marketReversal", root.getOrDefault("marketReversal", new JSONObject()));
         payload.put("marketWeakness", root.getOrDefault("marketWeakness", new JSONObject()));
@@ -931,6 +938,7 @@ public class StockApiRenderer {
         obj.put("name", marketIndexSnapshot.getName());
         obj.put("source", marketIndexSnapshot.getSource());
         obj.put("errorMessage", marketIndexSnapshot.getErrorMessage());
+        obj.put("dataDate", marketIndexSnapshot.getDataDate());
         obj.put("currentPrice", Double.valueOf(round1(marketIndexSnapshot.getCurrentPrice())));
         obj.put("movingAverage20", Double.valueOf(round1(marketIndexSnapshot.getMovingAverage20())));
         obj.put("movingAverage60", Double.valueOf(round1(marketIndexSnapshot.getMovingAverage60())));
@@ -990,13 +998,38 @@ public class StockApiRenderer {
             JSONObject prevPrice = database.loadLatestDailyMarketDataBefore("marketFuturesPrice", currentDate);
             JSONObject prevNightPrice = database.loadLatestDailyMarketDataBefore("marketFuturesNightPrice", currentDate);
             JSONObject prevPosition = database.loadLatestDailyMarketDataBefore("marketFuturesPosition", currentDate);
-            boolean priceAvailable = Boolean.TRUE.equals(price.get("available"));
-            boolean nightPriceAvailable = Boolean.TRUE.equals(nightPrice.get("available"));
-            boolean positionAvailable = Boolean.TRUE.equals(position.get("available"));
+            boolean priceRawAvailable = Boolean.TRUE.equals(price.get("available"));
+            boolean nightPriceRawAvailable = Boolean.TRUE.equals(nightPrice.get("available"));
+            boolean positionRawAvailable = Boolean.TRUE.equals(position.get("available"));
+            boolean priceAvailable = priceRawAvailable
+                    && sameDate(currentDate, price.get("snapshotDate"))
+                    && sameDate(currentDate, datePart(price.get("marketTime")));
+            boolean nightPriceAvailable = nightPriceRawAvailable
+                    && sameDate(currentDate, nightPrice.get("snapshotDate"))
+                    && sameDate(currentDate, nightPrice.get("tradeDate"))
+                    && sameDate(currentDate, datePart(nightPrice.get("marketTime")));
+            boolean positionAvailable = positionRawAvailable
+                    && sameDate(currentDate, position.get("snapshotDate"))
+                    && sameDate(currentDate, position.get("dataDate"));
             obj.put("available", Boolean.valueOf(priceAvailable || nightPriceAvailable || positionAvailable));
             obj.put("priceAvailable", Boolean.valueOf(priceAvailable));
             obj.put("nightPriceAvailable", Boolean.valueOf(nightPriceAvailable));
             obj.put("positionAvailable", Boolean.valueOf(positionAvailable));
+            obj.put("priceRawAvailable", Boolean.valueOf(priceRawAvailable));
+            obj.put("nightPriceRawAvailable", Boolean.valueOf(nightPriceRawAvailable));
+            obj.put("positionRawAvailable", Boolean.valueOf(positionRawAvailable));
+            obj.put("priceStale", Boolean.valueOf(priceRawAvailable && !priceAvailable));
+            obj.put("nightPriceStale", Boolean.valueOf(nightPriceRawAvailable && !nightPriceAvailable));
+            obj.put("positionStale", Boolean.valueOf(positionRawAvailable && !positionAvailable));
+            obj.put("priceSnapshotDate", safeJsonText(price.get("snapshotDate")));
+            obj.put("nightSnapshotDate", safeJsonText(nightPrice.get("snapshotDate")));
+            obj.put("positionSnapshotDate", safeJsonText(position.get("snapshotDate")));
+            obj.put("priceFreshnessReason", freshnessReason("日盤期貨", currentDate, priceRawAvailable,
+                    price.get("snapshotDate"), datePart(price.get("marketTime"))));
+            obj.put("nightFreshnessReason", freshnessReason("夜盤期貨", currentDate, nightPriceRawAvailable,
+                    nightPrice.get("snapshotDate"), nightPrice.get("tradeDate")));
+            obj.put("positionFreshnessReason", freshnessReason("外資期貨部位", currentDate, positionRawAvailable,
+                    position.get("snapshotDate"), position.get("dataDate")));
             obj.put("price", price);
             obj.put("nightPrice", nightPrice);
             obj.put("position", position);
@@ -1052,6 +1085,117 @@ public class StockApiRenderer {
             obj.put("errorMessage", ex.getMessage());
             return obj;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private JSONObject buildMarketDataQuality(String currentDate, int total, int confidenceReadyCount,
+            double averageStockConfidence, MarketIndexSnapshot marketIndex, JSONObject marketFutures,
+            MarketLiquiditySnapshot liquidity) {
+        JSONObject quality = new JSONObject();
+        JSONArray issues = new JSONArray();
+        double score = 0D;
+
+        boolean breadthFresh = total > 0;
+        if (breadthFresh) {
+            score += 30D;
+        } else {
+            issues.add("當日市場廣度資料缺失");
+        }
+
+        double coverage = total > 0 ? Math.min(1D, Math.max(0D, (double) confidenceReadyCount / total)) : 0D;
+        double stockQuality = Math.min(1D, Math.max(0D, averageStockConfidence / 100D));
+        score += 10D * coverage * stockQuality;
+        if (coverage < 0.95D) {
+            issues.add("個股資料信心覆蓋率不足 95%");
+        }
+
+        boolean indexFresh = marketIndex != null && marketIndex.isAvailable()
+                && sameDate(currentDate, marketIndex.getDataDate());
+        if (indexFresh) {
+            score += 25D;
+        } else {
+            issues.add("加權指數資料缺失或日期不一致");
+        }
+
+        boolean futuresPriceFresh = marketFutures != null
+                && Boolean.TRUE.equals(marketFutures.get("priceAvailable"));
+        boolean futuresPositionFresh = marketFutures != null
+                && Boolean.TRUE.equals(marketFutures.get("positionAvailable"));
+        boolean nightFresh = marketFutures != null
+                && Boolean.TRUE.equals(marketFutures.get("nightPriceAvailable"));
+        if (futuresPriceFresh) {
+            score += 10D;
+        } else {
+            issues.add("台指期日盤資料缺失或過期");
+        }
+        if (futuresPositionFresh) {
+            score += 15D;
+        } else {
+            issues.add("外資期貨部位缺失或日期不一致");
+        }
+        if (nightFresh) {
+            score += 5D;
+        } else {
+            issues.add("夜盤資料尚未取得或已過期");
+        }
+
+        boolean liquidityFresh = liquidity != null && liquidity.isAvailable()
+                && sameDate(currentDate, liquidity.getDate());
+        if (liquidityFresh) {
+            score += 5D;
+        } else {
+            issues.add("融資／量能資料缺失或日期不一致");
+        }
+
+        score = Math.max(0D, Math.min(100D, score));
+        boolean recommendationReady = breadthFresh && indexFresh && score >= 75D;
+        String status = score >= 95D ? "完整" : score >= 80D ? "部分資料待補" : score >= 60D ? "警告" : "不足";
+        quality.put("available", Boolean.TRUE);
+        quality.put("targetDate", normalizeDate(currentDate));
+        quality.put("score", Double.valueOf(round1(score)));
+        quality.put("status", status);
+        quality.put("recommendationReady", Boolean.valueOf(recommendationReady));
+        quality.put("breadthFresh", Boolean.valueOf(breadthFresh));
+        quality.put("indexFresh", Boolean.valueOf(indexFresh));
+        quality.put("futuresPriceFresh", Boolean.valueOf(futuresPriceFresh));
+        quality.put("futuresPositionFresh", Boolean.valueOf(futuresPositionFresh));
+        quality.put("nightFresh", Boolean.valueOf(nightFresh));
+        quality.put("liquidityFresh", Boolean.valueOf(liquidityFresh));
+        quality.put("stockConfidenceCoveragePct", Double.valueOf(round1(coverage * 100D)));
+        quality.put("averageStockConfidence", Double.valueOf(round1(averageStockConfidence)));
+        quality.put("issues", issues);
+        quality.put("scoreDefinition", "市場廣度30、指數25、期貨日盤10、外資期貨15、夜盤5、融資量能5、個股資料10");
+        return quality;
+    }
+
+    private boolean sameDate(String expectedDate, Object actualDate) {
+        String expected = normalizeDate(expectedDate);
+        String actual = normalizeDate(actualDate == null ? "" : String.valueOf(actualDate));
+        return expected.length() == 8 && expected.equals(actual);
+    }
+
+    private String normalizeDate(String value) {
+        String digits = value == null ? "" : value.replaceAll("[^0-9]", "");
+        return digits.length() >= 8 ? digits.substring(0, 8) : digits;
+    }
+
+    private String datePart(Object value) {
+        String text = value == null ? "" : String.valueOf(value).trim();
+        return text.length() >= 10 ? text.substring(0, 10) : text;
+    }
+
+    private String freshnessReason(String label, String expectedDate, boolean rawAvailable, Object firstDate,
+            Object secondDate) {
+        if (!rawAvailable) {
+            return label + "未取得";
+        }
+        String expected = normalizeDate(expectedDate);
+        String first = normalizeDate(firstDate == null ? "" : String.valueOf(firstDate));
+        String second = normalizeDate(secondDate == null ? "" : String.valueOf(secondDate));
+        if (!expected.equals(first) || !expected.equals(second)) {
+            return label + "日期不一致（目標 " + expected + "，資料 " + first + " / " + second + "）";
+        }
+        return label + "日期一致";
     }
 
     @SuppressWarnings("unchecked")

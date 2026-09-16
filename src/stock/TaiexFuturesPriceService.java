@@ -26,7 +26,12 @@ public class TaiexFuturesPriceService {
     private final HttpTextFetcher fetcher = new HttpTextFetcher();
 
     public TaiexFuturesPriceSnapshot fetchLatest() {
+        return fetchLatest(LocalDate.now(TAIPEI_ZONE).format(DATE_STAMP_FORMAT));
+    }
+
+    public TaiexFuturesPriceSnapshot fetchLatest(String expectedTradeDateStamp) {
         try {
+            LocalDate expectedTradeDate = parseTradeDate(expectedTradeDateStamp);
             String url = "https://query1.finance.yahoo.com/v8/finance/chart/" + SYMBOL + "?range=5d&interval=1m";
             String jsonText = fetcher.fetchJson(url, 15000, 2);
             JSONObject root = (JSONObject) new JSONParser().parse(jsonText);
@@ -61,7 +66,15 @@ public class TaiexFuturesPriceService {
             double changePct = previousClose > 0D ? change * 100D / previousClose : 0D;
             String marketTime = "";
             if (latestIndex < timestamps.size()) {
-                marketTime = TIME_FORMAT.format(Instant.ofEpochSecond(((Number) timestamps.get(latestIndex)).longValue()));
+                Instant latestInstant = Instant.ofEpochSecond(((Number) timestamps.get(latestIndex)).longValue());
+                LocalDate latestTradeDate = latestInstant.atZone(TAIPEI_ZONE).toLocalDate();
+                marketTime = TIME_FORMAT.format(latestInstant);
+                if (!expectedTradeDate.equals(latestTradeDate)) {
+                    return TaiexFuturesPriceSnapshot.unavailable(SOURCE,
+                            "latest futures bar is stale: expected "
+                                    + expectedTradeDate.format(DATE_STAMP_FORMAT)
+                                    + ", got " + latestTradeDate.format(DATE_STAMP_FORMAT));
+                }
             }
             return new TaiexFuturesPriceSnapshot(true, SYMBOL, NAME, SOURCE, "", current, previousClose, change,
                     changePct, volume, marketTime);

@@ -2069,7 +2069,7 @@ public class StockHistoryDatabase {
             Connection connection = openConnection();
             try {
                 PreparedStatement statement = connection.prepareStatement(
-                        "select data_json from daily_market_data where data_key = ? order by trade_date desc, updated_at desc limit 1");
+                        "select trade_date, stage, updated_at, data_json from daily_market_data where data_key = ? order by trade_date desc, updated_at desc limit 1");
                 try {
                     statement.setString(1, dataKey);
                     ResultSet resultSet = statement.executeQuery();
@@ -2078,7 +2078,11 @@ public class StockHistoryDatabase {
                             String json = safeText(resultSet.getString("data_json"));
                             Object parsed = new JSONParser().parse(json);
                             if (parsed instanceof JSONObject) {
-                                return (JSONObject) parsed;
+                                JSONObject object = (JSONObject) parsed;
+                                object.put("snapshotDate", safeText(resultSet.getString("trade_date")));
+                                object.put("snapshotStage", safeText(resultSet.getString("stage")));
+                                object.put("snapshotUpdatedAt", safeText(resultSet.getString("updated_at")));
+                                return object;
                             }
                         }
                     } finally {
@@ -2101,7 +2105,7 @@ public class StockHistoryDatabase {
             Connection connection = openConnection();
             try {
                 PreparedStatement statement = connection.prepareStatement(
-                        "select data_json from daily_market_data where data_key = ? and trade_date < ? order by trade_date desc, updated_at desc limit 1");
+                        "select trade_date, stage, updated_at, data_json from daily_market_data where data_key = ? and trade_date < ? order by trade_date desc, updated_at desc limit 1");
                 try {
                     statement.setString(1, dataKey);
                     statement.setString(2, beforeDate);
@@ -2111,7 +2115,11 @@ public class StockHistoryDatabase {
                             String json = safeText(resultSet.getString("data_json"));
                             Object parsed = new JSONParser().parse(json);
                             if (parsed instanceof JSONObject) {
-                                return (JSONObject) parsed;
+                                JSONObject object = (JSONObject) parsed;
+                                object.put("snapshotDate", safeText(resultSet.getString("trade_date")));
+                                object.put("snapshotStage", safeText(resultSet.getString("stage")));
+                                object.put("snapshotUpdatedAt", safeText(resultSet.getString("updated_at")));
+                                return object;
                             }
                         }
                     } finally {

@@ -15,7 +15,8 @@ public class StockMarketDataOnlyAnalysis {
         String date = analyzer.currentDateStamp();
 
         if ("market-futures".equals(mode) || "futures-price".equals(mode) || "taiex-futures".equals(mode)) {
-            JSONObject payload = priceToJson(new TaiexFuturesPriceService().fetchLatest());
+            JSONObject payload = priceToJson(new TaiexFuturesPriceService().fetchLatest(date));
+            addSnapshotMetadata(payload, date, "market-futures");
             database.upsertDailyMarketData(date, "market-futures", KEY_FUTURES_PRICE, payload);
             database.upsertDailyRunStatus(date, "market-futures",
                     Boolean.TRUE.equals(payload.get("available")) ? "completed" : "unavailable", 1,
@@ -28,6 +29,7 @@ public class StockMarketDataOnlyAnalysis {
             JSONObject payload = priceToJson(new TaiexFuturesPriceService().fetchNightClose(date));
             payload.put("session", "night");
             payload.put("tradeDate", date);
+            addSnapshotMetadata(payload, date, "market-futures-night");
             database.upsertDailyMarketData(date, "market-futures-night", KEY_FUTURES_NIGHT_PRICE, payload);
             database.upsertDailyRunStatus(date, "market-futures-night",
                     Boolean.TRUE.equals(payload.get("available")) ? "completed" : "unavailable", 1,
@@ -38,6 +40,7 @@ public class StockMarketDataOnlyAnalysis {
 
         if ("futures-position".equals(mode) || "taifex-position".equals(mode) || "foreign-futures".equals(mode)) {
             JSONObject payload = positionToJson(new TaifexFuturesService().fetchTaiwanIndexFuturesForeignPosition());
+            addSnapshotMetadata(payload, date, "futures-position");
             database.upsertDailyMarketData(date, "futures-position", KEY_FUTURES_POSITION, payload);
             database.upsertDailyRunStatus(date, "futures-position",
                     Boolean.TRUE.equals(payload.get("available")) ? "completed" : "unavailable", 1,
@@ -92,5 +95,13 @@ public class StockMarketDataOnlyAnalysis {
 
     private static double round1(double value) {
         return Math.round(value * 10D) / 10D;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addSnapshotMetadata(JSONObject payload, String date, String stage) {
+        payload.put("snapshotDate", date == null ? "" : date);
+        payload.put("snapshotStage", stage == null ? "" : stage);
+        payload.put("fetchedAt", java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Taipei"))
+                .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
 }
