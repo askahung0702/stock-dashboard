@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260611",
-  "latest_track_date": "20260916",
+  "latest_track_date": "20260917",
   "stock_count": 28,
   "groups": {
     "all": [
@@ -530,6 +530,14 @@
         "stock_count": 28,
         "avg_return_pct": 1.67,
         "median_return_pct": -3.87,
+        "win_rate_pct": 35.71
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 98,
+        "stock_count": 28,
+        "avg_return_pct": 0.59,
+        "median_return_pct": -7.75,
         "win_rate_pct": 35.71
       }
     ],
@@ -1061,6 +1069,14 @@
         "avg_return_pct": -2.61,
         "median_return_pct": -3.67,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 98,
+        "stock_count": 3,
+        "avg_return_pct": -2.44,
+        "median_return_pct": -2.29,
+        "win_rate_pct": 33.33
       }
     ],
     "continuation_focus": [
@@ -1590,6 +1606,14 @@
         "stock_count": 2,
         "avg_return_pct": -8.88,
         "median_return_pct": -8.88,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 98,
+        "stock_count": 2,
+        "avg_return_pct": -8.25,
+        "median_return_pct": -8.25,
         "win_rate_pct": 0.0
       }
     ],
@@ -2121,6 +2145,14 @@
         "avg_return_pct": 2.18,
         "median_return_pct": -4.07,
         "win_rate_pct": 36.0
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 98,
+        "stock_count": 25,
+        "avg_return_pct": 0.95,
+        "median_return_pct": -7.85,
+        "win_rate_pct": 36.0
       }
     ],
     "early_focus": [
@@ -2650,6 +2682,14 @@
         "stock_count": 11,
         "avg_return_pct": 8.58,
         "median_return_pct": -0.9,
+        "win_rate_pct": 45.45
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 98,
+        "stock_count": 11,
+        "avg_return_pct": 7.32,
+        "median_return_pct": 0.0,
         "win_rate_pct": 45.45
       }
     ]

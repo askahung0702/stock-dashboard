@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260805",
-  "latest_track_date": "20260916",
+  "latest_track_date": "20260917",
   "stock_count": 32,
   "groups": {
     "all": [
@@ -234,6 +234,14 @@
         "stock_count": 32,
         "avg_return_pct": 2.41,
         "median_return_pct": -0.9,
+        "win_rate_pct": 43.75
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 43,
+        "stock_count": 32,
+        "avg_return_pct": 3.29,
+        "median_return_pct": -2.81,
         "win_rate_pct": 43.75
       }
     ],
@@ -469,6 +477,14 @@
         "avg_return_pct": -8.84,
         "median_return_pct": -17.73,
         "win_rate_pct": 42.86
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 43,
+        "stock_count": 7,
+        "avg_return_pct": -7.25,
+        "median_return_pct": -13.95,
+        "win_rate_pct": 42.86
       }
     ],
     "continuation_focus": [
@@ -702,6 +718,14 @@
         "stock_count": 7,
         "avg_return_pct": -8.84,
         "median_return_pct": -17.73,
+        "win_rate_pct": 42.86
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 43,
+        "stock_count": 7,
+        "avg_return_pct": -7.25,
+        "median_return_pct": -13.95,
         "win_rate_pct": 42.86
       }
     ],
@@ -937,6 +961,14 @@
         "avg_return_pct": 5.56,
         "median_return_pct": -0.83,
         "win_rate_pct": 44.0
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 43,
+        "stock_count": 25,
+        "avg_return_pct": 6.24,
+        "median_return_pct": -2.78,
+        "win_rate_pct": 44.0
       }
     ],
     "early_focus": [
@@ -1170,6 +1202,14 @@
         "stock_count": 22,
         "avg_return_pct": -0.39,
         "median_return_pct": -2.11,
+        "win_rate_pct": 36.36
+      },
+      {
+        "track_date": "20260917",
+        "days_since_buy": 43,
+        "stock_count": 22,
+        "avg_return_pct": 0.01,
+        "median_return_pct": -2.92,
         "win_rate_pct": 36.36
       }
     ]
