@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260923",
-  "latest_track_date": "20260924",
+  "latest_track_date": "20260925",
   "stock_count": 11,
   "groups": {
     "all": [
@@ -15,6 +15,14 @@
       {
         "track_date": "20260924",
         "days_since_buy": 1,
+        "stock_count": 11,
+        "avg_return_pct": -0.92,
+        "median_return_pct": -1.45,
+        "win_rate_pct": 27.27
+      },
+      {
+        "track_date": "20260925",
+        "days_since_buy": 2,
         "stock_count": 11,
         "avg_return_pct": -0.92,
         "median_return_pct": -1.45,
@@ -37,6 +45,14 @@
         "avg_return_pct": -1.45,
         "median_return_pct": -1.45,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260925",
+        "days_since_buy": 2,
+        "stock_count": 2,
+        "avg_return_pct": -1.45,
+        "median_return_pct": -1.45,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -51,6 +67,14 @@
       {
         "track_date": "20260924",
         "days_since_buy": 1,
+        "stock_count": 1,
+        "avg_return_pct": -0.64,
+        "median_return_pct": -0.64,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260925",
+        "days_since_buy": 2,
         "stock_count": 1,
         "avg_return_pct": -0.64,
         "median_return_pct": -0.64,
@@ -73,6 +97,14 @@
         "avg_return_pct": -0.8,
         "median_return_pct": -1.45,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20260925",
+        "days_since_buy": 2,
+        "stock_count": 9,
+        "avg_return_pct": -0.8,
+        "median_return_pct": -1.45,
+        "win_rate_pct": 33.33
       }
     ],
     "early_focus": [
@@ -87,6 +119,14 @@
       {
         "track_date": "20260924",
         "days_since_buy": 1,
+        "stock_count": 7,
+        "avg_return_pct": -0.5,
+        "median_return_pct": -1.45,
+        "win_rate_pct": 42.86
+      },
+      {
+        "track_date": "20260925",
+        "days_since_buy": 2,
         "stock_count": 7,
         "avg_return_pct": -0.5,
         "median_return_pct": -1.45,
