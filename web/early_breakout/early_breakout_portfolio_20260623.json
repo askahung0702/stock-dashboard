@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260623",
-  "latest_track_date": "20260925",
+  "latest_track_date": "20260928",
   "stock_count": 12,
   "groups": {
     "all": [
@@ -519,6 +519,14 @@
       {
         "track_date": "20260925",
         "days_since_buy": 94,
+        "stock_count": 12,
+        "avg_return_pct": -3.19,
+        "median_return_pct": -5.87,
+        "win_rate_pct": 41.67
+      },
+      {
+        "track_date": "20260928",
+        "days_since_buy": 97,
         "stock_count": 12,
         "avg_return_pct": -3.19,
         "median_return_pct": -5.87,
@@ -1045,6 +1053,14 @@
         "avg_return_pct": -8.11,
         "median_return_pct": -20.88,
         "win_rate_pct": 25.0
+      },
+      {
+        "track_date": "20260928",
+        "days_since_buy": 97,
+        "stock_count": 4,
+        "avg_return_pct": -8.11,
+        "median_return_pct": -20.88,
+        "win_rate_pct": 25.0
       }
     ],
     "continuation_focus": [
@@ -1563,6 +1579,14 @@
       {
         "track_date": "20260925",
         "days_since_buy": 94,
+        "stock_count": 3,
+        "avg_return_pct": -26.8,
+        "median_return_pct": -22.82,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20260928",
+        "days_since_buy": 97,
         "stock_count": 3,
         "avg_return_pct": -26.8,
         "median_return_pct": -22.82,
@@ -2089,6 +2113,14 @@
         "avg_return_pct": -0.73,
         "median_return_pct": 1.65,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20260928",
+        "days_since_buy": 97,
+        "stock_count": 8,
+        "avg_return_pct": -0.73,
+        "median_return_pct": 1.65,
+        "win_rate_pct": 50.0
       }
     ],
     "early_focus": [
@@ -2607,6 +2639,14 @@
       {
         "track_date": "20260925",
         "days_since_buy": 94,
+        "stock_count": 6,
+        "avg_return_pct": 0.98,
+        "median_return_pct": 6.27,
+        "win_rate_pct": 66.67
+      },
+      {
+        "track_date": "20260928",
+        "days_since_buy": 97,
         "stock_count": 6,
         "avg_return_pct": 0.98,
         "median_return_pct": 6.27,
