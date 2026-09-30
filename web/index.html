@@ -961,6 +961,11 @@ function renderDataQualityNotice(data) {
     else if (n.status === 'partial') messages.push(`夜間更新部分完成（${n.dataDate}）：${n.message || '部分來源失敗'}。`);
     else if (n.status === 'running') messages.push('夜間完整分析執行中，完整資料尚未確認。');
   }
+  if (data.swingBacktest) {
+    const b = data.swingBacktest;
+    if (b.status === 'validated_sample_available') messages.push(`可成交波段回測已有 ${b.pointInTimeConsistentTradeCount} 筆當時可得交易樣本；請於績效頁檢視成本後結果。`);
+    else messages.push(`可成交波段回測目前只有 ${b.pointInTimeConsistentTradeCount || 0} 筆當時可得交易樣本，未滿 30 筆，不顯示為可靠勝率。`);
+  }
   messages.push('資料完整度分數不是勝率。2～8 週波段績效尚待驗證，候選名單供觀察與條件確認。');
   document.getElementById('data-quality-notice').textContent = messages.join(' ');
 }
@@ -1543,17 +1548,19 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus] = await Promise.all([
+    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest] = await Promise.all([
       fetchLatestData(),
       loadEarlyBreakout().catch(() => null),
       fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/trading_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('data/nightly_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
+      fetch('data/nightly_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('performance/swing_backtest_latest.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     const d = latestResp;
     if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
     if (tradingStatus && tradingStatus.date === d.date) d.tradingStatus = tradingStatus;
     if (nightlyStatus && nightlyStatus.dataDate <= d.date) d.nightlyStatus = nightlyStatus;
+    if (swingBacktest) d.swingBacktest = swingBacktest;
     S.hotThemes = hotThemeNamesFromMeta(d);
 
     // 預計算短線/中線分
@@ -3356,6 +3363,8 @@ function buildShareholderInsiderCard(s) {
   const insiderCount = Number(s.insiderTransferCount30d || 0);
   const insiderLots = Number(s.insiderTransferLots30d || 0);
   const events = Array.isArray(s.insiderTransferEvents) ? s.insiderTransferEvents : [];
+  const coverage = s.insiderTransferCoverage || {};
+  const coverageText = `官方雙市場查詢 ${Number(coverage.successfulDays || 0)}／${Number(coverage.expectedDays || 30)} 日完整；失敗 ${Number(coverage.failedDays || 0)} 日、部分 ${Number(coverage.partialDays || 0)} 日、缺少 ${Number(coverage.missingDays ?? 30)} 日`;
   const label = s.shareholderInsiderLabel || (largeDelta > 0 ? '大戶增加' : largeDelta < 0 ? '大戶減少' : '觀察');
   const labelColor = label.indexOf('降') >= 0 || label.indexOf('減') >= 0 || insiderCount > 0
     ? 'var(--orange)' : largeDelta > 0 ? 'var(--green)' : 'var(--muted)';
@@ -3370,7 +3379,7 @@ function buildShareholderInsiderCard(s) {
   return `
     <div class="inv-card">
       <div class="inv-title">大戶 / 內部人</div>
-      <div style="color:var(--muted);font-size:12px;margin-bottom:8px">申報轉讓包含信託、贈與及一般交易，不等同已賣出；資料不完整時只顯示已取得事件。</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:8px">申報轉讓包含信託、贈與及一般交易，不等同已賣出；資料不完整時只顯示已取得事件。<br>${escapeHtml(coverageText)}</div>
       <div class="ma-metrics" style="margin-top:0;margin-bottom:10px">
         <span class="ma-metric">集保日期 <b>${dataDate}</b></span>
         <span class="ma-metric">訊號 <b style="color:${labelColor}">${escapeHtml(label || '觀察')}</b></span>

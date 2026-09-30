@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-30T19:01:06.926092+08:00",
+  "status": "validated_sample_available",
+  "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
+  "signalCount": 724,
+  "independentSignalCount": 263,
+  "tradeCount": 639,
+  "pointInTimeConsistentTradeCount": 396,
+  "horizons": [
+    10,
+    20,
+    40
+  ],
+  "summary": {
+    "10": {
+      "sampleCount": 250,
+      "winRatePct": 30.4,
+      "averageNetReturnPct": -0.4071,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -6.4632,
+      "stopHitRatePct": 62.4
+    },
+    "20": {
+      "sampleCount": 231,
+      "winRatePct": 28.57,
+      "averageNetReturnPct": 1.1353,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -6.7287,
+      "stopHitRatePct": 66.67
+    },
+    "40": {
+      "sampleCount": 158,
+      "winRatePct": 23.42,
+      "averageNetReturnPct": 2.1237,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -7.274,
+      "stopHitRatePct": 75.95
+    }
+  },
+  "pointInTimeConsistentSummary": {
+    "10": {
+      "sampleCount": 138,
+      "winRatePct": 23.91,
+      "averageNetReturnPct": -1.836,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -7.2084,
+      "stopHitRatePct": 71.74
+    },
+    "20": {
+      "sampleCount": 129,
+      "winRatePct": 22.48,
+      "averageNetReturnPct": 0.0722,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -7.4201,
+      "stopHitRatePct": 75.19
+    },
+    "40": {
+      "sampleCount": 129,
+      "winRatePct": 20.16,
+      "averageNetReturnPct": 1.0293,
+      "medianNetReturnPct": -6.8291,
+      "averageMaxIntradayDrawdownPct": -7.5481,
+      "stopHitRatePct": 79.84
+    }
+  },
+  "rejected": {
+    "missing_or_invalid_bar": 83,
+    "insufficient_future_sessions": 67
+  },
+  "assumptions": {
+    "entry": "next verified trading-session adjusted open",
+    "stopLossPct": 6.0,
+    "buyFeePct": 0.14250000000000002,
+    "sellFeePct": 0.14250000000000002,
+    "sellTaxPct": 0.3,
+    "buySlippagePct": 0.15,
+    "sellSlippagePct": 0.15
+  },
+  "sources": {
+    "securitiesTransactionTax": "https://www.etax.nat.gov.tw/etwmain/tax-info/understanding/tax-knowledge/rwG2M1N",
+    "tradingGuide": "https://www.twse.com.tw/zh/about/company/guide.html"
+  },
+  "limitations": [
+    "供應商還原 OHLCV 尚未完成交易所公司行動逐筆核對",
+    "0.1425% 手續費是保守模型假設；實際費率、折讓與最低費用依券商及成交金額不同",
+    "漲跌停、撮合量、零股與委託排隊未模擬，不能保證以開盤價成交",
+    "訊號更新時間僅檢查日期一致；首次收集前的資料版本仍可能缺少當時可得證據",
+    "同一股票訊號以 10 個交易日冷卻降低重疊，但樣本仍非完全獨立",
+    "樣本少於 30 筆時不提供已驗證策略結論"
+  ]
+}

@@ -53,6 +53,18 @@
     "sourceCount": 6,
     "reviewRequiredCount": 30
   },
+  "swingBacktest": {
+    "status": "validated_sample_available",
+    "signalCount": 724,
+    "independentSignalCount": 263,
+    "tradeCount": 639,
+    "pointInTimeConsistentTradeCount": 396,
+    "horizons": [
+      10,
+      20,
+      40
+    ]
+  },
   "earlyBreakoutDate": "20260930",
-  "generatedAt": "2026-09-30T11:00:24.589560+00:00"
+  "generatedAt": "2026-09-30T11:01:17.214647+00:00"
 }
