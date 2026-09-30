@@ -952,6 +952,7 @@ function renderDataQualityNotice(data) {
   const messages = [`資料日期：${data.date || '未知'}。`];
   if (eps < rows.length) messages.push(`EPS 加速值 ${rows.length - eps} 檔資料不足。`);
   if (insider < rows.length) messages.push('內部人轉讓資料不完整，不能解讀成沒有轉讓。');
+  if (data.ohlcvQuality) messages.push(`逐日行情已保存 ${data.ohlcvQuality.capturedCount} 檔；10／20／40 日還原報酬資料完整 ${data.ohlcvQuality.complete40DayCount} 檔，仍待官方公司行動核對。`);
   messages.push('資料完整度分數不是勝率。2～8 週波段績效尚待驗證，候選名單供觀察與條件確認。');
   document.getElementById('data-quality-notice').textContent = messages.join(' ');
 }
@@ -1534,11 +1535,13 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const [latestResp, earlyBreakout] = await Promise.all([
+    const [latestResp, earlyBreakout, ohlcv] = await Promise.all([
       fetchLatestData(),
-      loadEarlyBreakout().catch(() => null)
+      loadEarlyBreakout().catch(() => null),
+      fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     const d = latestResp;
+    if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
     S.hotThemes = hotThemeNamesFromMeta(d);
 
     // 預計算短線/中線分
@@ -1546,6 +1549,7 @@ async function init() {
       const chipsFallback = parseChipsFallback(s);
       const normalized = {
         ...s,
+        ohlcv: ohlcv && ohlcv.date === d.date ? (ohlcv.stocks || {})[s.code] : null,
         latestInstitutionalNetLots: resolvedNumber(s.latestInstitutionalNetLots, chipsFallback.latestInstitutionalNetLots),
         latestInstitutionalNetRatioPct: resolvedNumber(s.latestInstitutionalNetRatioPct, chipsFallback.latestInstitutionalNetRatioPct),
         fiveDayInstitutionalNetLots: resolvedNumber(s.fiveDayInstitutionalNetLots, chipsFallback.fiveDayInstitutionalNetLots),
@@ -3256,6 +3260,7 @@ function renderDB(s, history) {
     ${buyCard}
     ${costCard}
     ${buildShareholderInsiderCard(s)}
+    ${buildOhlcvCard(s)}
     ${warningBox}
     ${resonanceBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
@@ -3275,6 +3280,15 @@ function renderDB(s, history) {
     document.getElementById('cv-t').closest('.cc').querySelector('.cc-title').textContent = '技術線圖（歷史資料累積中）';
     document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
   }
+}
+
+function buildOhlcvCard(s) {
+  const q = s.ohlcv;
+  if (!q) return '<div class="rsn"><div class="rsn-txt">逐日 OHLCV 尚未收集；還原行情檢核待更新。</div></div>';
+  const fmt = v => Number.isFinite(v) ? v.toFixed(2) + '%' : '資料不足';
+  const returns = q.returns || {};
+  const stats = q.available ? `10 / 20 / 40 交易日還原報酬：${fmt(returns['10'])} / ${fmt(returns['20'])} / ${fmt(returns['40'])}<br>40 交易日最大收盤回撤：${fmt(q.maxDrawdown40Pct)}<br>` : '本日完整 OHLCV 不足，暫不計算波段報酬。<br>';
+  return `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">還原行情檢核（2～8 週）</span></div><div class="rsn-txt">${stats}行情截至 ${escapeHtml(q.barsThrough || '未知')}；來源 Yahoo。<br>${(q.warnings || []).map(escapeHtml).join('<br>')}<br>以上為歷史價格觀察，尚未包含交易成本與可成交驗證，不代表買進勝率。</div></div>`;
 }
 
 function buildShareholderInsiderCard(s) {

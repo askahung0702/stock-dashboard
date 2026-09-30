@@ -1,0 +1,1858 @@
+{
+  "schemaVersion": 1,
+  "date": "20260930",
+  "generatedAt": "2026-09-30T08:40:26.936796+00:00",
+  "universeCount": 1971,
+  "attemptedCount": 52,
+  "capturedCount": 52,
+  "availableCount": 52,
+  "complete40DayCount": 52,
+  "status": "partial",
+  "source": "Yahoo Chart",
+  "sources": [
+    "https://help.yahoo.com/kb/finance/adjusted-close-sln28256.html"
+  ],
+  "failures": [],
+  "stocks": {
+    "5347": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:24.505134200Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-06",
+          "type": "dividends",
+          "details": {
+            "amount": 4.473773,
+            "date": 1783299600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 13.4796,
+        "20": 19.4719,
+        "40": 19.8675
+      },
+      "missingTradingDates": [],
+      "lastClose": 181.0,
+      "maxDrawdown40Pct": -9.816,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3293": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:25.142289100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-08",
+          "type": "dividends",
+          "details": {
+            "amount": 36.0,
+            "date": 1783472400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 12.7325,
+        "20": 7.9452,
+        "40": 2.2049
+      },
+      "missingTradingDates": [],
+      "lastClose": 788.0,
+      "maxDrawdown40Pct": -13.806,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6187": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:26.081393400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-03",
+          "type": "dividends",
+          "details": {
+            "amount": 11.660591,
+            "date": 1785718800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 6.9388,
+        "20": -2.6022,
+        "40": 30.3483
+      },
+      "missingTradingDates": [],
+      "lastClose": 1310.0,
+      "maxDrawdown40Pct": -16.4336,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "8299": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:26.770330300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2025-12-16",
+          "type": "dividends",
+          "details": {
+            "amount": 6.228316,
+            "date": 1765846800
+          }
+        },
+        {
+          "date": "2026-06-30",
+          "type": "dividends",
+          "details": {
+            "amount": 16.964256,
+            "date": 1782781200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 11.1111,
+        "20": -0.6928,
+        "40": 22.1591
+      },
+      "missingTradingDates": [],
+      "lastClose": 2150.0,
+      "maxDrawdown40Pct": -15.7895,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3680": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:27.523906800Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2025-12-11",
+          "type": "dividends",
+          "details": {
+            "amount": 1.9,
+            "date": 1765414800
+          }
+        },
+        {
+          "date": "2026-05-27",
+          "type": "dividends",
+          "details": {
+            "amount": 4.99734,
+            "date": 1779843600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 9.4675,
+        "20": 12.5761,
+        "40": 32.3004
+      },
+      "missingTradingDates": [],
+      "lastClose": 555.0,
+      "maxDrawdown40Pct": -13.6926,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6770": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:28.161883800Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-27",
+          "type": "dividends",
+          "details": {
+            "amount": 0.23,
+            "date": 1787792400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 6.5064,
+        "20": 3.1507,
+        "40": 38.1125
+      },
+      "missingTradingDates": [],
+      "lastClose": 75.30000305175781,
+      "maxDrawdown40Pct": -15.051,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "1303": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:29.109306800Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-08",
+          "type": "dividends",
+          "details": {
+            "amount": 0.8,
+            "date": 1783472400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 9.188,
+        "20": 5.3608,
+        "40": 54.8485
+      },
+      "missingTradingDates": [],
+      "lastClose": 255.5,
+      "maxDrawdown40Pct": -13.253,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2436": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:29.854012500Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-30",
+          "type": "dividends",
+          "details": {
+            "amount": 1.956716,
+            "date": 1782781200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 9.7202,
+        "20": 13.3942,
+        "40": 29.7909
+      },
+      "missingTradingDates": [],
+      "lastClose": 74.5,
+      "maxDrawdown40Pct": -11.6573,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3264": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:30.633319800Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-30",
+          "type": "dividends",
+          "details": {
+            "amount": 4.2,
+            "date": 1782781200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 7.033,
+        "20": 6.7982,
+        "40": 29.8667
+      },
+      "missingTradingDates": [],
+      "lastClose": 243.5,
+      "maxDrawdown40Pct": -14.9648,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3034": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:31.432626400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-13",
+          "type": "dividends",
+          "details": {
+            "amount": 23.0,
+            "date": 1783904400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": -1.7986,
+        "20": 1.1111,
+        "40": 5.2023
+      },
+      "missingTradingDates": [],
+      "lastClose": 546.0,
+      "maxDrawdown40Pct": -8.1818,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3665": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:32.086323700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-15",
+          "type": "dividends",
+          "details": {
+            "amount": 15.41876,
+            "date": 1784077200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 32.7366,
+        "20": 19.5853,
+        "40": 23.8663
+      },
+      "missingTradingDates": [],
+      "lastClose": 2595.0,
+      "maxDrawdown40Pct": -20.8861,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2344": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:33.027899100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-03-27",
+          "type": "dividends",
+          "details": {
+            "amount": 0.5,
+            "date": 1774573200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 12.1875,
+        "20": -1.6438,
+        "40": 25.5245
+      },
+      "missingTradingDates": [],
+      "lastClose": 179.5,
+      "maxDrawdown40Pct": -15.1596,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "5483": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:33.715451300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2026-01-08",
+          "type": "dividends",
+          "details": {
+            "amount": 1.0,
+            "date": 1767834000
+          }
+        },
+        {
+          "date": "2026-07-23",
+          "type": "dividends",
+          "details": {
+            "amount": 2.5,
+            "date": 1784768400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 17.5637,
+        "20": 16.573,
+        "40": 20.2899
+      },
+      "missingTradingDates": [],
+      "lastClose": 207.5,
+      "maxDrawdown40Pct": -6.9061,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "8046": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:34.653623700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-25",
+          "type": "dividends",
+          "details": {
+            "amount": 2.0,
+            "date": 1782349200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 27.0142,
+        "20": 8.9431,
+        "40": 40.6086
+      },
+      "missingTradingDates": [],
+      "lastClose": 1340.0,
+      "maxDrawdown40Pct": -21.4559,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3131": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:35.476532Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-29",
+          "type": "dividends",
+          "details": {
+            "amount": 46.08446,
+            "date": 1785286800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 9.3074,
+        "20": 4.7718,
+        "40": 4.3388
+      },
+      "missingTradingDates": [],
+      "lastClose": 2525.0,
+      "maxDrawdown40Pct": -14.2315,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6805": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:36.078077200Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-20",
+          "type": "dividends",
+          "details": {
+            "amount": 12.5,
+            "date": 1787187600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 13.3949,
+        "20": 6.5076,
+        "40": 68.1747
+      },
+      "missingTradingDates": [],
+      "lastClose": 2455.0,
+      "maxDrawdown40Pct": -13.6461,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "5274": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:36.806176100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2026-06-26",
+          "type": "dividends",
+          "details": {
+            "amount": 72.72727,
+            "date": 1782435600
+          }
+        },
+        {
+          "date": "2026-07-07",
+          "type": "splits",
+          "details": {
+            "date": 1783386000,
+            "numerator": 1100.0,
+            "denominator": 1000.0,
+            "splitRatio": "1100:1000"
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 4.2825,
+        "20": 16.7134,
+        "40": 17.3709
+      },
+      "missingTradingDates": [],
+      "lastClose": 18750.0,
+      "maxDrawdown40Pct": -14.5562,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "7751": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:37.654895Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-03-31",
+          "type": "dividends",
+          "details": {
+            "amount": 18.0,
+            "date": 1774918800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 15.6584,
+        "20": 0.6192,
+        "40": 30.5221
+      },
+      "missingTradingDates": [],
+      "lastClose": 1625.0,
+      "maxDrawdown40Pct": -31.4861,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2360": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:38.445709Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-17",
+          "type": "dividends",
+          "details": {
+            "amount": 19.5,
+            "date": 1781658000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": -0.2336,
+        "20": 8.9286,
+        "40": 8.9286
+      },
+      "missingTradingDates": [],
+      "lastClose": 2135.0,
+      "maxDrawdown40Pct": -16.9492,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2337": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:39.143196300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 0,
+      "events": [],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 5.6034,
+        "20": -2.7778,
+        "40": 10.8597
+      },
+      "missingTradingDates": [],
+      "lastClose": 122.5,
+      "maxDrawdown40Pct": -16.4234,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2404": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:39.932479700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-16",
+          "type": "dividends",
+          "details": {
+            "amount": 40.0,
+            "date": 1784163600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 27.0936,
+        "20": 21.6981,
+        "40": 16.7421
+      },
+      "missingTradingDates": [],
+      "lastClose": 1290.0,
+      "maxDrawdown40Pct": -14.1026,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6505": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:40.817303500Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-23",
+          "type": "dividends",
+          "details": {
+            "amount": 1.2,
+            "date": 1782176400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 17.5121,
+        "20": 32.381,
+        "40": 43.7223
+      },
+      "missingTradingDates": [],
+      "lastClose": 97.30000305175781,
+      "maxDrawdown40Pct": -8.0,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2451": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:41.434331600Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-25",
+          "type": "dividends",
+          "details": {
+            "amount": 11.782383,
+            "date": 1782349200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 5.4745,
+        "20": -1.8676,
+        "40": 2.847
+      },
+      "missingTradingDates": [],
+      "lastClose": 289.0,
+      "maxDrawdown40Pct": -13.6076,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6491": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:42.136436300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-07",
+          "type": "dividends",
+          "details": {
+            "amount": 10.005131,
+            "date": 1786064400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 8.2569,
+        "20": 3.3792,
+        "40": 19.1568
+      },
+      "missingTradingDates": [],
+      "lastClose": 413.0,
+      "maxDrawdown40Pct": -8.2603,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3030": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:43.093193300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-11",
+          "type": "dividends",
+          "details": {
+            "amount": 7.0,
+            "date": 1781139600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 7.722,
+        "20": -3.9587,
+        "40": -2.6178
+      },
+      "missingTradingDates": [],
+      "lastClose": 279.0,
+      "maxDrawdown40Pct": -15.935,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6278": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:43.822131600Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-09",
+          "type": "dividends",
+          "details": {
+            "amount": 5.564957,
+            "date": 1783558800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 17.5202,
+        "20": 9.2732,
+        "40": 49.8282
+      },
+      "missingTradingDates": [],
+      "lastClose": 218.0,
+      "maxDrawdown40Pct": -12.3786,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6196": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:44.505216600Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-24",
+          "type": "dividends",
+          "details": {
+            "amount": 6.448786,
+            "date": 1782262800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 12.5,
+        "20": 20.6186,
+        "40": 18.4211
+      },
+      "missingTradingDates": [],
+      "lastClose": 585.0,
+      "maxDrawdown40Pct": -6.6536,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "1714": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:45.230823400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-20",
+          "type": "dividends",
+          "details": {
+            "amount": 0.18,
+            "date": 1787187600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 10.3679,
+        "20": -2.3669,
+        "40": 16.2316
+      },
+      "missingTradingDates": [],
+      "lastClose": 16.5,
+      "maxDrawdown40Pct": -19.407,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6197": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:46.019608700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-02",
+          "type": "dividends",
+          "details": {
+            "amount": 6.92326,
+            "date": 1782954000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 9.7643,
+        "20": 7.7686,
+        "40": 7.7686
+      },
+      "missingTradingDates": [],
+      "lastClose": 326.0,
+      "maxDrawdown40Pct": -8.3728,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3105": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:46.757217200Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-11",
+          "type": "dividends",
+          "details": {
+            "amount": 2.0,
+            "date": 1781139600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 22.0721,
+        "20": 21.1173,
+        "40": 74.2765
+      },
+      "missingTradingDates": [],
+      "lastClose": 542.0,
+      "maxDrawdown40Pct": -11.25,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2330": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:47.514123400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 4,
+      "events": [
+        {
+          "date": "2025-12-11",
+          "type": "dividends",
+          "details": {
+            "amount": 5.000011,
+            "date": 1765414800
+          }
+        },
+        {
+          "date": "2026-03-17",
+          "type": "dividends",
+          "details": {
+            "amount": 6.000036,
+            "date": 1773709200
+          }
+        },
+        {
+          "date": "2026-06-11",
+          "type": "dividends",
+          "details": {
+            "amount": 6.000036,
+            "date": 1781139600
+          }
+        },
+        {
+          "date": "2026-09-16",
+          "type": "dividends",
+          "details": {
+            "amount": 7.000001,
+            "date": 1789520400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 4.5084,
+        "20": 3.422,
+        "40": 4.9494
+      },
+      "missingTradingDates": [],
+      "lastClose": 2480.0,
+      "maxDrawdown40Pct": -3.6437,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6190": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:48.255942700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-16",
+          "type": "dividends",
+          "details": {
+            "amount": 1.933038,
+            "date": 1784163600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 6.6667,
+        "20": -0.2833,
+        "40": 8.642
+      },
+      "missingTradingDates": [],
+      "lastClose": 70.4000015258789,
+      "maxDrawdown40Pct": -7.8212,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6683": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:49.002439Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-07",
+          "type": "dividends",
+          "details": {
+            "amount": 9.00147,
+            "date": 1783386000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 19.1011,
+        "20": 31.405,
+        "40": 56.6502
+      },
+      "missingTradingDates": [],
+      "lastClose": 1590.0,
+      "maxDrawdown40Pct": -23.2975,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3498": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:49.679114700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 0,
+      "events": [],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 20.21,
+        "20": 10.0962,
+        "40": 131.3131
+      },
+      "missingTradingDates": [],
+      "lastClose": 229.0,
+      "maxDrawdown40Pct": -16.5865,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "4961": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:50.474895200Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-01",
+          "type": "dividends",
+          "details": {
+            "amount": 7.72,
+            "date": 1782867600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 1.6854,
+        "20": 11.3846,
+        "40": 17.9153
+      },
+      "missingTradingDates": [],
+      "lastClose": 181.0,
+      "maxDrawdown40Pct": -8.046,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2412": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:51.408675400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-09",
+          "type": "dividends",
+          "details": {
+            "amount": 5.2,
+            "date": 1783558800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 0.7018,
+        "20": 5.5147,
+        "40": 3.2374
+      },
+      "missingTradingDates": [],
+      "lastClose": 143.5,
+      "maxDrawdown40Pct": -2.8777,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "8086": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:52.171403100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-09-01",
+          "type": "dividends",
+          "details": {
+            "amount": 1.68,
+            "date": 1788224400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 8.5308,
+        "20": -1.5646,
+        "40": 0.566
+      },
+      "missingTradingDates": [],
+      "lastClose": 114.5,
+      "maxDrawdown40Pct": -14.2276,
+      "recentCorporateActionCount": 1,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6693": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:53.029593600Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-08",
+          "type": "dividends",
+          "details": {
+            "amount": 0.6,
+            "date": 1783472400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 18.1564,
+        "20": 19.83,
+        "40": 34.7134
+      },
+      "missingTradingDates": [],
+      "lastClose": 211.5,
+      "maxDrawdown40Pct": -14.1333,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6944": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:53.834411300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2026-07-23",
+          "type": "dividends",
+          "details": {
+            "amount": 17.0,
+            "date": 1784768400
+          }
+        },
+        {
+          "date": "2026-07-23",
+          "type": "splits",
+          "details": {
+            "date": 1784768400,
+            "numerator": 1300.0,
+            "denominator": 1000.0,
+            "splitRatio": "1300:1000"
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 11.6715,
+        "20": 8.0893,
+        "40": 6.7493
+      },
+      "missingTradingDates": [],
+      "lastClose": 775.0,
+      "maxDrawdown40Pct": -13.728,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3324": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:54.533504900Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-17",
+          "type": "dividends",
+          "details": {
+            "amount": 11.903306,
+            "date": 1781658000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 17.2414,
+        "20": 22.4,
+        "40": 62.0763
+      },
+      "missingTradingDates": [],
+      "lastClose": 1530.0,
+      "maxDrawdown40Pct": -15.1515,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2308": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:55.229852700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-17",
+          "type": "dividends",
+          "details": {
+            "amount": 11.6,
+            "date": 1781658000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 16.6667,
+        "20": 2.7174,
+        "40": 19.6203
+      },
+      "missingTradingDates": [],
+      "lastClose": 1890.0,
+      "maxDrawdown40Pct": -14.0584,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "8016": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:55.914366900Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-15",
+          "type": "dividends",
+          "details": {
+            "amount": 11.5,
+            "date": 1781485200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 2.5271,
+        "20": -1.7301,
+        "40": 2.8986
+      },
+      "missingTradingDates": [],
+      "lastClose": 284.0,
+      "maxDrawdown40Pct": -13.1537,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2454": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:56.736838100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2026-01-06",
+          "type": "dividends",
+          "details": {
+            "amount": 29.0,
+            "date": 1767661200
+          }
+        },
+        {
+          "date": "2026-07-07",
+          "type": "dividends",
+          "details": {
+            "amount": 24.500216,
+            "date": 1783386000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 7.8947,
+        "20": 25.3503,
+        "40": 25.8312
+      },
+      "missingTradingDates": [],
+      "lastClose": 4920.0,
+      "maxDrawdown40Pct": -12.426,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3014": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:57.367288400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-09",
+          "type": "dividends",
+          "details": {
+            "amount": 8.50169,
+            "date": 1783558800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 8.4291,
+        "20": 10.1167,
+        "40": 11.8577
+      },
+      "missingTradingDates": [],
+      "lastClose": 141.5,
+      "maxDrawdown40Pct": -5.8608,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "5439": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:58.010201400Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-22",
+          "type": "dividends",
+          "details": {
+            "amount": 7.199923,
+            "date": 1784682000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 3.0426,
+        "20": -5.0467,
+        "40": 18.6916
+      },
+      "missingTradingDates": [],
+      "lastClose": 254.0,
+      "maxDrawdown40Pct": -13.6364,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6166": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:58.820566700Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-09",
+          "type": "dividends",
+          "details": {
+            "amount": 1.198986,
+            "date": 1783558800
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 20.362,
+        "20": 15.1515,
+        "40": 7.2581
+      },
+      "missingTradingDates": [],
+      "lastClose": 133.0,
+      "maxDrawdown40Pct": -24.8276,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "7810": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:38:59.536155Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-30",
+          "type": "dividends",
+          "details": {
+            "amount": 5.0,
+            "date": 1785373200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 6.0948,
+        "20": 3.9823,
+        "40": 30.1939
+      },
+      "missingTradingDates": [],
+      "lastClose": 235.0,
+      "maxDrawdown40Pct": -6.8584,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3529": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:39:00.368531500Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-06-25",
+          "type": "dividends",
+          "details": {
+            "amount": 20.5,
+            "date": 1782349200
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 21.0623,
+        "20": 37.7083,
+        "40": 38.2845
+      },
+      "missingTradingDates": [],
+      "lastClose": 3305.0,
+      "maxDrawdown40Pct": -23.9859,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6664": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:39:01.014453100Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-28",
+          "type": "dividends",
+          "details": {
+            "amount": 10.142498,
+            "date": 1785200400
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 11.9048,
+        "20": 8.2014,
+        "40": 12.4066
+      },
+      "missingTradingDates": [],
+      "lastClose": 376.0,
+      "maxDrawdown40Pct": -10.3683,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6257": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:39:01.845077Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-07",
+          "type": "dividends",
+          "details": {
+            "amount": 4.249688,
+            "date": 1783386000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 20.9524,
+        "20": 21.8225,
+        "40": 29.9233
+      },
+      "missingTradingDates": [],
+      "lastClose": 254.0,
+      "maxDrawdown40Pct": -7.277,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6488": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:33:07.515109600Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2025-12-31",
+          "type": "dividends",
+          "details": {
+            "amount": 2.0,
+            "date": 1767142800
+          }
+        },
+        {
+          "date": "2026-07-16",
+          "type": "dividends",
+          "details": {
+            "amount": 5.7,
+            "date": 1784163600
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 15.0,
+        "20": 13.4868,
+        "40": 19.515
+      },
+      "missingTradingDates": [],
+      "lastClose": 1035.0,
+      "maxDrawdown40Pct": -15.0943,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "2317": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-09-30T08:33:08.328130300Z",
+      "barsThrough": "2026-09-30",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-02",
+          "type": "dividends",
+          "details": {
+            "amount": 7.171792,
+            "date": 1782954000
+          }
+        }
+      ],
+      "warnings": [
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": 1.2072,
+        "20": 0.6,
+        "40": -0.5929
+      },
+      "missingTradingDates": [],
+      "lastClose": 251.5,
+      "maxDrawdown40Pct": -10.0,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    }
+  },
+  "limitations": [
+    "供應商 OHLC 可能已包含分割調整，不能當成交易所原始成交價",
+    "還原 OHLC 僅為衍生價格尺度；本頁不模擬交易或提供勝率",
+    "原始版本與取得時間已保留，首次收集以前不具有當時可得資訊證據",
+    "股利／分割事件不代表已涵蓋全部減資、配股與停復牌事件"
+  ]
+}
