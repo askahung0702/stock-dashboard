@@ -532,6 +532,8 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
   </div>
 
+  <div id="data-quality-notice" role="status" style="padding:12px 16px;margin:12px 0;border:1px solid var(--orange);border-radius:8px;color:var(--muted)"></div>
+
   <!-- Table -->
   <div class="tw" id="tw">
     <div class="loading" id="ld"><div class="spin"></div><div>載入資料中...</div></div>
@@ -943,6 +945,17 @@ function calcShortScore(s) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+function renderDataQualityNotice(data) {
+  const rows = data.rows || [];
+  const eps = rows.filter(s => s.epsAccelerationReady === true && Number.isFinite(s.epsAccelerationPct)).length;
+  const insider = rows.filter(s => s.insiderTransferDataReady === true).length;
+  const messages = [`資料日期：${data.date || '未知'}。`];
+  if (eps < rows.length) messages.push(`EPS 加速值 ${rows.length - eps} 檔資料不足。`);
+  if (insider < rows.length) messages.push('內部人轉讓資料不完整，不能解讀成沒有轉讓。');
+  messages.push('資料完整度分數不是勝率。2～8 週波段績效尚待驗證，候選名單供觀察與條件確認。');
+  document.getElementById('data-quality-notice').textContent = messages.join(' ');
+}
+
 function calcMidScore(s) {
   let score = 0;
   // 營收成長最重要 (30分)：中線靠業績驅動
@@ -959,7 +972,7 @@ function calcMidScore(s) {
   else if (peg > 0.5 && peg <= 1) score += 3;
   else if (peg > 2)               score -= 2;
   // EPS 加速加分 (5分)
-  const accel = s.epsAccelerationPct || 0;
+  const accel = s.epsAccelerationReady === true && Number.isFinite(s.epsAccelerationPct) ? s.epsAccelerationPct : 0;
   if (accel > 20)      score += 5;
   else if (accel > 5)  score += 3;
   else if (accel < -20) score -= 3;
@@ -1552,8 +1565,8 @@ async function init() {
         holdersOver1000LotsDelta: resolvedNumber(s.holdersOver1000LotsDelta, 0),
         ratioOver1000Lots: resolvedNumber(s.ratioOver1000Lots, 0),
         ratioOver1000LotsDelta: resolvedNumber(s.ratioOver1000LotsDelta, 0),
-        insiderTransferCount30d: resolvedNumber(s.insiderTransferCount30d, 0),
-        insiderTransferLots30d: resolvedNumber(s.insiderTransferLots30d, 0),
+        insiderTransferCount30d: resolvedNumber(s.insiderTransferObservedCount30d, resolvedNumber(s.insiderTransferCount30d, 0)),
+        insiderTransferLots30d: resolvedNumber(s.insiderTransferObservedLots30d, resolvedNumber(s.insiderTransferLots30d, 0)),
         grossMarginPct: grossMarginPctOf(s)
       };
       const bearish = calcBearishProfile(normalized);
@@ -1592,6 +1605,7 @@ async function init() {
     document.getElementById('s-likely').textContent = (d.likelyCount||0).toLocaleString();
     document.getElementById('s-watch').textContent  = (d.watchlistCount||0).toLocaleString();
 
+    renderDataQualityNotice(d);
     renderMarketBanner(d);
     renderWeaknessBar(d);
     renderMarketAdvisor(d);
@@ -2468,7 +2482,7 @@ function mkRow(s) {
     fmtLotsCell(s.brokerNetLots) + fmtPctCell(s.brokerNetRatioPct) +
     fmtHolderCell(s.holders100To1000Lots, s.holders100To1000LotsDelta) +
     fmtHolderCell(s.holdersOver1000Lots, s.holdersOver1000LotsDelta) +
-    fmtInsiderCell(s.insiderTransferCount30d, s.insiderTransferLots30d, s.shareholderInsiderLabel) +
+    fmtInsiderCell(s.insiderTransferCount30d, s.insiderTransferLots30d, s.shareholderInsiderLabel, s.insiderTransferDataReady === true) +
     fmtMarginUsageCell(s.marginUsagePct) +
     `<td style="color:${ssColor};font-weight:600;background:linear-gradient(90deg,rgba(59,130,246,.12) ${s.shortScore}%,transparent ${s.shortScore}%)">${s.shortScore}</td>` +
     `<td style="color:${msColor};font-weight:600;background:linear-gradient(90deg,rgba(34,197,94,.12) ${s.midScore}%,transparent ${s.midScore}%)">${s.midScore}</td>`;
@@ -2523,7 +2537,8 @@ function fmtHolderCell(count, delta) {
     : `<span class="${d>0?'rp':'rn'}">Δ ${d>0?'+':''}${Math.round(d).toLocaleString()}</span>`;
   return `<td style="font-weight:700">${Math.round(c).toLocaleString()}<div class="et">${deltaText}</div></td>`;
 }
-function fmtInsiderCell(count, lots, label) {
+function fmtInsiderCell(count, lots, label, ready) {
+  if (!ready && !(count > 0)) return '<td title="近30日資料取得不完整，不能判定沒有轉讓" style="color:var(--orange)">資料不足</td>';
   const c = Number(count || 0);
   const l = Number(lots || 0);
   if (!Number.isFinite(c) || c <= 0) return '<td style="color:var(--muted)">—</td>';
@@ -3235,7 +3250,7 @@ function renderDB(s, history) {
       ${s.rsi14 > 0 ? `<div class="met"><div class="met-lbl">RSI14</div><div class="met-val" style="color:${s.rsi14>=80?'var(--red)':s.rsi14>=50&&s.rsi14<70?'var(--green)':s.rsi14<30?'var(--red)':'var(--yellow)'}">${s.rsi14.toFixed(1)}</div></div>` : ''}
       ${s.stochasticK > 0 ? `<div class="met"><div class="met-lbl">KD (K/D)</div><div class="met-val" style="color:${s.stochasticK>=80?'var(--red)':s.stochasticK>s.stochasticD?'var(--green)':'var(--muted)'}">${s.stochasticK.toFixed(1)}/${s.stochasticD.toFixed(1)}</div></div>` : ''}
       ${s.peg > 0 ? `<div class="met"><div class="met-lbl">PEG</div><div class="met-val" style="color:${s.peg<=1?'var(--green)':s.peg<=2?'var(--yellow)':'var(--red)'}">${s.peg.toFixed(2)}</div></div>` : ''}
-      ${s.epsAccelerationPct !== 0 && s.epsAccelerationPct !== undefined ? `<div class="met"><div class="met-lbl">EPS加速</div><div class="met-val ${s.epsAccelerationPct>0?'rp':'rn'}">${s.epsAccelerationPct>0?'+':''}${s.epsAccelerationPct.toFixed(1)}%</div></div>` : ''}
+      <div class="met"><div class="met-lbl">EPS年增率加速</div><div class="met-val">${s.epsAccelerationReady === true && Number.isFinite(s.epsAccelerationPct) ? s.epsAccelerationPct.toFixed(1) + ' 個百分點' : '資料不足'}</div></div>
       ${trackHtml}
     </div>
     ${buyCard}
@@ -3285,10 +3300,11 @@ function buildShareholderInsiderCard(s) {
       <td>${escapeHtml(e.insiderRole || '—')}</td>
       <td>${escapeHtml(e.transferMethod || '—')}</td>
       <td style="text-align:right;color:var(--orange);font-weight:700">${Math.round(Number(e.plannedTransferLots || 0)).toLocaleString()}張</td>
-    </tr>`).join('') : `<tr><td colspan="5" style="color:var(--muted);text-align:center">近30天沒有內部人申報轉讓紀錄</td></tr>`;
+    </tr>`).join('') : `<tr><td colspan="5" style="color:var(--muted);text-align:center">${s.insiderTransferDataReady === true ? '近30天已查詢，沒有內部人申報轉讓紀錄' : '近30天資料取得不完整，無法確認是否有內部人轉讓'}</td></tr>`;
   return `
     <div class="inv-card">
       <div class="inv-title">大戶 / 內部人</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:8px">申報轉讓包含信託、贈與及一般交易，不等同已賣出；資料不完整時只顯示已取得事件。</div>
       <div class="ma-metrics" style="margin-top:0;margin-bottom:10px">
         <span class="ma-metric">集保日期 <b>${dataDate}</b></span>
         <span class="ma-metric">訊號 <b style="color:${labelColor}">${escapeHtml(label || '觀察')}</b></span>
@@ -3307,7 +3323,7 @@ function buildShareholderInsiderCard(s) {
         <div class="sl-item" style="border-left:3px solid var(--orange)">
           <div class="sl-item-lbl">內部人申報轉讓</div>
           <div class="sl-item-val" style="color:${insiderCount > 0 ? 'var(--orange)' : 'var(--muted)'}">${insiderCount ? Math.round(insiderCount) + ' 筆' : '—'}</div>
-          <div class="sl-item-sub">近30天 ${insiderLots ? Math.round(insiderLots).toLocaleString() + ' 張' : '無申報轉讓張數'}</div>
+          <div class="sl-item-sub">${s.insiderTransferDataReady === true ? '近30天' : '不完整資料，已取得'} ${insiderLots ? Math.round(insiderLots).toLocaleString() + ' 張' : (s.insiderTransferDataReady === true ? '0 張' : '筆數未知')}</div>
         </div>
         <div class="sl-item" style="border-left:3px solid var(--muted)">
           <div class="sl-item-lbl">最近申報日</div>

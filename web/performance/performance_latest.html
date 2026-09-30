@@ -45,7 +45,8 @@ table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:8px 9
   </section>
   <section class="bar">
     <h2>Tag / 模式績效</h2>
-    <p>每一列代表某個 tag 在指定階段出現後的後續報酬。14:00 來自 intraday-close，17:00 來自 close，23:00 來自 full；「全部階段」是三個階段合併統計。</p>
+    <p>每一列代表某個 tag 在指定階段出現後的後續報酬。14:00 為初版行情、17:00 為收盤分析、20:15 為官方籌碼、23:00 為完整分析；「全部階段」合併各階段統計，同一股票可能重複計入。</p>
+    <p>這是未還原快照價格的事後統計，尚未模擬可成交進場、交易成本與滑價，也未完成公告時點及樣本外驗證。表中的勝率不能直接當成未來買進勝率。「期間最差報酬」是相對訊號價格的最低收盤報酬，並非部位從高點下跌的最大回撤；缺少完整價格路徑時不計算。</p>
   </section>
   <section class="filters">
     <input id="q" placeholder="搜尋 tag / 類型" oninput="render()">
@@ -71,8 +72,8 @@ table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:8px 9
         <th onclick="sortMetric('win_rate_pct')">勝率</th>
         <th onclick="sortMetric('avg_return_pct')">平均</th>
         <th onclick="sortMetric('median_return_pct')">中位</th>
-        <th onclick="sortMetric('avg_max_drawdown_pct')">平均回撤</th>
-        <th onclick="sortMetric('worst_max_drawdown_pct')">最差回撤</th>
+        <th onclick="sortMetric('avg_max_drawdown_pct')">平均期間最差報酬</th>
+        <th onclick="sortMetric('worst_max_drawdown_pct')">最低期間報酬</th>
       </tr></thead>
       <tbody id="summary-body"><tr><td colspan="10" class="empty">載入中...</td></tr></tbody>
     </table>
