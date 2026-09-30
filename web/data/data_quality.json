@@ -2,28 +2,27 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20260930",
-  "count": 1962,
+  "count": 1969,
   "errors": [],
   "warnings": [
-    "EPS 加速值：1962 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：1969 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "本次僅更新資料來源狀態，行情日期與分析分數未重算",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "尚無可追蹤的夜間完整分析執行狀態"
   ],
   "readiness": {
-    "techReady": 1962,
-    "marketReady": 1962,
-    "financialReady": 1961,
-    "institutionalReady": 1962,
+    "techReady": 1969,
+    "marketReady": 1969,
+    "financialReady": 1968,
+    "institutionalReady": 1969,
     "newsReady": 0
   },
   "epsAccelerationReadyCount": 0,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "close": 1962
+    "official-chip": 1969
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -41,17 +40,17 @@
   },
   "ohlcv": {
     "date": "20260930",
-    "capturedCount": 1962,
-    "availableCount": 1950,
-    "complete40DayCount": 1755,
-    "universeCount": 1962
+    "capturedCount": 1969,
+    "availableCount": 1956,
+    "complete40DayCount": 1759,
+    "universeCount": 1969
   },
   "officialTradingAnnouncements": {
     "date": "20260930",
     "evaluationDate": "2026-09-30",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 30
+    "reviewRequiredCount": 43
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -66,5 +65,5 @@
     ]
   },
   "earlyBreakoutDate": "20260930",
-  "generatedAt": "2026-09-30T11:01:17.214647+00:00"
+  "generatedAt": "2026-09-30T12:52:40.609003+00:00"
 }
