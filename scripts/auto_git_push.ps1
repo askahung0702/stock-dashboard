@@ -14,9 +14,18 @@ if ($env:STOCK_SKIP_AUTO_PUSH -eq "1") {
 }
 
 if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
-    Write-Host "No git repository found, skip auto push."
-    exit 0
+    throw "No git repository found; site was not published."
 }
+
+$branch = & git symbolic-ref --short HEAD
+if ($LASTEXITCODE -ne 0 -or $branch -ne "main") {
+    throw "Auto publish requires the main branch."
+}
+& git rev-parse --verify -q MERGE_HEAD *> $null
+if ($LASTEXITCODE -eq 0) { throw "An unfinished merge exists; resolve it before publishing." }
+# Do not include or disturb changes staged by a person or another task.
+& git diff --cached --quiet
+if ($LASTEXITCODE -ne 0) { throw "The index already contains staged changes; finish them before publishing." }
 
 $trackedPaths = @(
     "history_dashboard.html",
@@ -53,10 +62,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 & git diff --cached --quiet -- $resolvedTrackedPaths
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "No tracked site changes to push."
-    exit 0
-}
+$siteDiffExit = $LASTEXITCODE
+if ($siteDiffExit -gt 1) { throw "Cannot inspect staged site changes." }
 
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $message = if ($Mode -eq "news-only" -or $Mode -eq "news-event") {
@@ -69,9 +76,25 @@ $message = if ($Mode -eq "news-only" -or $Mode -eq "news-event") {
     "Auto update site after full analysis $timestamp"
 }
 
-& git commit -m $message -- $resolvedTrackedPaths
+if ($siteDiffExit -eq 1) {
+    & git commit -m $message -- $resolvedTrackedPaths
+    if ($LASTEXITCODE -ne 0) { throw "git commit failed." }
+} else {
+    Write-Host "No new site changes; checking previously unpushed commits."
+}
+
+# Merge rather than rewrite history. Git refuses to overwrite local edits.
+# A conflicting merge is aborted, leaving the generated commit available to retry.
+& git fetch origin main
+if ($LASTEXITCODE -ne 0) { throw "git fetch failed; local commits retained for retry." }
+& git merge --no-edit origin/main
 if ($LASTEXITCODE -ne 0) {
-    throw "git commit failed."
+    & git rev-parse --verify -q MERGE_HEAD *> $null
+    if ($LASTEXITCODE -eq 0) {
+        & git merge --abort
+        if ($LASTEXITCODE -ne 0) { throw "Merge failed and could not be aborted; manual recovery required." }
+    }
+    throw "Remote changes could not be merged safely. Local edits retained; site was not published."
 }
 
 & git push origin main

@@ -296,7 +296,7 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after %RUN_MODE% stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode %RUN_MODE%
-        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+        if errorlevel 1 set "EXIT_CODE=1"
     )
 )
 goto cleanup
@@ -310,7 +310,7 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after intraday close stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode intraday-close
-        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+        if errorlevel 1 set "EXIT_CODE=1"
     )
 )
 goto cleanup
@@ -324,7 +324,7 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after close stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode close
-        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+        if errorlevel 1 set "EXIT_CODE=1"
     )
 )
 goto cleanup
@@ -338,7 +338,7 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after official-chip stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode official-chip
-        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+        if errorlevel 1 set "EXIT_CODE=1"
     )
 )
 goto cleanup
@@ -352,7 +352,7 @@ if defined HAS_LIMITED_ARGS (
     ) else (
         echo Requesting serialized export after news-event stage...
         "%POWERSHELL_CMD%" -ExecutionPolicy Bypass -File "%~dp0scripts\request_export.ps1" -Mode news-event
-        if errorlevel 1 set "EXIT_CODE=%ERRORLEVEL%"
+        if errorlevel 1 set "EXIT_CODE=1"
     )
 )
 goto cleanup
