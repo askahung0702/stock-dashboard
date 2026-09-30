@@ -953,6 +953,7 @@ function renderDataQualityNotice(data) {
   if (eps < rows.length) messages.push(`EPS 加速值 ${rows.length - eps} 檔資料不足。`);
   if (insider < rows.length) messages.push('內部人轉讓資料不完整，不能解讀成沒有轉讓。');
   if (data.ohlcvQuality) messages.push(`逐日行情已保存 ${data.ohlcvQuality.capturedCount} 檔；10／20／40 日還原報酬資料完整 ${data.ohlcvQuality.complete40DayCount} 檔，仍待官方公司行動核對。`);
+  if (data.tradingStatus) messages.push(`官方交易公告 ${data.tradingStatus.fetchedSourceCount}／${data.tradingStatus.sourceCount} 個來源取得回應；${data.tradingStatus.reviewRequiredCount} 檔有公告需核對。未列出不代表可正常交易，請查看個股公告日期。`);
   messages.push('資料完整度分數不是勝率。2～8 週波段績效尚待驗證，候選名單供觀察與條件確認。');
   document.getElementById('data-quality-notice').textContent = messages.join(' ');
 }
@@ -1535,13 +1536,15 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const [latestResp, earlyBreakout, ohlcv] = await Promise.all([
+    const [latestResp, earlyBreakout, ohlcv, tradingStatus] = await Promise.all([
       fetchLatestData(),
       loadEarlyBreakout().catch(() => null),
-      fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
+      fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('data/trading_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     const d = latestResp;
     if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
+    if (tradingStatus && tradingStatus.date === d.date) d.tradingStatus = tradingStatus;
     S.hotThemes = hotThemeNamesFromMeta(d);
 
     // 預計算短線/中線分
@@ -1550,6 +1553,7 @@ async function init() {
       const normalized = {
         ...s,
         ohlcv: ohlcv && ohlcv.date === d.date ? (ohlcv.stocks || {})[s.code] : null,
+        officialTrading: attachTradingStatus(tradingStatus, d.date, s),
         latestInstitutionalNetLots: resolvedNumber(s.latestInstitutionalNetLots, chipsFallback.latestInstitutionalNetLots),
         latestInstitutionalNetRatioPct: resolvedNumber(s.latestInstitutionalNetRatioPct, chipsFallback.latestInstitutionalNetRatioPct),
         fiveDayInstitutionalNetLots: resolvedNumber(s.fiveDayInstitutionalNetLots, chipsFallback.fiveDayInstitutionalNetLots),
@@ -2456,6 +2460,7 @@ function mkRow(s) {
     nameExtra += `<div class="et" style="color:var(--red)">轉弱：${s.bearishReasons.join('、')}</div>`;
   }
   nameExtra += warningBadgesHtml(s);
+  nameExtra += tradingStatusBadge(s);
 
   // 短中線分用漸層背景
   const ssColor = s.shortScore >= 65 ? 'var(--blue)' : s.shortScore >= 40 ? 'var(--muted)' : 'var(--muted)';
@@ -3261,6 +3266,7 @@ function renderDB(s, history) {
     ${costCard}
     ${buildShareholderInsiderCard(s)}
     ${buildOhlcvCard(s)}
+    ${buildTradingStatusCard(s)}
     ${warningBox}
     ${resonanceBox}
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
@@ -3280,6 +3286,43 @@ function renderDB(s, history) {
     document.getElementById('cv-t').closest('.cc').querySelector('.cc-title').textContent = '技術線圖（歷史資料累積中）';
     document.getElementById('cv-h').closest('.cc').querySelector('.cc-title').textContent = '趨勢（歷史資料累積中）';
   }
+}
+
+function attachTradingStatus(report, snapshotDate, stock) {
+  const q = report && report.date === snapshotDate && (report.stocks || {})[stock.code];
+  return q ? {...q, evaluatedAt: report.evaluatedAt, evaluationDate: report.evaluationDate,
+    sources: Object.values(report.sources || {}).filter(v => v.market === stock.market)} : null;
+}
+
+function tradingStatusFresh(q, now = Date.now()) {
+  if (!q) return false;
+  const age = now - Date.parse(q.evaluatedAt);
+  const today = new Date(now + 8 * 3600000).toISOString().slice(0, 10);
+  return Number.isFinite(age) && age >= 0 && age < 86400000 && q.evaluationDate === today;
+}
+
+function tradingStatusBadge(s) {
+  const q = s.officialTrading;
+  const label = !tradingStatusFresh(q) ? '交易公告待更新' : q.assessment === 'review_required' ? '交易公告需核對' : !q.fetchHealthy ? '交易公告收取不完整' : '';
+  return label ? `<div class="et" style="color:var(--orange)">${label}</div>` : '';
+}
+
+function buildTradingStatusCard(s) {
+  const q = s.officialTrading;
+  if (!q) return '<div class="rsn"><div class="rsn-txt">官方交易公告尚未取得或日期不符，交易限制尚未確認。</div></div>';
+  const fresh = tradingStatusFresh(q);
+  const title = !fresh ? '公告檢核待更新' : q.assessment === 'review_required' ? '有公告需核對' : '未取得需提示的公告；交易限制仍待確認';
+  const labels = {disposal:'處置', attention:'注意', halt:'暫停交易', resume:'恢復交易'};
+  const phases = {announced_period:'公告期間內', upcoming:'即將開始', announced_period_elapsed:'公告期間已過，順延與解除仍待確認'};
+  const events = (q.events || []).map(e => {
+    const period = e.startDate ? `${e.startDate} ～ ${e.endDate}（${phases[e.phase] || '待核對'}）` : e.effectiveDate ? `${e.effectiveDate} ${e.effectiveTime || '時間未明'}` : e.announcedDate;
+    return `<div style="margin-top:8px"><b>${escapeHtml(labels[e.kind] || '公告')}：${escapeHtml(period || '日期未明')}</b>${!e.sourceFresh || !fresh ? '（舊資料待更新）' : ''}<br>${e.announcedDate ? '公告日期：' + escapeHtml(e.announcedDate) + '<br>' : ''}${escapeHtml(e.detail || '')}</div>`;
+  }).join('');
+  const sourceRows = (q.sources || []).map(v => {
+    const state = v.status === 'failed' ? '收取失敗' : v.status === 'received_empty' ? '回應空集合，未確認完整性' : '已取得回應';
+    return `${escapeHtml(v.label)}：${state}；公告日期 ${escapeHtml(v.latestAnnouncementDate || '未提供完整日期')}；取得於 ${escapeHtml(v.fetchedAt || '未知')}`;
+  }).join('<br>');
+  return `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">官方交易公告：${title}</span></div><div class="rsn-txt">${events || '目前清單沒有符合提示條件的公告。'}<br>${(q.issues || []).map(escapeHtml).join('<br>')}<br>${sourceRows}<br><a href="https://openapi.twse.com.tw/" target="_blank" rel="noopener noreferrer">證交所來源</a> · <a href="https://www.tpex.org.tw/openapi/" target="_blank" rel="noopener noreferrer">櫃買中心來源</a><br>未列出不代表可正常交易；處置可能因停牌或休市順延。此處尚未涵蓋全部停止買賣、變更交易與下市資訊，亦非買進訊號。</div></div>`;
 }
 
 function buildOhlcvCard(s) {
