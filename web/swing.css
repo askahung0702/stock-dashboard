@@ -1,0 +1,12 @@
+#swing-board{margin:12px 0;line-height:1.7}
+.swing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.swing-tile{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);overflow-wrap:anywhere}
+.swing-tile b,.swing-tile .et{display:block;margin-top:8px;font-size:13px}
+.swing-tile p{font-size:12px;color:var(--muted);margin-top:6px}
+.swing-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.swing-form label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px}
+.swing-form input,.swing-form select{width:100%;min-width:0;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:inherit}
+.swing-form input[readonly]{opacity:.7}
+.inv-card ul{padding-left:20px;line-height:1.8}.inv-card p{line-height:1.7;margin:6px 0}
+.inv-card a{text-decoration:underline}
+@media(max-width:520px){.swing-grid,.swing-form{grid-template-columns:1fr}}

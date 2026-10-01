@@ -36,6 +36,7 @@ table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:8px 9
   </div>
 </header>
 <main class="main">
+  <section class="bar" id="swing-results"><h2>2～8 週波段假設回測</h2><div id="swing-result-body">回測載入中…</div></section>
   <section class="stats">
     <div class="stat"><div class="lbl">驗證區間</div><div class="val" id="st-range">—</div></div>
     <div class="stat"><div class="lbl">股票階段列</div><div class="val" id="st-snapshots">—</div></div>
@@ -89,6 +90,12 @@ table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:8px 9
     </div>
   </section>
 </main>
+<script src="../swing.js?v=20261001"></script>
+<script>
+fetch('swing_backtest_latest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json();}).then(d=>{
+  document.getElementById('swing-result-body').innerHTML=Swing.backtestHtml(d);
+}).catch(()=>{document.getElementById('swing-result-body').textContent='波段回測載入失敗，無法提供歷史結果；請重新整理。';});
+</script>
 <script>
 const DATA_URLS=['signal_performance_latest.json','performance/signal_performance_latest.json','/web/performance/signal_performance_latest.json'];
 const S={data:null,sortKey:'sample_count_max',sortDir:-1,metricSort:null};

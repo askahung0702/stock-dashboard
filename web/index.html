@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+// The Java server serves this page at / and assets at /web/.
+if (location.pathname === '/' && !location.hostname.endsWith('github.io') && location.protocol !== 'file:') {
+  const base = document.createElement('base'); base.href = '/web/'; document.head.appendChild(base);
+}
+</script>
 <title>台股選股系統</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -375,6 +381,7 @@ td{padding:7px 9px;vertical-align:middle}
 .sc-divider{height:1px;background:var(--border);margin:14px 0}
 @media(max-width:640px){.sc-body,.sc-paths{grid-template-columns:1fr}.sc-col{border-right:none;border-bottom:1px solid var(--border)}.sc-path{border-right:none;border-bottom:1px solid var(--border)}.met-business{grid-template-columns:1fr}.biz-margin{text-align:left;border-left:none;border-top:1px solid var(--border);padding-left:0;padding-top:10px}.biz-grid{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="swing.css?v=20261001">
 </head>
 <body>
 
@@ -397,6 +404,8 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="stat"><div class="stat-lbl">觀察名單</div><div class="stat-val c-yellow" id="s-watch">—</div></div>
     <div class="stat"><div class="stat-lbl">自選清單</div><div class="stat-val c-blue" id="s-saved">0</div></div>
   </div>
+
+  <section id="swing-board" class="inv-card" aria-label="波段與持股追蹤"></section>
 
   <!-- Market banner -->
   <div class="mkt-banner sig-neutral" id="mkt-banner">
@@ -526,7 +535,7 @@ td{padding:7px 9px;vertical-align:middle}
     <div class="tab tab-breakout1854" data-t="breakout1854" onclick="tab('breakout1854')">🌿 早期起漲 18/54 <span class="tcnt" id="tc-breakout1854">0</span></div>
     <div class="tab tab-continuation1854" data-t="continuation1854" onclick="tab('continuation1854')">⚡ 強勢續攻 18/54 <span class="tcnt" id="tc-continuation1854">0</span></div>
     <div class="tab tab-highwin" data-t="structure" onclick="tab('structure')">🏗️ 波段優勢 <span class="tcnt" id="tc-structure">0</span></div>
-    <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">🏆 highWinMode <span class="tcnt" id="tc-highwin">0</span></div>
+    <div class="tab tab-highwin" data-t="highwin" onclick="tab('highwin')">模型條件篩選 <span class="tcnt" id="tc-highwin">0</span></div>
     <div class="tab tab-prelaunch" data-t="prelaunch" onclick="tab('prelaunch')">🌙 起漲前夜 <span class="tcnt" id="tc-prelaunch">0</span></div>
     <div class="tab tab-bear" data-t="bearish" onclick="tab('bearish')">轉弱預警 <span class="tcnt" id="tc-bearish">0</span></div>
     <div class="tab"           data-t="saved" onclick="tab('saved')">⭐ 自選清單 <span class="tcnt" id="tc-saved">0</span></div>
@@ -591,6 +600,8 @@ td{padding:7px 9px;vertical-align:middle}
   </div>
 </div>
 
+<script src="swing.js?v=20261001"></script>
+<script src="swing-ui.js?v=20261001"></script>
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────────
 const SMAXES  = {revenueScore:30,chipsScore:30,liquidityScore:15,valuationScore:20,technicalScore:20,financialQualityScore:20};
@@ -963,8 +974,8 @@ function renderDataQualityNotice(data) {
   }
   if (data.swingBacktest) {
     const b = data.swingBacktest;
-    if (b.status === 'validated_sample_available') messages.push(`可成交波段回測已有 ${b.pointInTimeConsistentTradeCount} 筆當時可得交易樣本；請於績效頁檢視成本後結果。`);
-    else messages.push(`可成交波段回測目前只有 ${b.pointInTimeConsistentTradeCount || 0} 筆當時可得交易樣本，未滿 30 筆，不顯示為可靠勝率。`);
+    if (b.status === 'validated_sample_available') messages.push(`波段假設回測已有 ${b.pointInTimeConsistentTradeCount} 筆訊號日期一致的交易樣本；請於績效頁檢視成本後結果。`);
+    else messages.push(`波段假設回測目前只有 ${b.pointInTimeConsistentTradeCount || 0} 筆訊號日期一致的交易樣本，未滿 30 筆，不顯示為可靠勝率。`);
   }
   messages.push('資料完整度分數不是勝率。2～8 週波段績效尚待驗證，候選名單供觀察與條件確認。');
   document.getElementById('data-quality-notice').textContent = messages.join(' ');
@@ -1548,13 +1559,14 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest] = await Promise.all([
+    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest, tradingCalendar] = await Promise.all([
       fetchLatestData(),
       loadEarlyBreakout().catch(() => null),
       fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/trading_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/nightly_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('performance/swing_backtest_latest.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
+      fetch('performance/swing_backtest_latest.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('data/trading_calendar.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     const d = latestResp;
     if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
@@ -1622,7 +1634,9 @@ async function init() {
     S.all.forEach(s => { s.type = getType(s); });
     applyEarlyBreakoutMeta(earlyBreakout);
 
+    d.tradingCalendar = tradingCalendar;
     S.meta = d;
+    renderSwingBoard();
     const ds = fmtDate(d.date);
     document.getElementById('hdr-meta').textContent = '更新日期：' + ds + (d.prevDate ? '  前日：' + fmtDate(d.prevDate) : '');
     document.getElementById('s-total').textContent  = (d.count||0).toLocaleString();
@@ -2443,7 +2457,7 @@ function mkRow(s) {
   const wl  = S.wl.has(s.code);
   const sc  = s.likely ? 'sl' : s.score >= getWatchlistThreshold() ? 'sw' : 'sn';
   const buy = s.buyPointScore || 0;
-  const buyLabelText = explainBuyPointLabel(s) || s.buyPointLabel;
+  const buyLabelText = swingDecision(s).label;
   const bear = s.bearishScore || 0;
   const confidenceReady = hasConfidenceData(s);
   const conf = confidenceReady ? (s.dataConfidence || 0) : 0;
@@ -2465,9 +2479,7 @@ function mkRow(s) {
     const e  = S.wlEntries[s.code];
     const pl = (e.price > 0 && s.price > 0) ? ((s.price - e.price) / e.price * 100) : 0;
     const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
-    const stopP = e.stopPrice > 0 ? e.stopPrice : 0;
-    const stopHit = stopP > 0 && s.price > 0 && s.price <= stopP;
-    nameExtra = `<div class="et">進 ${fmtDateShort(e.date)} $${e.price} <span style="color:${pc};font-weight:700">${pl>0?'+':''}${pl.toFixed(1)}%</span>${stopHit ? ' <span style="color:var(--red);font-weight:700">⚠停損</span>' : ''}</div>`;
+    nameExtra = `<div class="et">觀察 ${fmtDateShort(e.date)} ${Swing.money(e.price)}；價差 ${pl>0?'+':''}${pl.toFixed(1)}%（非損益）</div>`;
   }
   if (String(s?.analysisVersion || '').endsWith('-cached')) {
     nameExtra += `<span style="font-size:10px;color:var(--muted);margin-left:4px">📦快取</span>`;
@@ -2826,7 +2838,7 @@ function explainBuyPointLabel(s) {
 function fmtBuyBadge(score, label) {
   if (!score) return '<span style="color:var(--muted)">—</span>';
   let bg = 'rgba(148,163,184,.10)', fg = 'var(--muted)';
-  if (score >= 85) { bg = 'rgba(34,197,94,.16)'; fg = 'var(--green)'; }
+  if (score >= 85) { bg = 'rgba(148,163,184,.16)'; fg = 'var(--muted)'; }
   else if (score >= 75) { bg = 'rgba(249,115,22,.16)'; fg = 'var(--orange)'; }
   else if (score >= 60) { bg = 'rgba(234,179,8,.16)'; fg = 'var(--yellow)'; }
   const text = label || (score >= 85 ? 'A級買點' : score >= 75 ? 'B級買點' : score >= 60 ? '等確認' : '暫不建議');
@@ -2891,8 +2903,7 @@ function toggleWL(code, btn) {
     const s = S.all.find(x => x.code === code);
     group.entries[code] = s ? {
       price: s.price, score: s.score, date: S.meta.date,
-      stopPrice: s.suggestedStopPrice > 0 ? s.suggestedStopPrice : (s.price > 0 ? +(s.price * 0.93).toFixed(0) : 0),
-      exitRule: s.exitRule || ''
+      stopPrice: 0, exitRule: ''
     } : normalizeEntry({});
     if (btn) btn.classList.add('on');
   }
@@ -3034,7 +3045,7 @@ function renderDB(s, history) {
   const turnaroundReason = s.turnaroundReason || '';
   const oneOffRiskScore = s.oneOffRiskScore || 0;
   const marketScore = S.meta.marketScore || 50;
-  const buyLabel = explainBuyPointLabel(s) || s.buyPointLabel || (buyScore >= 85 ? 'A級買點' : buyScore >= 75 ? 'B級買點' : buyScore >= 60 ? '等確認' : '暫不建議');
+  const buyLabel = swingDecision(s).label;
   const warningGroups = warningBuckets(s);
   const warningBox = [
     warningGroups.bearish.length ? `
@@ -3076,97 +3087,16 @@ function renderDB(s, history) {
       </div>
     </div>` : '';
 
-  // ── 投資建議卡 ──
-  const invConclusion = buildConclusion(s, ss, ms);
-  const stopLoss   = s.suggestedStopPrice > 0 ? s.suggestedStopPrice.toFixed(0) : (s.price > 0 ? (s.price * 0.93).toFixed(0) : '—');
-  const target1    = s.suggestedTargetPrice > 0 ? s.suggestedTargetPrice.toFixed(0) : (s.price > 0 ? (s.price * 1.15).toFixed(0) : '—');
-  const fairLow    = Number(s.fairValueLow || 0);
-  const fairBase   = Number(s.fairValueBase || 0);
-  const fairHigh   = Number(s.fairValueHigh || 0);
-  const fairConf   = Number(s.fairValueConfidence || 0);
-  const fairReady  = fairLow > 0 && fairBase > 0 && fairHigh > 0;
-  const fairGapPct = fairReady && Number(s.price || 0) > 0 ? ((fairBase - Number(s.price || 0)) / Number(s.price || 0) * 100) : 0;
-  const valuationRich = fairReady && Number(s.price || 0) > fairHigh;
-  const fairGapText = fairReady ? `${fairGapPct >= 0 ? '+' : ''}${fairGapPct.toFixed(1)}% vs 現價` : '待財報齊備';
-  const fairRangeText = fairReady ? `保守 $${formatMoney(fairLow)} / 樂觀 $${formatMoney(fairHigh)}` : '—';
-  const fairBaseText = fairReady ? `$${formatMoney(fairBase)}` : '—';
-  const fairMethodText = s.fairValueMethod || '混合估值';
-  const holdDays   = ss >= 65 && ms < 65 ? '5～15 個交易日（短線）' : ss >= 65 && ms >= 65 ? '20～60 個交易日（彈性）' : '20～60 個交易日（中線）';
-  const targetLabel = valuationRich ? '技術壓力' : '交易目標';
-  const targetSub = valuationRich
-    ? `估值已高於合理區間上緣，$${target1} 只當前高壓力`
-    : (s.upsidePotentialPct > 0 ? '+' + s.upsidePotentialPct.toFixed(1) + '% 上檔空間' : '+15%，先出 1/2');
-  const entryPlan = valuationRich ? '等待回檔' : '分批進場';
-  const entrySub = valuationRich
-    ? `接近合理區間上緣 $${formatMoney(fairHigh)} 或支撐轉強再評估`
-    : '首次 50%，確認後加碼';
-
-  const invCard = `
-    <div class="inv-card">
-      <div class="inv-title">操作建議</div>
-      <div class="inv-grid">
-        <div class="inv-half">
-          <div class="inv-lbl"><span>⚡ 短線適性（技術+籌碼+量能）</span><b style="color:${ss>=65?'var(--blue)':'var(--muted)'}">${ss}分</b></div>
-          <div class="inv-pbar"><div class="inv-pfill" style="width:${ss}%;background:${ss>=65?'var(--blue)':'var(--border)'}"></div></div>
-        </div>
-        <div class="inv-half">
-          <div class="inv-lbl"><span>📈 中線適性（營收+財報+籌碼）</span><b style="color:${ms>=65?'var(--green)':'var(--muted)'}">${ms}分</b></div>
-          <div class="inv-pbar"><div class="inv-pfill" style="width:${ms}%;background:${ms>=65?'var(--green)':'var(--border)'}"></div></div>
-        </div>
-      </div>
-      <div class="inv-conclusion">${invConclusion}</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">停損停利參考（現價 $${s.price > 0 ? s.price.toLocaleString() : '—'}）｜僅供參考，依個人風險自行判斷</div>
-      <div class="sl-grid">
-        <div class="sl-item" style="border-left:3px solid var(--red)">
-          <div class="sl-item-lbl">⛔ 停損</div>
-          <div class="sl-item-val" style="color:var(--red)">$${stopLoss}</div>
-          <div class="sl-item-sub">${s.suggestedStopPct > 0 ? '-' + s.suggestedStopPct.toFixed(1) + '%' : '-7%'}，守不住就出場</div>
-        </div>
-        <div class="sl-item" style="border-left:3px solid var(--muted)">
-          <div class="sl-item-lbl">⏰ 持有上限</div>
-          <div class="sl-item-val" style="color:var(--muted);font-size:13px">${holdDays}</div>
-          <div class="sl-item-sub">超過未動考慮換股</div>
-        </div>
-        <div class="sl-item" style="border-left:3px solid var(--yellow)">
-          <div class="sl-item-lbl">🧭 基準合理價</div>
-          <div class="sl-item-val" style="color:var(--yellow)">${fairBaseText}</div>
-          <div class="sl-item-sub">${fairReady ? fairGapText : '待 full 財報補齊後估值'}</div>
-        </div>
-        <div class="sl-item" style="border-left:3px solid var(--green)">
-          <div class="sl-item-lbl">🧮 三情境估值</div>
-          <div class="sl-item-val" style="color:var(--green);font-size:13px">${fairRangeText}</div>
-          <div class="sl-item-sub">${fairReady ? `${fairMethodText}｜信心 ${fairConf.toFixed(0)} 分` : '尚未建立估值區間'}</div>
-        </div>
-        <div class="sl-item" style="border-left:3px solid var(--orange)">
-          <div class="sl-item-lbl">🎯 ${targetLabel}</div>
-          <div class="sl-item-val" style="color:var(--orange)">$${target1}</div>
-          <div class="sl-item-sub">${targetSub}</div>
-        </div>
-        <div class="sl-item" style="border-left:3px solid var(--purple)">
-          <div class="sl-item-lbl">📊 建議買法</div>
-          <div class="sl-item-val" style="color:var(--purple);font-size:13px">${entryPlan}</div>
-          <div class="sl-item-sub">${entrySub}</div>
-        </div>
-      </div>
-      ${s.fairValueReason ? `<div style="margin-top:10px;font-size:11px;color:var(--muted)">估值說明：${s.fairValueReason}</div>` : ''}
-    </div>`;
-
-  const savedCost = getPositionCost(s.code);
-  const costCard = `
-    <div class="inv-card pos-card">
-      <div class="inv-title">持股成本建議</div>
-      <div class="pos-form">
-        <label style="font-size:12px;color:var(--muted)">我的成本</label>
-        <input class="pos-input" id="pcost-${s.code}" type="number" min="0" step="0.01" placeholder="輸入成本價" value="${savedCost > 0 ? savedCost : ''}" oninput="onPositionCostInput('${s.code}')">
-        <button class="pos-clear" onclick="clearPositionCost('${s.code}')">清除</button>
-        <span style="font-size:11px;color:var(--muted)">會存在本機瀏覽器，不會上傳</span>
-      </div>
-      <div class="pos-advice" id="pcost-advice-${s.code}">${buildPositionCostAdvice(s, savedCost)}</div>
-    </div>`;
+  // 估值保留研究用途；動作由共用波段判斷產生。
+  const fairLow = Number(s.fairValueLow || 0), fairBase = Number(s.fairValueBase || 0), fairHigh = Number(s.fairValueHigh || 0);
+  const fairReady = fairLow > 0 && fairBase > 0 && fairHigh > 0;
+  const fairGapPct = fairReady && s.price > 0 ? (fairBase / s.price - 1) * 100 : 0;
+  const invCard = '';
+  const costCard = buildPositionEditor(s);
 
   const buyCard = `
     <div class="inv-card">
-      <div class="inv-title">買點判讀</div>
+      <div class="inv-title">原模型研究分數（不是進場指令）</div>
       <div class="inv-grid">
         <div class="inv-half">
           <div class="inv-lbl"><span>🎯 買點分</span><b style="color:${buyScore>=85?'var(--green)':buyScore>=75?'var(--orange)':buyScore>=60?'var(--yellow)':'var(--muted)'}">${buyScore.toFixed(1)}分</b></div>
@@ -3177,38 +3107,18 @@ function renderDB(s, history) {
           <div class="inv-pbar"><div class="inv-pfill" style="width:${confidenceReady ? Math.min(100,confidence) : 0}%;background:${confidenceColorValue}"></div></div>
         </div>
       </div>
-      <div class="inv-conclusion"><b>${buyLabel}</b>｜市場環境 ${(S.meta.marketSignal||'中性')} ${marketScore.toFixed(1)} 分 / 警報 ${(S.meta.marketAlert||'中性')} ${(S.meta.marketDangerScore||0).toFixed(1)} 分<br>族群 ${sectorScore.toFixed(1)}｜題材 ${primaryTheme} ${themeScore.toFixed(1)}｜續航 ${trendStatus} ${trendScore.toFixed(1)}${trendDays>0 ? `（${trendDays}天）` : ''}｜翻轉 ${turnaroundLabel} ${turnaroundScore.toFixed(1)} / 一次性風險 ${oneOffRiskScore.toFixed(1)}｜新聞 ${newsScore.toFixed(1)} / 風險 ${newsRiskScore.toFixed(1)}｜結構 ${structureLabel} ${structureScore.toFixed(1)}｜風報 ${rrScore.toFixed(1)} / ${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}<br>${s.buyPointReason || '尚無買點說明'}${turnaroundReason ? '<br>翻轉：' + turnaroundReason : ''}<br>${s.eligibilityReason ? '資格：' + s.eligibilityReason + '<br>' : ''}${confidenceReason ? '資料：' + confidenceReason : ''}<br>資料狀態：${snapshotStageLabel(s.snapshotStage)}｜技術 <span style="color:${readyColor(!!s.techReady)}">${readyText(!!s.techReady)}</span>｜法人 <span style="color:${readyColor(!!s.institutionalReady)}">${readyText(!!s.institutionalReady)}</span>｜主力 <span style="color:${readyColor(!!s.brokerReady)}">${readyText(!!s.brokerReady)}</span>｜財報 <span style="color:${readyColor(!!s.financialReady)}">${readyText(!!s.financialReady)}</span>｜新聞 <span style="color:${readyColor(!!s.newsReady)}">${readyText(!!s.newsReady)}</span>${cacheStalenessBadge(s)}</div>
+      <div class="inv-conclusion"><b>${buyLabel}</b>｜市場環境 ${(S.meta.marketSignal||'中性')} ${marketScore.toFixed(1)} 分 / 警報 ${(S.meta.marketAlert||'中性')} ${(S.meta.marketDangerScore||0).toFixed(1)} 分<br>族群 ${sectorScore.toFixed(1)}｜題材 ${primaryTheme} ${themeScore.toFixed(1)}｜續航 ${trendStatus} ${trendScore.toFixed(1)}${trendDays>0 ? `（${trendDays}天）` : ''}｜翻轉 ${turnaroundLabel} ${turnaroundScore.toFixed(1)} / 一次性風險 ${oneOffRiskScore.toFixed(1)}｜新聞 ${newsScore.toFixed(1)} / 風險 ${newsRiskScore.toFixed(1)}｜結構 ${structureLabel} ${structureScore.toFixed(1)}｜風報 ${rrScore.toFixed(1)} / ${rrRatio > 0 ? rrRatio.toFixed(2) + 'R' : '—'}<br>${Swing.esc(Swing.researchText(s.buyPointReason)) || '尚無研究說明'}${turnaroundReason ? '<br>翻轉：' + turnaroundReason : ''}<br>${s.eligibilityReason ? '資格：' + s.eligibilityReason + '<br>' : ''}${confidenceReason ? '資料：' + confidenceReason : ''}<br>資料狀態：${snapshotStageLabel(s.snapshotStage)}｜技術 <span style="color:${readyColor(!!s.techReady)}">${readyText(!!s.techReady)}</span>｜法人 <span style="color:${readyColor(!!s.institutionalReady)}">${readyText(!!s.institutionalReady)}</span>｜主力 <span style="color:${readyColor(!!s.brokerReady)}">${readyText(!!s.brokerReady)}</span>｜財報 <span style="color:${readyColor(!!s.financialReady)}">${readyText(!!s.financialReady)}</span>｜新聞 <span style="color:${readyColor(!!s.newsReady)}">${readyText(!!s.newsReady)}</span>${cacheStalenessBadge(s)}</div>
     </div>`;
 
-  // ── 進場追蹤 ──
   let trackHtml = '';
   if (S.wl.has(s.code) && S.wlEntries[s.code]) {
-    const e  = S.wlEntries[s.code];
-    const pl = (e.price > 0 && s.price > 0) ? ((s.price - e.price) / e.price * 100) : 0;
-    const pc = pl > 0 ? 'var(--green)' : pl < 0 ? 'var(--red)' : 'var(--muted)';
-    const groupName = getActiveWatchGroup().name;
-    const stopP = e.stopPrice > 0 ? e.stopPrice : 0;
-    const stopTriggered = stopP > 0 && s.price > 0 && s.price <= stopP;
-    const stopColor = stopTriggered ? 'var(--red)' : stopP > 0 && s.price > 0 && s.price <= stopP * 1.03 ? 'var(--orange)' : 'var(--muted)';
-    const stopLine = stopP > 0
-      ? `停損價：<b style="color:${stopColor}">$${stopP.toLocaleString()}</b>${stopTriggered ? ' <span style="color:var(--red);font-weight:700">⚠ 已觸發停損！</span>' : (s.price > 0 && s.price <= stopP * 1.05 ? ' <span style="color:var(--orange)">接近停損</span>' : '')}`
-      : '';
-    const heldDays = e.date ? Math.round((Date.now() - new Date(e.date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')).getTime()) / 86400000) : 0;
-    const exitLine = e.exitRule ? `出場規則：${e.exitRule}` : '';
-    trackHtml = `<div class="met track${stopTriggered ? ' track-alert' : ''}">
-      <div class="track-lbl">⭐ ${groupName} 進場追蹤${stopTriggered ? ' ⚠' : ''}</div>
-      <div class="track-body">
-        進場日：${fmtDate(e.date)}${heldDays > 0 ? `（持倉 ${heldDays} 天）` : ''}<br>
-        進場價：<b>$${e.price.toLocaleString()}</b> &nbsp;→&nbsp; 現價：<b>$${s.price.toLocaleString()}</b><br>
-        進場分：<b>${e.score.toFixed(0)}</b> &nbsp;→&nbsp; 現分：<b>${s.score.toFixed(0)}</b><br>
-        損益：<span style="color:${pc};font-size:18px;font-weight:700">${pl>0?'+':''}${pl.toFixed(2)}%</span><br>
-        ${stopLine}${exitLine ? '<br>' + exitLine : ''}
-      </div>
-    </div>`;
+    const e = S.wlEntries[s.code];
+    const change = e.price > 0 && s.price > 0 ? ((s.price / e.price - 1)*100).toFixed(2)+'%' : '未知';
+    trackHtml = `<div class="met track"><div class="track-lbl">⭐ ${escapeHtml(getActiveWatchGroup().name)} 觀察紀錄</div><div class="track-body">加入時資料日期：${fmtDate(e.date)}<br>參考價 ${Swing.money(e.price)} → 快照價 ${Swing.money(s.price)}<br>觀察期間價差 ${change}；不是實際交易損益。</div></div>`;
   }
 
   document.getElementById('db-body').innerHTML =
-    buildStockCard(s, ss, ms) +
+    buildStockCard(s, ss, ms) + costCard +
     `<div class="met-row">
       <div class="met met-business">
         <div>
@@ -3279,7 +3189,6 @@ function renderDB(s, history) {
       ${trackHtml}
     </div>
     ${buyCard}
-    ${costCard}
     ${buildShareholderInsiderCard(s)}
     ${buildOhlcvCard(s)}
     ${buildTradingStatusCard(s)}
@@ -3420,415 +3329,13 @@ function positionCostKey(code) {
 }
 
 function getPositionCost(code) {
-  const value = Number(localStorage.getItem(positionCostKey(code)) || 0);
+  let value = 0;
+  try { value = Number(localStorage.getItem(positionCostKey(code)) || 0); } catch (_) { return 0; }
   return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function onPositionCostInput(code) {
-  const input = document.getElementById(`pcost-${code}`);
-  const target = document.getElementById(`pcost-advice-${code}`);
-  const stock = S.all.find(x => x.code === code);
-  if (!input || !target || !stock) return;
-  const cost = Number(input.value || 0);
-  if (Number.isFinite(cost) && cost > 0) localStorage.setItem(positionCostKey(code), String(cost));
-  else localStorage.removeItem(positionCostKey(code));
-  target.innerHTML = buildPositionCostAdvice(stock, cost);
-}
-
-function clearPositionCost(code) {
-  localStorage.removeItem(positionCostKey(code));
-  const input = document.getElementById(`pcost-${code}`);
-  if (input) input.value = '';
-  onPositionCostInput(code);
-}
-
-function buildPositionCostAdvice(s, cost) {
-  const price = Number(s.price || 0);
-  const hasCost = Number.isFinite(cost) && cost > 0;
-  if (!price) {
-    return `<div class="pos-note">目前沒有有效現價，暫時無法用成本計算持股建議。</div>`;
-  }
-  if (!hasCost) {
-    return `<div class="pos-note">輸入你的持有成本後，系統會依現價、防守價、目標價、轉空警示與進場時機分，給出續抱、加碼、減碼或停損建議。</div>`;
-  }
-
-  const pnlPct = (price - cost) * 100 / cost;
-  const stop = Number(s.suggestedTrailingStopPrice || 0) > 0
-    ? Number(s.suggestedTrailingStopPrice)
-    : Number(s.suggestedStopPrice || 0) > 0 ? Number(s.suggestedStopPrice) : price * 0.93;
-  const target = Number(s.suggestedTargetPrice || 0) > 0 ? Number(s.suggestedTargetPrice) : price * 1.15;
-  const stopGapPct = stop > 0 ? (price - stop) * 100 / price : 0;
-  const targetGapPct = target > 0 ? (target - price) * 100 / price : 0;
-  const buy = Number(s.buyPointScore || 0);
-  const sell = Number(s.sellSignalScore || 0);
-  const rr = stopGapPct > 0 ? targetGapPct / stopGapPct : 0;
-  const rsi = Number(s.rsi14 || 0);
-  const ret20 = Number(s.return20DayPct || 0);
-  const label = s.sellSignalLabel || '續抱觀察';
-  const warnings = warningBuckets(s);
-  const bearishCount = warnings.bearish.length;
-  const overheatedCount = warnings.overheated.length;
-  const nearStop = stop > 0 && price <= stop * 1.03;
-  const stopBroken = stop > 0 && price <= stop;
-  const weakStructure = /轉弱|出場|跌破|結構未完成|暫不出手/.test(`${s.structureLabel || ''} ${s.postCloseAction || ''} ${s.buyPointLabel || ''}`);
-
-  let action = '續抱觀察';
-  let color = 'var(--yellow)';
-  let reason = '目前未觸發明確停損，但也還不到積極加碼條件，先依模型停損與量價確認來管理。';
-
-  if (stopBroken || sell >= 70 || bearishCount >= 2) {
-    action = '停損 / 退出';
-    color = 'var(--red)';
-    reason = '現價已跌破模型停損，或轉空訊號過多。這種狀態不適合凹單，應優先保護本金。';
-  } else if (nearStop || (pnlPct <= -8 && buy < 75) || sell >= 55 || bearishCount >= 1) {
-    action = '減碼防守';
-    color = 'var(--orange)';
-    reason = '已接近停損或出現轉弱警示，建議先降部位，等重新站回關鍵均線或買點分修復再評估。';
-  } else if ((pnlPct >= 18 && (overheatedCount > 0 || rsi >= 72 || ret20 >= 25)) || pnlPct >= 30) {
-    action = '分批停利';
-    color = 'var(--green)';
-    reason = '目前已有明顯獲利，且短線可能偏熱。可先出一部分，剩餘部位改用移動停利守住。';
-  } else if (buy >= 85 && sell < 35 && rr >= 1.2 && !weakStructure && pnlPct > -4) {
-    action = '續抱，可等回檔加碼';
-    color = 'var(--green)';
-    reason = '進場時機、風報比與賣壓狀態仍可接受。若回測不破防守價或 MA20 附近有承接，可考慮小幅加碼。';
-  } else if (buy >= 75 && sell < 50 && pnlPct >= -6) {
-    action = '續抱觀察';
-    color = 'var(--blue)';
-    reason = '進場時機仍在可觀察區，但還不是無腦加碼。續抱可以，新增部位要等量價確認。';
-  } else if (pnlPct > 0) {
-    action = '保守續抱';
-    color = 'var(--yellow)';
-    reason = '仍有獲利，但模型時機不算漂亮。建議把停損上移，避免獲利回吐。';
-  } else if (pnlPct > -2) {
-    action = '續抱觀察，不加碼';
-    color = 'var(--yellow)';
-    reason = '目前接近成本，還沒有明確轉空，但進場時機與風報沒有明顯優勢。原持股可依防守價管理，新資金先等量價或結構轉強。';
-  } else {
-    action = '暫不加碼';
-    color = 'var(--orange)';
-    reason = '目前處於虧損或時機分不足，先不要攤平；等結構修復、法人/主力回流或進場時機重新轉強。';
-  }
-
-  const pnlColor = pnlPct > 0 ? 'var(--green)' : pnlPct < 0 ? 'var(--red)' : 'var(--muted)';
-  const stopColor = stopBroken ? 'var(--red)' : nearStop ? 'var(--orange)' : 'var(--muted)';
-  const targetText = targetGapPct >= 0 ? `+${targetGapPct.toFixed(1)}%` : `${targetGapPct.toFixed(1)}%`;
-  const stopText = stopGapPct >= 0 ? `-${stopGapPct.toFixed(1)}%` : `已跌破 ${Math.abs(stopGapPct).toFixed(1)}%`;
-  const entryRef = Number(s.movingAverage20 || 0) > 0
-    ? Number(s.movingAverage20)
-    : Number(s.suggestedStopPrice || 0) > 0 ? Number(s.suggestedStopPrice) : 0;
-  const entryRefText = entryRef > 0
-    ? `$${formatMoney(entryRef)} 附近`
-    : '等量價確認';
-
-  return `
-    <div class="pos-head">
-      <span class="pos-action" style="color:${color}">${action}</span>
-      <span class="pos-pill">賣訊：${label} ${sell.toFixed(0)}</span>
-      <span class="pos-pill">時機分：${buy.toFixed(0)}/100</span>
-      <span class="pos-pill">風報：${rr > 0 ? rr.toFixed(2) + 'R' : '—'}</span>
-    </div>
-    <div class="pos-metrics">
-      <div class="pos-metric">現價<b>$${formatMoney(price)}</b></div>
-      <div class="pos-metric">成本損益<b style="color:${pnlColor}">${pnlPct > 0 ? '+' : ''}${pnlPct.toFixed(2)}%</b></div>
-      <div class="pos-metric">防守價<b style="color:${stopColor}">$${formatMoney(stop)} <span style="font-size:11px">(${stopText})</span></b></div>
-      <div class="pos-metric">合理價中位<b>${Number(s.fairValueBase || 0) > 0 ? '$' + formatMoney(s.fairValueBase) : '—'} <span style="font-size:11px;color:var(--muted)">${Number(s.fairValueConfidence || 0) > 0 ? `(信心 ${Number(s.fairValueConfidence).toFixed(0)})` : '(待估值)'}</span></b></div>
-      <div class="pos-metric">交易目標<b>$${formatMoney(target)} <span style="font-size:11px;color:var(--muted)">(${targetText})</span></b></div>
-      <div class="pos-metric">承接參考<b>${entryRefText}</b></div>
-    </div>
-    <div class="pos-note">${reason}<br>輔助判斷：${s.postCloseCategory || '—'} / ${s.postCloseAction || '—'}；${bearishCount ? `轉空警示 ${bearishCount} 項` : '未見明確轉空警示'}；${overheatedCount ? `過熱 ${overheatedCount} 項` : '未見明顯過熱'}。</div>
-  `;
-}
-
-function starsHtml(score, max) {
-  const n = Math.round(Math.max(0, Math.min(1, Number(score) / Number(max))) * 5);
-  return `<span class="sc-stars">${'★'.repeat(n)}</span><span class="sc-empty-stars">${'☆'.repeat(5 - n)}</span>`;
-}
-
 function buildStockCard(s, ss, ms) {
-  const price    = Number(s.price)    || 0;
-  const rsi      = Number(s.rsi14)   || 0;
-  const kK       = Number(s.stochasticK) || 0;
-  const kD       = Number(s.stochasticD) || 0;
-  const ma20     = Number(s.movingAverage20) || 0;
-  const ma60     = Number(s.movingAverage60) || 0;
-  const stopP    = Number(s.suggestedStopPrice) > 0 ? Number(s.suggestedStopPrice) : price * 0.93;
-  const stopPct  = Number(s.suggestedStopPct)  > 0 ? Number(s.suggestedStopPct)  : 7;
-  const target   = Number(s.suggestedTargetPrice) > 0 ? Number(s.suggestedTargetPrice) : price * 1.15;
-  const fairBase = Number(s.fairValueBase) || 0;
-  const fairLow  = Number(s.fairValueLow) || 0;
-  const fairHigh = Number(s.fairValueHigh) || 0;
-  const fairOk   = fairLow > 0 && fairBase > 0 && fairHigh > 0;
-  const fairGapPct = (fairOk && price > 0) ? (fairBase - price) / price * 100 : 0;
-  const valuationRich = fairOk && price > fairHigh;
-  const instDay  = Number(s.latestInstitutionalNetRatioPct) || 0;
-  const inst5    = Number(s.fiveDayInstitutionalNetRatioPct) || 0;
-  const foreignL = Number(s.latestForeignNetLots) || 0;
-  const brokerL  = Number(s.brokerNetLots) || 0;
-  const volRatio = Number(s.volumeRatio) || 0;
-  const ret20    = Number(s.return20DayPct) || 0;
-  const vol20    = Number(s.volatility20Pct) || 0;
-  const atr20    = Number(s.atr20) || 0;
-  const drawdown = Number(s.drawdownFromHigh60Pct) || 0;
-  const techScore   = Number(s.technicalScore) || 0;
-  const chipsScore  = Number(s.chipsScore) || 0;
-  const structScore = Number(s.structureScore) || 0;
-  const structLabel = s.structureLabel || '整理待確認';
-  const buyScore    = Number(s.buyPointScore) || Number(s.score) || 0;
-
-  // 60日高點估算
-  const high60   = (drawdown < -0.1 && price > 0) ? price / (1 + drawdown / 100) : 0;
-  const resist   = high60 > price * 1.005 ? high60 : target;
-  const support1 = ma20 > 0 ? ma20 * 0.985 : (price > 0 ? price * 0.95 : 0);
-  const support2 = ma60 > 0 ? ma60 * 0.985 : (price > 0 ? price * 0.88 : 0);
-
-  // Banner 判斷
-  const bannerClass = (ss >= 65 && ms >= 65 && buyScore >= 75 && !valuationRich) ? 'sc-banner-buy'
-                    : (ss >= 65 && ms < 65) ? 'sc-banner-short'
-                    : (ms >= 65 && ss < 65 && !valuationRich) ? 'sc-banner-mid'
-                    : 'sc-banner-watch';
-  const bannerIcon  = bannerClass === 'sc-banner-buy'   ? '買'
-                    : bannerClass === 'sc-banner-short' ? '短'
-                    : bannerClass === 'sc-banner-mid'   ? '中' : '觀';
-
-  // RSI 顏色與標籤
-  const rsiColor = rsi >= 80 ? 'var(--red)' : rsi >= 70 ? 'var(--orange)' : rsi >= 50 ? 'var(--green)' : rsi >= 30 ? 'var(--yellow)' : 'var(--red)';
-  const rsiZone  = rsi >= 80 ? '超買' : rsi >= 70 ? '偏熱' : rsi >= 50 ? '偏多' : rsi >= 30 ? '中性' : '超賣';
-
-  // KD 顏色與標籤
-  const kdColor  = kK >= 80 ? 'var(--red)' : (kK > kD && kK < 80) ? 'var(--green)' : kK < 20 ? 'var(--red)' : 'var(--yellow)';
-  const kdSignal = kK >= 80 ? '高檔鈍化' : (kK > kD && kK < 80) ? '黃金交叉' : (kK < kD && kK <= 20) ? '超賣' : kK < kD ? '死亡交叉' : '中性';
-
-  // 技術面結語
-  const techText = (rsi >= 80 || kK >= 80)  ? '技術面過熱，短線漲幅偏大，容易出現拉回震盪。'
-                 : (rsi >= 60 && kK > kD)    ? '技術面偏強，動能充足，趨勢向上確立中。'
-                 : rsi >= 40                  ? '技術面中性整理，等待方向確認。'
-                 :                             '技術面偏弱，短線動能不足，建議等待反彈確認。';
-
-  // MA 相對股價
-  const ma20Color = ma20 > 0 ? (price >= ma20 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
-  const ma60Color = ma60 > 0 ? (price >= ma60 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
-  const ma20Label = ma20 > 0 ? (price >= ma20 ? '↑ 站上' : '↓ 跌破') : '';
-  const ma60Label = ma60 > 0 ? (price >= ma60 ? '↑ 站上' : '↓ 跌破') : '';
-
-  // 籌碼條形圖輔助
-  function cb(val, maxAbs, color) {
-    const pct = maxAbs > 0 ? Math.min(100, Math.abs(val) / maxAbs * 100) : 0;
-    return `<div class="chip-bar-wrap"><div class="chip-bar-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>`;
-  }
-  const instC = instDay > 0 ? 'var(--green)' : instDay < 0 ? 'var(--red)' : 'var(--muted)';
-  const inst5C = inst5  > 0 ? 'var(--green)' : inst5  < 0 ? 'var(--red)' : 'var(--muted)';
-  const brkC  = brokerL > 0 ? 'var(--green)' : brokerL < 0 ? 'var(--red)' : 'var(--muted)';
-  const forC  = foreignL > 0 ? 'var(--green)' : foreignL < 0 ? 'var(--red)' : 'var(--muted)';
-  const volC  = volRatio >= 2 ? 'var(--orange)' : volRatio >= 1.3 ? 'var(--green)' : 'var(--muted)';
-
-  // 籌碼結語
-  const chipsText = (inst5 > 2 && brokerL > 50)   ? '法人與主力同步買進，籌碼面支撐明顯。'
-                  : (inst5 < -2 || brokerL < -100) ? '法人或主力出現賣壓，籌碼面需謹慎。'
-                  : instDay > 0.5                   ? '法人單日買超，短線籌碼偏多。'
-                  : instDay < -0.5                  ? '單日法人賣超，注意籌碼鬆動。'
-                  :                                  '法人籌碼方向尚不明顯，持續觀察。';
-
-  // 可能路徑文字
-  const p1text = high60 > price * 1.005
-    ? valuationRich
-      ? `若挑戰近期高點 $${formatMoney(high60)}，視為技術壓力，不當成估值合理目標`
-      : `若突破近期高點 $${formatMoney(high60)}，可望挑戰 $${formatMoney(Math.max(target, high60 * 1.05))}`
-    : `若維持強勢站穩，目標 $${formatMoney(target)}`;
-  const p2text = ma20 > 0
-    ? `若跌破 MA20（$${formatMoney(support1)}），可能回測${ma60 > 0 ? ' MA60（$' + formatMoney(support2) + '）' : '下方支撐'}`
-    : `若跌破支撐 $${formatMoney(support1)}，留意下方風險`;
-  const p3text = `若跌破停損 $${formatMoney(stopP)}，短線轉弱，應降低部位`;
-
-  // 持有天數建議
-  const holdDays = (ss >= 65 && ms >= 65) ? '20～60 個交易日（彈性）'
-                 : ss >= 65               ? '5～15 個交易日（短線）'
-                 :                          '20～60 個交易日（中線）';
-
-  // 星評
-  const diffScore   = Math.max(0, 100 - vol20 * 8);
-  const overallLabel = valuationRich ? '估值偏高，等待回檔'
-                     : buyScore >= 85 ? '高潛力，注意波動'
-                     : buyScore >= 75 ? '值得關注，分批布局'
-                     : buyScore >= 60 ? '審慎觀察，等待確認'
-                     :                  '暫不建議，列入追蹤';
-  const resistDisplay = formatMoney(resist > price * 1.005 ? resist : target);
-  const buyPlan = valuationRich ? '等待回檔' : '分批進場';
-  const buyPlanSub = valuationRich
-    ? `估值偏貴，接近 $${formatMoney(fairHigh)} 或支撐轉強再評估`
-    : '首次 50%，確認後加碼';
-
-  return `
-<div class="sc-wrap">
-  <div class="sc-banner ${bannerClass}">
-    <div class="sc-banner-icon">${bannerIcon}</div>
-    <div class="sc-banner-main">
-      <div class="sc-banner-label">${buildConclusion(s, ss, ms)}</div>
-    </div>
-    <div class="sc-banner-scores">
-      <div class="sc-score-item">
-        <div class="sc-score-val" style="color:${ss>=65?'var(--blue)':'var(--muted)'}">${ss}</div>
-        <div class="sc-score-lbl">短線</div>
-      </div>
-      <div class="sc-score-item">
-        <div class="sc-score-val" style="color:${ms>=65?'var(--green)':'var(--muted)'}">${ms}</div>
-        <div class="sc-score-lbl">中線</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="sc-body">
-    <div class="sc-col">
-      <div class="sc-col-title">技術面分析</div>
-      ${rsi > 0 ? `
-      <div class="ind-row">
-        <div class="ind-lbl"><span>RSI (14)</span><b style="color:${rsiColor}">${rsi.toFixed(1)} <span style="font-size:10px;font-weight:400">${rsiZone}</span></b></div>
-        <div class="ind-bar"><div class="ind-fill" style="width:${rsi}%;background:${rsiColor}"></div></div>
-      </div>` : ''}
-      ${kK > 0 ? `
-      <div class="ind-row">
-        <div class="ind-lbl"><span>KD（K/D）</span><b style="color:${kdColor}">${kK.toFixed(1)}/${kD.toFixed(1)} <span style="font-size:10px;font-weight:400">${kdSignal}</span></b></div>
-        <div class="ind-bar"><div class="ind-fill" style="width:${kK}%;background:${kdColor}"></div></div>
-      </div>` : ''}
-      ${ma20 > 0 ? `
-      <div class="ma-row">
-        <div class="ma-dot" style="background:#eab308"></div>
-        <span class="ma-info">MA20</span><span class="ma-val">${formatMoney(ma20)}</span>
-        <span class="ma-pct" style="color:${ma20Color}">${ma20Label}</span>
-      </div>` : ''}
-      ${ma60 > 0 ? `
-      <div class="ma-row">
-        <div class="ma-dot" style="background:#a855f7"></div>
-        <span class="ma-info">MA60</span><span class="ma-val">${formatMoney(ma60)}</span>
-        <span class="ma-pct" style="color:${ma60Color}">${ma60Label}</span>
-      </div>` : ''}
-      ${atr20 > 0 ? `
-      <div class="ma-row">
-        <div class="ma-dot" style="background:#475569"></div>
-        <span class="ma-info">ATR20</span><span class="ma-val">${atr20.toFixed(1)}</span>
-        ${vol20 > 0 ? `<span class="ma-pct" style="color:var(--muted)">${vol20.toFixed(1)}% 波動</span>` : ''}
-      </div>` : ''}
-      <div class="ind-conclusion">${techText}</div>
-    </div>
-
-    <div class="sc-col">
-      <div class="sc-col-title">籌碼面分析</div>
-      <div class="chip-item">
-        <span class="chip-lbl">單日法人%</span>${cb(instDay,3,instC)}
-        <span class="chip-val" style="color:${instC}">${instDay>0?'+':''}${instDay.toFixed(2)}%</span>
-      </div>
-      <div class="chip-item">
-        <span class="chip-lbl">5日法人%</span>${cb(inst5,5,inst5C)}
-        <span class="chip-val" style="color:${inst5C}">${inst5>0?'+':''}${inst5.toFixed(2)}%</span>
-      </div>
-      <div class="chip-item">
-        <span class="chip-lbl">外資單日</span>${cb(foreignL,500,forC)}
-        <span class="chip-val" style="color:${forC}">${foreignL>0?'+':''}${foreignL.toLocaleString()}張</span>
-      </div>
-      <div class="chip-item">
-        <span class="chip-lbl">主力淨買</span>${cb(brokerL,500,brkC)}
-        <span class="chip-val" style="color:${brkC}">${brokerL>0?'+':''}${brokerL.toLocaleString()}張</span>
-      </div>
-      <div class="chip-item">
-        <span class="chip-lbl">量比</span>${cb(volRatio,4,volC)}
-        <span class="chip-val" style="color:${volC}">${volRatio.toFixed(2)}x</span>
-      </div>
-      <div class="chip-item">
-        <span class="chip-lbl">20日漲跌</span>${cb(ret20,30,ret20>0?'var(--green)':'var(--red)')}
-        <span class="chip-val" style="color:${ret20>0?'var(--green)':ret20<0?'var(--red)':'var(--muted)'}">${ret20>0?'+':''}${ret20.toFixed(1)}%</span>
-      </div>
-      <div class="ind-conclusion">${chipsText}</div>
-    </div>
-
-    <div class="sc-col">
-      <div class="sc-col-title">操作建議</div>
-      <div class="kp-item">
-        <div class="kp-dot" style="background:var(--red)"></div>
-        <span class="kp-lbl">壓力區</span>
-        <span class="kp-val" style="color:var(--red)">$${resistDisplay}</span>
-        <span class="kp-sub">${high60 > price * 1.005 ? '近期高點' : '目標價'}</span>
-      </div>
-      <div class="kp-item">
-        <div class="kp-dot" style="background:var(--green)"></div>
-        <span class="kp-lbl">支撐區</span>
-        <span class="kp-val" style="color:var(--green)">$${formatMoney(support1)}</span>
-        <span class="kp-sub">MA20 附近</span>
-      </div>
-      <div class="kp-item">
-        <div class="kp-dot" style="background:var(--blue)"></div>
-        <span class="kp-lbl">強支撐</span>
-        <span class="kp-val" style="color:var(--blue)">$${formatMoney(support2)}</span>
-        <span class="kp-sub">MA60 附近</span>
-      </div>
-      <div class="kp-item">
-        <div class="kp-dot" style="background:var(--orange)"></div>
-        <span class="kp-lbl">停損參考</span>
-        <span class="kp-val" style="color:var(--orange)">$${formatMoney(stopP)}</span>
-        <span class="kp-sub">-${stopPct.toFixed(1)}%</span>
-      </div>
-      ${fairOk ? `
-      <div class="kp-item">
-        <div class="kp-dot" style="background:var(--yellow)"></div>
-        <span class="kp-lbl">合理價</span>
-        <span class="kp-val" style="color:var(--yellow)">$${formatMoney(fairBase)}</span>
-        <span class="kp-sub">${fairGapPct>=0?'+':''}${fairGapPct.toFixed(1)}%</span>
-      </div>` : ''}
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">建議買法</div>
-        <div style="font-size:12px;color:var(--purple);font-weight:600">${buyPlan}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${buyPlanSub}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px">${holdDays}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="sc-paths">
-    <div class="sc-path sc-path-up">
-      <div class="sc-path-num">① 上漲路徑</div>
-      <div class="sc-path-desc">${p1text}</div>
-    </div>
-    <div class="sc-path sc-path-pull">
-      <div class="sc-path-num">② 回檔路徑</div>
-      <div class="sc-path-desc">${p2text}</div>
-    </div>
-    <div class="sc-path sc-path-weak">
-      <div class="sc-path-num">③ 轉弱路徑</div>
-      <div class="sc-path-desc">${p3text}</div>
-    </div>
-  </div>
-
-  <div class="sc-ratings">
-    <div class="sc-ratings-table">
-      <div class="sc-ratings-row">
-        <span class="sc-ratings-lbl">股價趨勢</span>
-        <span class="sc-ratings-quality">${structLabel}</span>
-        ${starsHtml(structScore, 100)}
-      </div>
-      <div class="sc-ratings-row">
-        <span class="sc-ratings-lbl">技術面</span>
-        <span class="sc-ratings-quality">${rsi>=70?'短線過熱':rsi>=50?'偏強':'整理中'}</span>
-        ${starsHtml(techScore, 20)}
-      </div>
-      <div class="sc-ratings-row">
-        <span class="sc-ratings-lbl">籌碼面</span>
-        <span class="sc-ratings-quality">${inst5>2?'法人積極':inst5<-2?'需觀察':'持平'}</span>
-        ${starsHtml(chipsScore, 30)}
-      </div>
-      <div class="sc-ratings-row">
-        <span class="sc-ratings-lbl">操作難度</span>
-        <span class="sc-ratings-quality">${vol20>5?'偏高':vol20>3?'中等':'偏低'}</span>
-        ${starsHtml(diffScore, 100)}
-      </div>
-    </div>
-    <div class="sc-overall-box">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-align:center">綜合評估</div>
-      <div class="sc-overall-stars">${starsHtml(buyScore, 100)}</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:5px;text-align:center;line-height:1.5">${overallLabel}</div>
-    </div>
-  </div>
-
-  <div class="sc-divider"></div>
-</div>`;
+  return swingCard(s);
 }
 
 function formatMoney(value) {
@@ -3838,52 +3345,8 @@ function formatMoney(value) {
 }
 
 function buildConclusion(s, ss, ms) {
-  const vr  = s.volumeRatio || 0;
-  const ret = s.return20DayPct || 0;
-  const buy = s.buyPointScore || 0;
-  const sector = s.sectorScore || 0;
-  const trend = s.trendPersistenceScore || 0;
-  const rr = s.riskRewardRatio || 0;
-  const price = Number(s.price || 0);
-  const fairHigh = Number(s.fairValueHigh || 0);
-  const valuationRich = price > 0 && fairHigh > 0 && price > fairHigh;
-  const market = S.meta.marketScore || 50;
-  const both = ss >= 65 && ms >= 65;
-  const shortOnly = ss >= 65 && ms < 65;
-  const midOnly   = ms >= 65 && ss < 65;
-  let prefix = '';
-
-  if (valuationRich) prefix = '估值已高於合理區間上緣，技術目標只適合作為壓力參考。';
-  else if (buy >= 85 && market >= 60 && sector >= 60 && trend >= 65) prefix = '目前屬於相對理想的出手區。';
-  else if (buy >= 75 && rr >= 1.5) prefix = '買點條件不錯，但仍建議分批進場。';
-  else if (buy >= 60) prefix = '基本面與趨勢可看，但時機還需要確認。';
-  else prefix = '這檔可以追蹤，但目前時機面不算漂亮。';
-
-  if (valuationRich) {
-    return prefix + ` <b>不建議用估值角度追價</b>，等待回到合理區間上緣 $${formatMoney(fairHigh)} 附近，或支撐轉強後再評估。`;
-  }
-
-  if (both) {
-    let note = prefix + ' 短中皆宜。';
-    if (ms > ss + 10) note += '基本面更強，<b>中線操作報酬潛力更大</b>，建議以中線思維持有。';
-    else if (ss > ms + 10) note += '動能較強，<b>短線衝擊力道佳</b>，中線可繼續持有但注意技術位。';
-    else note += '<b>均衡配置</b>，短線可操作，中線繼續持有。';
-    if (ret >= 15) note += ' ⚠️ 短期已有漲幅，追高需謹慎，建議等回檔再加碼。';
-    if (vr >= 2.5) note += ' 今日量比偏高，注意是否為主力出貨跡象。';
-    return note;
-  }
-  if (shortOnly) {
-    let note = prefix + ' 適合<b>短線操作（5～15個交易日）</b>。籌碼與技術面佔優，但基本面未達中線標準。';
-    if (ret >= 15) note += ' ⚠️ 短期漲幅已大，建議設好停利，不要戀棧。';
-    if (vr >= 1.8) note += ' 量能配合，短線動能確立。';
-    return note;
-  }
-  if (midOnly) {
-    let note = prefix + ' 適合<b>中線布局（1～3個月）</b>。營收與財報扎實，短線技術面尚未成熟，等待技術確認後進場更安全。';
-    if ((s.chipsScore || 0) < 15) note += ' 籌碼分偏低，留意法人是否尚未大量介入。';
-    return note;
-  }
-  return prefix + ' 目前短線與中線適性均未達標準（65分以下），建議加入觀察，<b>等待更好的進場時機</b>。';
+  const d = swingDecision(s);
+  return Swing.esc(d.label + '。' + [...d.reasons, ...d.missing].join('；'));
 }
 
 function buildReasons(s) {
@@ -3901,7 +3364,7 @@ function buildReasons(s) {
         <span class="rsn-pct">${pct}%</span>
       </div>
       <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${bc}"></div></div>
-      <div class="rsn-txt">${s[REASON_MAP[k]] || '無詳細說明'}</div>
+      <div class="rsn-txt">${Swing.esc(Swing.researchText(s[REASON_MAP[k]])) || '無詳細說明'}</div>
     </div>`;
   });
   if (s.eventRiskReason) {
