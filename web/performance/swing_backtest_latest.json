@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T23:46:57.074913+08:00",
+  "generatedAt": "2026-10-01T14:59:46.275643+08:00",
   "status": "validated_sample_available",
   "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
   "signalCount": 735,
   "independentSignalCount": 274,
-  "tradeCount": 639,
+  "tradeCount": 640,
   "pointInTimeConsistentTradeCount": 396,
   "horizons": [
     10,
@@ -30,12 +30,12 @@
       "stopHitRatePct": 66.67
     },
     "40": {
-      "sampleCount": 158,
-      "winRatePct": 23.42,
-      "averageNetReturnPct": 2.1237,
+      "sampleCount": 159,
+      "winRatePct": 23.9,
+      "averageNetReturnPct": 2.2095,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.274,
-      "stopHitRatePct": 75.95
+      "averageMaxIntradayDrawdownPct": -7.2314,
+      "stopHitRatePct": 75.47
     }
   },
   "pointInTimeConsistentSummary": {
@@ -66,7 +66,7 @@
   },
   "rejected": {
     "missing_or_invalid_bar": 83,
-    "insufficient_future_sessions": 100
+    "insufficient_future_sessions": 99
   },
   "assumptions": {
     "entry": "next verified trading-session adjusted open",
