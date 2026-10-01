@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "20261001",
-  "evaluatedAt": "2026-10-01T10:36:54.503873+00:00",
+  "evaluatedAt": "2026-10-01T12:32:00.451845+00:00",
   "evaluationDate": "2026-10-01",
   "universeCount": 1968,
   "reviewRequiredCount": 42,
@@ -10,8 +10,8 @@
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-10-01T10:36:53.279693+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:53.279693+00:00",
+      "fetchedAt": "2026-10-01T12:31:56.543312+00:00",
+      "lastAttemptAt": "2026-10-01T12:31:56.543312+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "e9de9103840499216ac44bb63079682bca0295f5575d368d9160763430a05ced",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-10-01T10:36:53.554988+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:53.554988+00:00",
+      "fetchedAt": "2026-10-01T12:31:57.050141+00:00",
+      "lastAttemptAt": "2026-10-01T12:31:57.050141+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-10-01T10:36:53.743603+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:53.743603+00:00",
+      "fetchedAt": "2026-10-01T12:31:57.455034+00:00",
+      "lastAttemptAt": "2026-10-01T12:31:57.455034+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "fd2c9a8037aa459cb8aade5df20bb9e2e0dea1b0c50adee024a12b0617a60eb1",
@@ -46,8 +46,8 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-10-01T10:36:53.956679+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:53.956679+00:00",
+      "fetchedAt": "2026-10-01T12:31:57.846397+00:00",
+      "lastAttemptAt": "2026-10-01T12:31:57.846397+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
       "sha256": "2ebe3321a2bf433d4e27bd6cc76e5ae60f6d5f8ac181871f17c3e61c9384b4e1",
@@ -58,8 +58,8 @@
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-10-01T10:36:54.132331+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:54.132331+00:00",
+      "fetchedAt": "2026-10-01T12:31:59.066053+00:00",
+      "lastAttemptAt": "2026-10-01T12:31:59.066053+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
       "sha256": "3c92c1b4a3be145e3a6c7a0f507d92e5581d54d5e7cd0f7960f85877b6de7626",
@@ -70,8 +70,8 @@
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-10-01T10:36:54.335108+00:00",
-      "lastAttemptAt": "2026-10-01T10:36:54.335108+00:00",
+      "fetchedAt": "2026-10-01T12:32:00.247952+00:00",
+      "lastAttemptAt": "2026-10-01T12:32:00.247952+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
       "sha256": "4e3747a4a27c1e45542ce476ff7ccd0384e5c420e9f2d5bbfd9257b9cc48e6a2",
@@ -617,17 +617,6 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "3017": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
     "3357": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -894,6 +883,17 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "3017": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [
+        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
+      ],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "3551": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -1079,6 +1079,17 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "8996": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [
+        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
+      ],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "2303": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -1239,17 +1250,6 @@
       "pointInTimeVerified": false
     },
     "1802": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "8996": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -6460,15 +6460,6 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "5356": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
     "1723": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -6477,6 +6468,15 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
+    "5356": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -12547,7 +12547,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "6235": {
+    "3050": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -12558,7 +12558,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "3050": {
+    "6235": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -14347,7 +14347,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "5258": {
+    "9930": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -14358,7 +14358,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "9930": {
+    "5258": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -18284,7 +18284,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "3494": {
+    "2254": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -18295,7 +18295,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "2254": {
+    "3494": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
