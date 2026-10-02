@@ -44,7 +44,7 @@ function node(id){if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',va
 const document={getElementById:node,querySelectorAll:()=>[],querySelector:()=>node('query'),createElement:()=>node('created'),addEventListener(){}};
 const ctx=vm.createContext({console,document,location:{protocol:'http:',href:'http://localhost/index.html',pathname:'/index.html',search:''},URLSearchParams,URL,Intl,Date,Math,Number,Set,Map,JSON,window:{addEventListener(){},confirm:()=>true,alert(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(quota)throw Error('quota');storage.set(k,v);},removeItem:k=>storage.delete(k)},Chart:function(){this.destroy=()=>{};},setTimeout:()=>0,clearTimeout(){}});
 ctx.window.location=ctx.location;
-for(const name of ['technical-overlays.js','swing.js','swing-ui.js']) vm.runInContext(fs.readFileSync(path.join(root,'web',name),'utf8'),ctx);
+for(const name of ['technical-overlays.js','video-entry.js','swing.js','swing-ui.js']) vm.runInContext(fs.readFileSync(path.join(root,'web',name),'utf8'),ctx);
 const html=fs.readFileSync(path.join(root,'web/index.html'),'utf8');
 const main=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).find(s=>s.includes('const SMAXES'));
 vm.runInContext(main.replace(/\ninit\(\);\s*$/,'\n'),ctx);
