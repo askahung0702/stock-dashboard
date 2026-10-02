@@ -27,12 +27,30 @@ if ($LASTEXITCODE -eq 0) { throw "An unfinished merge exists; resolve it before 
 & git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) { throw "The index already contains staged changes; finish them before publishing." }
 
+# Keep local detail pages current too; Pages also rebuilds these from history.json.
+$historyExporter = Join-Path $PSScriptRoot "export_stock_history.py"
+if (Test-Path -LiteralPath $historyExporter) {
+    $historyPython = if ($env:STOCK_PYTHON) { $env:STOCK_PYTHON } else { "python" }
+    & $historyPython $historyExporter
+    if ($LASTEXITCODE -ne 0) { throw "Per-stock history export failed; site was not published." }
+}
+
 $trackedPaths = @(
     "history_dashboard.html",
     "web/index.html",
+    "web/swing.js",
+    "web/swing-ui.js",
+    "web/swing.css",
+    "web/data/trading_calendar.json",
     "web/data/latest.json",
     "web/data/history.json",
+    "scripts/export_stock_history.py",
+    "scripts/build_pages_site.ps1",
     "web/data/snapshot_status.json",
+    "web/data/data_quality.json",
+    "web/data/ohlcv_quality.json",
+    "web/data/trading_status.json",
+    "web/data/nightly_status.json",
     "web/data/close_full_diff_summary.json",
     "web/early_breakout",
     "web/performance",

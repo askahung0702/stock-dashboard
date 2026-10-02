@@ -624,13 +624,15 @@ function latestDataCandidates() {
 }
 
 function stockHistoryUrl(code) {
-  return isStaticPagesMode() ? 'data/history.json' : '/api/stock/' + code;
+  return stockHistoryCandidates(code)[0];
 }
 
 function stockHistoryCandidates(code) {
+  const stockFile = 'data/history/' + encodeURIComponent(code) + '.json';
   return isStaticPagesMode()
-    ? ['data/history.json']
-    : ['/api/stock/' + code, '/web/data/history.json', 'web/data/history.json', 'data/history.json'];
+    ? [stockFile, 'data/history.json']
+    : ['/api/stock/' + encodeURIComponent(code), '/web/' + stockFile, stockFile,
+       '/web/data/history.json', 'web/data/history.json', 'data/history.json'];
 }
 
 function btcPageUrl() {
@@ -2917,31 +2919,63 @@ function toggleWL(code, btn) {
 async function openDetail(code) {
   const s = S.all.find(x => x.code === code);
   if (!s) return;
+  const request = (S.detailRequest || 0) + 1;
+  S.detailRequest = request;
+  S.detailCode = code;
   document.getElementById('ov').classList.add('open');
   renderDH(s);
   renderDB(s, null);
+  setHistoryStatus('loading');
   try {
-    if (!S.historyMap || !Array.isArray(S.historyMap[code])) {
-      await loadStockHistory(code);
-    }
-    renderDB(s, S.historyMap[code] || []);
-  } catch(e) { /* show without history */ }
+    const history = S.historyMap?.[code]?.length ? S.historyMap[code] : await loadStockHistory(code);
+    if (S.detailRequest !== request || S.detailCode !== code) return;
+    renderDB(s, history);
+    if (history.length < 2) setHistoryStatus('empty', history.length);
+  } catch(e) {
+    if (S.detailRequest !== request || S.detailCode !== code) return;
+    console.error('Stock detail history failed', code, e);
+    setHistoryStatus('error');
+  }
 }
 
 async function loadStockHistory(code) {
   S.historyMap = S.historyMap || {};
+  S.historyRequests = S.historyRequests || new Map();
   let lastError = null;
   for (const url of stockHistoryCandidates(code)) {
     try {
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' @ ' + url);
-      const payload = await resp.json();
+      if (!S.historyRequests.has(url)) {
+        const pending = (async () => {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 30000);
+          try {
+            const resp = await fetch(url, { cache: 'no-store', signal: controller.signal });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status + ' @ ' + url);
+            return await resp.json();
+          } finally { clearTimeout(timeout); }
+        })();
+        S.historyRequests.set(url, pending);
+      }
+      let payload;
+      try { payload = await S.historyRequests.get(url); }
+      finally { S.historyRequests.delete(url); }
+      if (payload.latestDate && S.meta.date && payload.latestDate !== S.meta.date) {
+        throw new Error('History snapshot date mismatch @ ' + url);
+      }
+      const normalize = rows => (Array.isArray(rows) ? rows : []).filter(row =>
+        typeof row.date === 'string' && /^\d{8}$/.test(row.date) &&
+        (!S.meta.date || row.date <= S.meta.date) &&
+        typeof row.price === 'number' && Number.isFinite(row.price) && row.price > 0
+      ).sort((a, b) => a.date.localeCompare(b.date));
       if (Array.isArray(payload.stocks)) {
-        payload.stocks.forEach(stock => { S.historyMap[String(stock.code)] = stock.history || []; });
-      } else if (Array.isArray(payload.history)) {
-        S.historyMap[code] = payload.history || [];
+        payload.stocks.forEach(stock => { S.historyMap[String(stock.code)] = normalize(stock.history); });
+      } else if (Array.isArray(payload.history) && (!payload.code || String(payload.code) === code)) {
+        S.historyMap[code] = normalize(payload.history);
+      } else {
+        throw new Error('Unexpected history payload @ ' + url);
       }
       if (Array.isArray(S.historyMap[code])) return S.historyMap[code];
+      throw new Error('Stock history missing @ ' + url);
     } catch (err) {
       lastError = err;
     }
@@ -2949,8 +2983,31 @@ async function loadStockHistory(code) {
   throw lastError || new Error('history unavailable');
 }
 
+function setHistoryStatus(state, count = 0) {
+  const message = state === 'loading' ? '正在載入此股票的歷史資料…'
+    : state === 'error' ? '歷史圖表載入失敗，請重試。'
+    : `目前只有 ${count} 筆有效歷史資料，至少需要 2 筆才能畫圖。`;
+  for (const [id, label] of [['history-tech', '技術線圖'], ['history-trend', '分數＋股價趨勢']]) {
+    const card = document.getElementById(id);
+    if (!card) continue;
+    card.querySelector('.cc-title').textContent = label;
+    const wrap = card.querySelector('.cc-wrap');
+    wrap.innerHTML = `<div role="status" style="padding:24px;color:var(--muted);line-height:1.8">${message}` +
+      (state === 'error' ? '<br><button type="button" onclick="retryStockHistory()">重新載入圖表</button>' : '') + '</div>';
+  }
+}
+
+function retryStockHistory() {
+  if (S.detailCode) openDetail(S.detailCode);
+}
+
 function ovClick(e) { if (e.target === document.getElementById('ov')) closeDetail(); }
-function closeDetail() { document.getElementById('ov').classList.remove('open'); killCharts(); }
+function closeDetail() {
+  S.detailRequest = (S.detailRequest || 0) + 1;
+  S.detailCode = null;
+  document.getElementById('ov').classList.remove('open');
+  killCharts();
+}
 function killCharts() {
   if (S.rc) { S.rc.destroy(); S.rc = null; }
   if (S.hc) { S.hc.destroy(); S.hc = null; }
@@ -3197,9 +3254,9 @@ function renderDB(s, history) {
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">
-      <div class="cc cc-wide"><div class="cc-title">技術線圖（股價 / 均線 / 量比）</div><div class="cc-wrap tech"><canvas id="cv-t"></canvas></div></div>
+      <div class="cc cc-wide" id="history-tech"><div class="cc-title">技術線圖（股價 / 均線 / 量比）</div><div class="cc-wrap tech"><canvas id="cv-t"></canvas></div></div>
       <div class="cc"><div class="cc-title">六維雷達圖</div><div class="cc-wrap"><canvas id="cv-r"></canvas></div></div>
-      <div class="cc"><div class="cc-title">分數 + 股價趨勢</div><div class="cc-wrap"><canvas id="cv-h"></canvas></div></div>
+      <div class="cc" id="history-trend"><div class="cc-title">分數 + 股價趨勢</div><div class="cc-wrap"><canvas id="cv-h"></canvas></div></div>
     </div>
     <div id="rsns">${buildReasons(s)}</div>`;
 

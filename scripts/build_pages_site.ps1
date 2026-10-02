@@ -13,6 +13,8 @@ New-Item -ItemType Directory -Path (Join-Path $siteDir "daily") | Out-Null
 $webSourceDir = Join-Path $repoRoot "web"
 if (Test-Path -LiteralPath $webSourceDir) {
     Copy-Item -LiteralPath $webSourceDir -Destination (Join-Path $siteDir "web") -Recurse -Force
+    & python (Join-Path $PSScriptRoot "export_stock_history.py") --data-dir (Join-Path $siteDir "web/data")
+    if ($LASTEXITCODE -ne 0) { throw "Per-stock history export failed; site was not built." }
 }
 
 $historyDashboard = Join-Path $repoRoot "history_dashboard.html"
