@@ -35,10 +35,21 @@ if (Test-Path -LiteralPath $historyExporter) {
     if ($LASTEXITCODE -ne 0) { throw "Per-stock history export failed; site was not published." }
 }
 
+# Publish only the public daily market fields used to confirm chart entry patterns.
+$chartExporter = Join-Path $PSScriptRoot "export_chart_ohlcv.py"
+if (Test-Path -LiteralPath $chartExporter) {
+    $chartPython = if ($env:STOCK_PYTHON) { $env:STOCK_PYTHON } else { "python" }
+    & $chartPython $chartExporter
+    if ($LASTEXITCODE -ne 0) { throw "Daily chart export failed; site was not published." }
+}
+
 $trackedPaths = @(
     "history_dashboard.html",
     "web/index.html",
     "web/technical-overlays.js",
+    "web/video-entry.js",
+    "web/data/ohlcv",
+    "scripts/export_chart_ohlcv.py",
     "web/swing.js",
     "web/swing-ui.js",
     "web/swing.css",

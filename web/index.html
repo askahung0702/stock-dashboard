@@ -610,6 +610,7 @@ td{padding:7px 9px;vertical-align:middle}
 </div>
 
 <script src="technical-overlays.js?v=20261002"></script>
+<script src="video-entry.js?v=20261002"></script>
 <script src="swing.js?v=20261001"></script>
 <script src="swing-ui.js?v=20261001"></script>
 <script>
@@ -3505,9 +3506,39 @@ function mergeLatestMa(series, latest, key) {
   return series;
 }
 
+function technicalChartSource(s, history) {
+  const payload = S.chartOhlcv?.[s.code];
+  const settings = S.technicalOptions?.[s.code];
+  if (settings?.entrySignals && payload?.available && payload.latestDate === S.meta.date) {
+    const result = VideoEntry.scan(payload, {asof:S.meta.date, requireFilters:settings.entryFilters});
+    const rows = result.bars.filter(VideoEntry.valid).map((b,i) => ({date:b.date.replaceAll('-',''),price:b.close,
+      open:b.open,high:b.high,low:b.low,volume:b.volume,
+      volumeRatio:result.metrics[result.bars.indexOf(b)]?.volumeRatio || 0}));
+    if (rows.length >= 2) return {rows, result, daily:true};
+  }
+  return {rows:TechnicalOverlays.history(history,S.meta.date), daily:false};
+}
+
+async function loadChartOhlcv(code) {
+  S.chartOhlcv = S.chartOhlcv || {};
+  if (S.chartOhlcv[code]?.latestDate === S.meta.date) return S.chartOhlcv[code];
+  const date = S.meta.date;
+  const controller = new AbortController(), timeout = setTimeout(()=>controller.abort(),30000);
+  try {
+    const response = await fetch(stockHistoryUrl(code).replace('/history/','/ohlcv/'), {cache:'no-store',signal:controller.signal});
+    if (!response.ok) throw new Error('每日 OHLCV 載入失敗（HTTP ' + response.status + '），可取消再勾選以重試。');
+    const payload = await response.json();
+    if(payload.code !== code || payload.latestDate !== date || payload.schemaVersion !== 1 || !Array.isArray(payload.bars)) {
+      throw new Error('每日行情代碼或日期不符，暫不顯示進場訊號。');
+    }
+    if(S.meta.date === date) S.chartOhlcv[code] = payload;
+    return payload;
+  } finally {clearTimeout(timeout);}
+}
+
 function technicalChartState(s, rows) {
   S.technicalOptions = S.technicalOptions || {};
-  const settings = S.technicalOptions[s.code] || {fibonacci:false, bands:false, period:20, deviations:2, visible:90};
+  const settings = S.technicalOptions[s.code] || {fibonacci:false, bands:false, entrySignals:false, entryFilters:false, period:20, deviations:2, visible:90};
   if (rows.length && (!rows.some(row => row.date === settings.start) || !rows.some(row => row.date === settings.end))) {
     Object.assign(settings, TechnicalOverlays.anchors(rows));
   }
@@ -3516,11 +3547,13 @@ function technicalChartState(s, rows) {
 }
 
 function technicalChartControls(s, history) {
-  const rows = TechnicalOverlays.history(history, S.meta.date);
+  const rows = technicalChartSource(s, history).rows;
   const settings = technicalChartState(s, rows);
   if (rows.length < 2) return '<p class="tech-note">載入至少 2 筆歷史收盤資料後，可套用 Fibonacci Retracement 與 Bollinger Bands。</p>';
   const dates = selected => rows.map(row => `<option value="${row.date}"${row.date === selected ? ' selected' : ''}>${fmtDate(row.date)} · $${formatMoney(row.price)}</option>`).join('');
-  return `<div class="tech-controls" aria-label="技術線圖指標設定">
+  return `<div id="technical-settings"><div class="tech-controls" aria-label="技術線圖指標設定">
+    <label><input name="entrySignals" type="checkbox"${settings.entrySignals ? ' checked' : ''} onchange="updateTechnicalChart(this)">破底翻進場提示</label>
+    <label><input name="entryFilters" type="checkbox"${settings.entryFilters ? ' checked' : ''} onchange="updateTechnicalChart(this)">套用初升篩選</label>
     <label><input name="fibonacci" type="checkbox"${settings.fibonacci ? ' checked' : ''} onchange="updateTechnicalChart(this)">Fibonacci Retracement</label>
     <label>起點<select name="start" aria-label="Fibonacci 起點" onchange="updateTechnicalChart(this)">${dates(settings.start)}</select></label>
     <label>終點<select name="end" aria-label="Fibonacci 終點" onchange="updateTechnicalChart(this)">${dates(settings.end)}</select></label>
@@ -3528,15 +3561,15 @@ function technicalChartControls(s, history) {
     <label>期間<input name="period" type="number" min="5" max="100" step="1" value="${settings.period}" aria-label="布林通道期間" onchange="updateTechnicalChart(this)">期</label>
     <label>標準差<input name="deviations" type="number" min="0.5" max="4" step="0.1" value="${settings.deviations}" aria-label="布林通道標準差倍數" onchange="updateTechnicalChart(this)">倍</label>
     <label>顯示<select name="visible" aria-label="技術線圖顯示筆數" onchange="updateTechnicalChart(this)">${[60,90,150].map(n => `<option value="${n}"${settings.visible === n ? ' selected' : ''}>最近 ${n} 筆</option>`).join('')}</select></label>
-  </div><div class="tech-note" id="technical-overlay-note" role="status"></div>`;
+  </div><div class="tech-note" id="technical-overlay-note" role="status"></div><div id="technical-entry-note" class="tech-note"></div></div>`;
 }
 
-function updateTechnicalChart(input) {
+async function updateTechnicalChart(input) {
   const stock = S.technicalStock;
   if (!stock || stock.code !== S.detailCode) return;
-  const rows = S.technicalHistory || [];
-  const settings = technicalChartState(stock, rows);
-  const allowed = ['fibonacci','bands','period','deviations','start','end','visible'];
+  const history = S.technicalSnapshotHistory || S.technicalHistory || [];
+  const settings = technicalChartState(stock, technicalChartSource(stock,history).rows);
+  const allowed = ['fibonacci','bands','entrySignals','entryFilters','period','deviations','start','end','visible'];
   if (!allowed.includes(input.name)) return;
   const next = {...settings, [input.name]:input.type === 'checkbox' ? input.checked :
     ['period','deviations','visible'].includes(input.name) ? Number(input.value) : input.value};
@@ -3549,14 +3582,71 @@ function updateTechnicalChart(input) {
     return;
   }
   Object.assign(settings, next);
-  drawTechnicalChart(stock, rows);
+  const request = S.technicalRequest = (S.technicalRequest || 0) + 1;
+  const detailRequest = S.detailRequest;
+  if(settings.entrySignals && S.chartOhlcv?.[stock.code]?.latestDate !== S.meta.date) {
+    document.getElementById('technical-entry-note').textContent = '正在載入每日開高低收與成交量，確認進場次序…';
+    try { await loadChartOhlcv(stock.code); }
+    catch(error) {
+      if(request === S.technicalRequest && detailRequest === S.detailRequest && S.detailCode === stock.code) {
+        document.getElementById('technical-entry-note').textContent = error.message;
+      }
+      return;
+    }
+  }
+  if(request !== S.technicalRequest || detailRequest !== S.detailRequest || S.detailCode !== stock.code) return;
+  if(input.name === 'entrySignals') document.getElementById('technical-settings').outerHTML = technicalChartControls(stock, history);
+  drawTechnicalChart(stock, history);
+}
+
+function addVideoEntryChart(source, rows, datasets, settings) {
+  const result = source.result;
+  const node = document.getElementById('technical-entry-note');
+  if(!settings.entrySignals) {if(node)node.textContent='';return;}
+  if(!source.daily) {if(node)node.textContent='每日行情尚未就緒，保留收盤快照圖；無法確認破底翻進場。';return;}
+  const names={observe:'第一低點確認',break:'跌破前低',entry:'進場條件成立',filtered:'型態成立・初升篩選未過',stop:'跌破停損'};
+  const colors={observe:'#facc15',break:'#fb923c',entry:'#22c55e',filtered:'#94a3b8',stop:'#ef4444'};
+  for(const type of ['observe','break','entry','filtered','stop']) {
+    const events=result.events.filter(e=>e.type===type);
+    if(!events.length)continue;
+    const byDate=new Map(events.map(e=>[e.date.replaceAll('-',''),e]));
+    datasets.push({type:'line',label:names[type],data:rows.map(r=>byDate.get(r.date)?.price ?? null),yAxisID:'price',
+      showLine:false,pointStyle:type==='entry'?'triangle':type==='stop'?'crossRot':'circle',pointRadius:type==='entry'?9:6,
+      pointHoverRadius:11,pointBackgroundColor:colors[type],pointBorderColor:colors[type],borderColor:colors[type],
+      borderWidth:2,order:0,entryMarkers:true,events:rows.map(r=>byDate.get(r.date))});
+  }
+  const latest=result.events.filter(e=>e.type==='entry').at(-1);
+  if(latest) {
+    const end=latest.closed?.date?.replaceAll('-','') || '99999999';
+    datasets.push({type:'line',label:'最近訊號停損',data:rows.map(r=>r.date>=latest.date.replaceAll('-','')&&r.date<=end?latest.stop:null),
+      yAxisID:'price',borderColor:'#ef4444',borderDash:[3,3],borderWidth:1.3,pointRadius:0,order:6});
+  }
+  if(result.wave) {
+    const w=result.wave;
+    for(const ratio of [.5,.382,.236])datasets.push({type:'line',label:`影片位階 ${ratio}`,data:rows.map(r=>r.date>=w.confirmed.replaceAll('-','')?w.low+(w.high-w.low)*ratio:null),
+      yAxisID:'price',borderColor:'#eab308',borderDash:[2,5],borderWidth:1,pointRadius:0,order:7,videoLevel:true});
+  }
+  const filtered=result.events.filter(e=>e.type==='filtered').at(-1);
+  const summary=latest?`最近條件成立：${latest.date}，訊號收盤 $${formatMoney(latest.price)}，實體低點停損 $${formatMoney(latest.stop)}。${latest.closed?latest.closed.date+' '+latest.closed.reason:'截至行情日期，後續日K尚未跌破此停損。'}`:
+    filtered?`最近型態成立：${filtered.date}；未顯示綠色進場：${filtered.screening.reasons.join('、')}。`:result.status;
+  const wave=result.wave?`自動波段：${result.wave.start} 低 $${formatMoney(result.wave.low)} → ${result.wave.end} 高 $${formatMoney(result.wave.high)}，${result.wave.confirmed} 確認。`:'';
+  if(node)node.innerHTML=`<strong>${settings.entryFilters?'模式：型態＋完整初升篩選':'模式：破底翻與價量型態（未套用初升篩選）'}</strong><br><span style="color:#facc15">● 第一低點</span> → <span style="color:#fb923c">● 破前低</span> → <span style="color:#22c55e">▲ 進場條件成立</span>；<span style="color:#ef4444">× 跌破停損</span><br>${escapeHtml('行情截至 '+S.meta.date+'。'+summary)}<br>${escapeHtml(wave)}
+    <details><summary>查看判定規則與位階方向</summary>
+    依提供的影片摘要建立程式規則，尚未取得完整字幕。自動取前60根日K的低點與確認高點；波段至少5根、上漲至少10%，高點需後2根較低高點確認。<br>
+    影片位階：低＝0、高＝1；0.5±0.05 區域低點反彈至少2%確認第一低點，之後須跌破該低點並到0.382或0.236±0.05區域。3個交易日內收盤站回第一低點、收紅且高於前收，成交量高於前日及前30日均量，才算型態成立。<br>
+    初升篩選：近126根日K漲幅&lt;50%（約6個月）、ADX14&gt;20、MA50&gt;MA200、當日量&gt;前30日均量；資料不足不通過。取消篩選只檢查型態。<br>
+    進場提示採收盤確認，綠色標記是歷史條件成立點，不代表盤中成交或策略勝率已驗證。停損為反轉K棒 min(開,收)，後續日K低點跌破即標記；缺資料或公司行動會中止該波段。<br>
+    此自動波段與手動 Fibonacci Retracement 起終點獨立；手動回撤為高點0%、低點100%，影片位階0.382相當於回撤61.8%。
+    </details>`;
 }
 
 function drawTechnicalChart(s, history) {
   const ctx = document.getElementById('cv-t');
   if (!ctx) return;
   if (S.tc) { S.tc.destroy(); S.tc = null; }
-  const allRows = TechnicalOverlays.history(history, S.meta.date);
+  S.technicalSnapshotHistory = history;
+  const source = technicalChartSource(s, history);
+  const allRows = source.rows;
   if (allRows.length <= 1) return;
   S.technicalStock = s;
   S.technicalHistory = allRows;
@@ -3564,7 +3654,7 @@ function drawTechnicalChart(s, history) {
   const rows = allRows.slice(-settings.visible);
   const clip = values => values.slice(-settings.visible);
   const prices = allRows.map(h => h.price);
-  const ma18 = mergeLatestMa(allRows.map(h => techValue(h, 'movingAverage18', 'ma18')), s, 'movingAverage18');
+  const ma18 = source.daily ? rollingAverage(prices,18) : mergeLatestMa(allRows.map(h => techValue(h, 'movingAverage18', 'ma18')), s, 'movingAverage18');
   const computedMa5 = clip(rollingAverage(prices, 5));
   const computedMa10 = clip(rollingAverage(prices, 10));
   const computedMa18 = clip(rollingAverage(prices, 18));
@@ -3585,7 +3675,7 @@ function drawTechnicalChart(s, history) {
         {type:'line',label:'MA18',data:pickSeries(clip(ma18), computedMa18),yAxisID:'price',borderColor:'#94a3b8',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.6,borderDash:[5,4],order:4}
   ];
-  const notes = ['依歷史收盤快照計算；1 期為 1 筆資料，缺少交易日的快照不等於完整日線。'];
+  const notes = [source.daily ? '依 Yahoo 每日 OHLCV 計算；行情尚未完成逐筆官方核對。股價線顯示收盤價，進場使用完整開高低收與原始成交量。均線與布林按有效日K筆數計算，缺資料會中止進場波段。' : '依歷史收盤快照計算；1 期為 1 筆資料，缺少交易日的快照不等於完整日線。'];
   let levelHtml = '';
   if (settings.bands) {
     const bb = TechnicalOverlays.bollinger(prices, settings.period, settings.deviations);
@@ -3610,6 +3700,7 @@ function drawTechnicalChart(s, history) {
       levelHtml = '<div class="tech-levels">' + fib.levels.map(level => `<span>${(level.ratio * 100).toFixed(1)}%：$${formatMoney(level.price)}</span>`).join('') + '</div>';
     } catch(error) { notes.push(error.message); }
   }
+  addVideoEntryChart(source, rows, datasets, settings);
   const note = document.getElementById('technical-overlay-note');
   if (note) note.innerHTML = notes.map(escapeHtml).join('<br>') + levelHtml;
   S.tc = new Chart(ctx, {
@@ -3625,8 +3716,19 @@ function drawTechnicalChart(s, history) {
              title:{display:true,text:'量比',color:'#94a3b8',font:{size:10}}}
       },
       plugins:{
-        legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:10,filter:item=>!item.text.startsWith('Fib ')}},
-        tooltip:{filter:context=>!context.dataset.fibonacci,callbacks:{label:ctx=>{
+        legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:10,filter:item=>!item.text.startsWith('Fib ')&&!item.text.startsWith('影片位階 ')}},
+        tooltip:{filter:context=>!context.dataset.fibonacci&&!context.dataset.videoLevel,callbacks:{label:ctx=>{
+          if(ctx.dataset.entryMarkers) {
+            const e=ctx.dataset.events[ctx.dataIndex];
+            if(!e)return '';
+            const details=[`${ctx.dataset.label}｜${e.date}｜收盤 $${formatMoney(e.price)}`];
+            if(e.reference)details.push('第一低點 $'+formatMoney(e.reference));
+            if(e.stop)details.push('實體低點停損 $'+formatMoney(e.stop));
+            if(e.volumeRatio)details.push('量 / 前30日均量 '+e.volumeRatio.toFixed(2));
+            if(e.screening?.reasons?.length)details.push(e.screening.reasons.join('、'));
+            if(e.closed)details.push(e.closed.date+' '+e.closed.reason);
+            return details;
+          }
           const label = ctx.dataset.label || '';
           const value = Number(ctx.parsed.y || 0);
           return label === '量比' ? `${label}：${value.toFixed(2)}` : `${label}：$${formatMoney(value)}`;
