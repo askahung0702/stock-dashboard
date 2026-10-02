@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261002",
-  "count": 1968,
+  "count": 1969,
   "errors": [],
   "warnings": [
     "EPS 加速值：43 檔資料不足，不應解讀為零成長",
@@ -12,16 +12,16 @@
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
   ],
   "readiness": {
-    "techReady": 1968,
-    "marketReady": 1968,
-    "financialReady": 1967,
-    "institutionalReady": 1968,
+    "techReady": 1969,
+    "marketReady": 1969,
+    "financialReady": 1968,
+    "institutionalReady": 1969,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1925,
+  "epsAccelerationReadyCount": 1926,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "close": 1968
+    "official-chip": 1969
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -39,10 +39,10 @@
   },
   "ohlcv": {
     "date": "20261002",
-    "capturedCount": 1968,
-    "availableCount": 1945,
+    "capturedCount": 1969,
+    "availableCount": 1946,
     "complete40DayCount": 1757,
-    "universeCount": 1968
+    "universeCount": 1969
   },
   "officialTradingAnnouncements": {
     "date": "20261002",
@@ -74,5 +74,5 @@
     ]
   },
   "earlyBreakoutDate": "20261002",
-  "generatedAt": "2026-10-02T10:54:19.047943+00:00"
+  "generatedAt": "2026-10-02T12:51:12.680453+00:00"
 }

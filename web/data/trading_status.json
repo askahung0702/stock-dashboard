@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "date": "20261002",
-  "evaluatedAt": "2026-10-02T10:34:16.103568+00:00",
+  "evaluatedAt": "2026-10-02T12:32:18.467047+00:00",
   "evaluationDate": "2026-10-02",
-  "universeCount": 1968,
+  "universeCount": 1969,
   "reviewRequiredCount": 38,
   "fetchedSourceCount": 6,
   "sourceCount": 6,
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-10-02T10:34:12.684426+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:12.684426+00:00",
+      "fetchedAt": "2026-10-02T12:32:16.237635+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:16.237635+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "a09fcb61244fbd5970ca75305472080d0ce2927de921246c6306aca8753aa2c7",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-10-02T10:34:13.945804+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:13.945804+00:00",
+      "fetchedAt": "2026-10-02T12:32:16.489024+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:16.489024+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-10-02T10:34:14.385804+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:14.385804+00:00",
+      "fetchedAt": "2026-10-02T12:32:16.646082+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:16.646082+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "fd2c9a8037aa459cb8aade5df20bb9e2e0dea1b0c50adee024a12b0617a60eb1",
@@ -46,8 +46,8 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-10-02T10:34:14.796157+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:14.796157+00:00",
+      "fetchedAt": "2026-10-02T12:32:16.823179+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:16.823179+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
       "sha256": "25a0905e95b86046493320725927d9a2f32fa5e7c5657162363282acc36340b5",
@@ -58,8 +58,8 @@
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-10-02T10:34:15.661710+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:15.661710+00:00",
+      "fetchedAt": "2026-10-02T12:32:17.009056+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:17.009056+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
       "sha256": "86e31274bba7fd08c6c522efeede182e72beeda0592e277cdbbb2297421565eb",
@@ -70,8 +70,8 @@
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-10-02T10:34:15.871203+00:00",
-      "lastAttemptAt": "2026-10-02T10:34:15.871203+00:00",
+      "fetchedAt": "2026-10-02T12:32:17.198252+00:00",
+      "lastAttemptAt": "2026-10-02T12:32:17.198252+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
       "sha256": "4e3747a4a27c1e45542ce476ff7ccd0384e5c420e9f2d5bbfd9257b9cc48e6a2",
@@ -92,15 +92,6 @@
       "pointInTimeVerified": false
     },
     "6187": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6907": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -134,7 +125,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "5347": {
+    "6907": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -143,14 +134,12 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "2360": {
+    "5347": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
       "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
+      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -169,6 +158,17 @@
       "flags": [],
       "events": [],
       "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
+    "2360": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [
+        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
+      ],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -601,17 +601,6 @@
       "pointInTimeVerified": false
     },
     "3037": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6805": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -1105,6 +1094,17 @@
       "flags": [],
       "events": [],
       "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
+    "6805": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [
+        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
+      ],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -2018,6 +2018,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "5904": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "3036": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -2026,15 +2035,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "5904": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -2610,6 +2610,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "6728": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "5243": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -2622,15 +2631,6 @@
       "pointInTimeVerified": false
     },
     "7547": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6728": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -2878,6 +2878,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "8941": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "2363": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -2886,15 +2895,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "8941": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -3952,6 +3952,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "6629": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "3014": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -3971,15 +3980,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6629": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -4548,6 +4548,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "6195": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "2527": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -4578,15 +4587,6 @@
       "pointInTimeVerified": false
     },
     "3310": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6195": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -4846,6 +4846,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2937": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6265": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -4955,15 +4964,6 @@
       "pointInTimeVerified": false
     },
     "4430": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2937": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -5709,6 +5709,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "5903": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6925": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -5759,15 +5768,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "5903": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -7521,6 +7521,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "3171": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "8926": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -7540,15 +7549,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "3171": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -7846,7 +7846,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "8176": {
+    "2916": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -7855,7 +7855,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "2916": {
+    "8176": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -9290,6 +9290,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "5902": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6914": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -9374,15 +9383,6 @@
       "pointInTimeVerified": false
     },
     "5609": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "5902": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -11245,6 +11245,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "8433": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "8937": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -11283,17 +11292,6 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "6115": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
     "5521": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -11305,16 +11303,18 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "7828": {
+    "6115": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
       "events": [],
-      "issues": [],
+      "issues": [
+        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
+      ],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "8433": {
+    "7828": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -11731,6 +11731,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2947": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6180": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -11779,15 +11788,6 @@
       "pointInTimeVerified": false
     },
     "3666": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2947": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -12225,6 +12225,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "7782": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "9930": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -12264,15 +12273,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "7782": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -12337,6 +12337,15 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
+    "6968": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -12449,15 +12458,6 @@
       "pointInTimeVerified": false
     },
     "8097": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6968": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -14786,6 +14786,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2948": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "8341": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -14903,15 +14912,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2948": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -15317,6 +15317,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2230": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "4108": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -15329,15 +15338,6 @@
       "pointInTimeVerified": false
     },
     "3548": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2230": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -15902,6 +15902,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "8066": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "8450": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -16191,6 +16200,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2924": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6114": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -16212,15 +16230,6 @@
       "pointInTimeVerified": false
     },
     "5202": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2924": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -17363,7 +17372,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "3552": {
+    "3259": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -17372,7 +17381,7 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
-    "3259": {
+    "3552": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -18691,6 +18700,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2938": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "6236": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -18701,15 +18719,6 @@
       "pointInTimeVerified": false
     },
     "6843": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2938": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -19506,6 +19515,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "2941": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "4190": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -19534,15 +19552,6 @@
       "issues": [
         "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "2941": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
@@ -20407,6 +20416,15 @@
       "tradabilityVerified": false,
       "pointInTimeVerified": false
     },
+    "6616": {
+      "fetchHealthy": true,
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
+      "issues": [],
+      "tradabilityVerified": false,
+      "pointInTimeVerified": false
+    },
     "1789": {
       "fetchHealthy": true,
       "assessment": "unknown",
@@ -20419,15 +20437,6 @@
       "pointInTimeVerified": false
     },
     "3252": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "6616": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
