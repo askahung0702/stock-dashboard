@@ -44,6 +44,7 @@ $trackedPaths = @(
     "web/data/trading_calendar.json",
     "web/data/latest.json",
     "web/data/history.json",
+    "web/data/history",
     "scripts/export_stock_history.py",
     "scripts/build_pages_site.ps1",
     "web/data/snapshot_status.json",
