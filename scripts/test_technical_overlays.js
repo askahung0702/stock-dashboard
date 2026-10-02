@@ -1,0 +1,35 @@
+const assert = require('assert'), fs = require('fs'), vm = require('vm'), path = require('path');
+const root = path.join(__dirname, '..');
+const c = vm.createContext({});
+vm.runInContext(fs.readFileSync(path.join(root, 'web/technical-overlays.js'), 'utf8'), c);
+const indicator = c.TechnicalOverlays;
+const close = (actual, expected) => assert(Math.abs(actual - expected) < 1e-9, `${actual} != ${expected}`);
+
+const bb = indicator.bollinger([1,2,3,4,5,6], 5, 2);
+assert(bb.middle.slice(0,4).every(value => value === null));
+close(bb.middle[4], 3); close(bb.upper[4], 3 + 2 * Math.sqrt(2)); close(bb.lower[4], 3 - 2 * Math.sqrt(2));
+close(bb.middle[5], 4);
+const flat = indicator.bollinger([10,10,10,10,10],5,2);
+assert.strictEqual(flat.upper[4],10); assert.strictEqual(flat.lower[4],10);
+assert(indicator.bollinger([1,2,null,4,5],5,2).middle.every(value => value === null));
+assert.throws(() => indicator.bollinger([],4,2));
+assert.throws(() => indicator.bollinger([],20,NaN));
+
+const up = [{date:'20260101',price:100},{date:'20260102',price:200},{date:'20260103',price:160}];
+const fib = indicator.fibonacci(up,'20260101','20260102');
+assert.strictEqual(fib.direction,'上漲回撤');
+close(fib.levels.find(level => level.ratio === .382).price,161.8);
+close(fib.levels.find(level => level.ratio === .5).price,150);
+close(fib.levels.find(level => level.ratio === .618).price,138.2);
+assert(fib.levels.every(level => level.values.length === up.length));
+const down = indicator.fibonacci([{date:'20260101',price:200},{date:'20260102',price:100}],'20260101','20260102');
+assert.strictEqual(down.direction,'下跌反彈');
+close(down.levels.find(level => level.ratio === .382).price,138.2);
+assert(down.levels.every(level => level.values.every(Number.isFinite)), 'leg ending on the last observation still draws a line');
+assert.throws(() => indicator.fibonacci(up,'20260102','20260101'));
+assert.throws(() => indicator.fibonacci(up,'20260101','20260101'));
+assert.throws(() => indicator.fibonacci([{date:'20260101',price:100},{date:'20260102',price:100}],'20260101','20260102'));
+const normalized = indicator.history([...up, {date:'20260103',price:161}, {date:'20260104',price:180}], '20260103');
+assert.strictEqual(normalized.length,3); assert.strictEqual(normalized[2].price,161);
+assert.deepStrictEqual(JSON.parse(JSON.stringify(indicator.anchors(up))), {start:'20260101',end:'20260102'});
+console.log('Technical overlays: Bollinger population variance, warmup and invalid inputs; Fibonacci directions, ratios, final-bar anchors and date normalization passed');

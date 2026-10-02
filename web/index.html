@@ -292,6 +292,15 @@ td{padding:7px 9px;vertical-align:middle}
 .cc-wrap{position:relative;height:185px}
 .cc-wrap.tech{height:260px}
 
+.tech-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:8px 0;color:var(--muted);font-size:12px}
+.tech-controls label{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tech-controls input[type=number]{width:66px}
+.tech-controls select,.tech-controls input[type=number]{padding:5px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font:inherit;max-width:100%}
+.tech-controls input[type=checkbox]{accent-color:var(--blue)}
+.tech-note{font-size:11px;color:var(--muted);line-height:1.7;margin:6px 0 10px;overflow-wrap:anywhere}
+.tech-levels{display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:4px}
+@media(max-width:520px){.tech-controls label{width:100%}.tech-controls select{flex:1;min-width:0}.cc-wrap.tech{height:300px}}
+
 /* Reasons */
 .rsn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-bottom:8px}
 .rsn-hdr{display:flex;align-items:center;gap:8px;margin-bottom:5px}
@@ -600,6 +609,7 @@ td{padding:7px 9px;vertical-align:middle}
   </div>
 </div>
 
+<script src="technical-overlays.js?v=20261002"></script>
 <script src="swing.js?v=20261001"></script>
 <script src="swing-ui.js?v=20261001"></script>
 <script>
@@ -3264,7 +3274,7 @@ function renderDB(s, history) {
     ${newsSummary || themeTags ? `<div class="rsn"><div class="rsn-hdr"><span class="rsn-lbl">📰 新聞 / 題材</span></div><div class="rsn-txt">${themeTags ? `題材籃子：${themeTags}<br>` : ''}${newsSummary ? `新聞摘要：${newsSummary}` : '目前沒有可用新聞摘要'}</div></div>` : ''}
     ${invCard}
     <div class="charts">
-      <div class="cc cc-wide" id="history-tech"><div class="cc-title">技術線圖（股價 / 均線 / 量比）</div><div class="cc-wrap tech"><canvas id="cv-t"></canvas></div></div>
+      <div class="cc cc-wide" id="history-tech"><div class="cc-title">技術線圖（股價 / 均線 / 量比）</div>${technicalChartControls(s, history)}<div class="cc-wrap tech"><canvas id="cv-t"></canvas></div></div>
       <div class="cc"><div class="cc-title">六維雷達圖</div><div class="cc-wrap"><canvas id="cv-r"></canvas></div></div>
       <div class="cc" id="history-trend"><div class="cc-title">分數 + 股價趨勢</div><div class="cc-wrap"><canvas id="cv-h"></canvas></div></div>
     </div>
@@ -3495,38 +3505,115 @@ function mergeLatestMa(series, latest, key) {
   return series;
 }
 
+function technicalChartState(s, rows) {
+  S.technicalOptions = S.technicalOptions || {};
+  const settings = S.technicalOptions[s.code] || {fibonacci:false, bands:false, period:20, deviations:2, visible:90};
+  if (rows.length && (!rows.some(row => row.date === settings.start) || !rows.some(row => row.date === settings.end))) {
+    Object.assign(settings, TechnicalOverlays.anchors(rows));
+  }
+  S.technicalOptions[s.code] = settings;
+  return settings;
+}
+
+function technicalChartControls(s, history) {
+  const rows = TechnicalOverlays.history(history, S.meta.date);
+  const settings = technicalChartState(s, rows);
+  if (rows.length < 2) return '<p class="tech-note">載入至少 2 筆歷史收盤資料後，可套用 Fibonacci Retracement 與 Bollinger Bands。</p>';
+  const dates = selected => rows.map(row => `<option value="${row.date}"${row.date === selected ? ' selected' : ''}>${fmtDate(row.date)} · $${formatMoney(row.price)}</option>`).join('');
+  return `<div class="tech-controls" aria-label="技術線圖指標設定">
+    <label><input name="fibonacci" type="checkbox"${settings.fibonacci ? ' checked' : ''} onchange="updateTechnicalChart(this)">Fibonacci Retracement</label>
+    <label>起點<select name="start" aria-label="Fibonacci 起點" onchange="updateTechnicalChart(this)">${dates(settings.start)}</select></label>
+    <label>終點<select name="end" aria-label="Fibonacci 終點" onchange="updateTechnicalChart(this)">${dates(settings.end)}</select></label>
+    <label><input name="bands" type="checkbox"${settings.bands ? ' checked' : ''} onchange="updateTechnicalChart(this)">Bollinger Bands</label>
+    <label>期間<input name="period" type="number" min="5" max="100" step="1" value="${settings.period}" aria-label="布林通道期間" onchange="updateTechnicalChart(this)">期</label>
+    <label>標準差<input name="deviations" type="number" min="0.5" max="4" step="0.1" value="${settings.deviations}" aria-label="布林通道標準差倍數" onchange="updateTechnicalChart(this)">倍</label>
+    <label>顯示<select name="visible" aria-label="技術線圖顯示筆數" onchange="updateTechnicalChart(this)">${[60,90,150].map(n => `<option value="${n}"${settings.visible === n ? ' selected' : ''}>最近 ${n} 筆</option>`).join('')}</select></label>
+  </div><div class="tech-note" id="technical-overlay-note" role="status"></div>`;
+}
+
+function updateTechnicalChart(input) {
+  const stock = S.technicalStock;
+  if (!stock || stock.code !== S.detailCode) return;
+  const rows = S.technicalHistory || [];
+  const settings = technicalChartState(stock, rows);
+  const allowed = ['fibonacci','bands','period','deviations','start','end','visible'];
+  if (!allowed.includes(input.name)) return;
+  const next = {...settings, [input.name]:input.type === 'checkbox' ? input.checked :
+    ['period','deviations','visible'].includes(input.name) ? Number(input.value) : input.value};
+  try {
+    TechnicalOverlays.bollinger([], next.period, next.deviations);
+    if (![60,90,150].includes(next.visible)) throw new Error('請選擇有效的顯示筆數。');
+  } catch(error) {
+    input.value = settings[input.name];
+    document.getElementById('technical-overlay-note').textContent = error.message;
+    return;
+  }
+  Object.assign(settings, next);
+  drawTechnicalChart(stock, rows);
+}
+
 function drawTechnicalChart(s, history) {
   const ctx = document.getElementById('cv-t');
   if (!ctx) return;
   if (S.tc) { S.tc.destroy(); S.tc = null; }
-  const rows = (history || []).filter(h => Number(h.price || 0) > 0).slice(-90);
-  if (rows.length <= 1) return;
-  const prices = rows.map(h => Number(h.price || 0));
-  const ma18 = mergeLatestMa(rows.map(h => techValue(h, 'movingAverage18', 'ma18')), s, 'movingAverage18');
-  const computedMa5 = rollingAverage(prices, 5);
-  const computedMa10 = rollingAverage(prices, 10);
-  const computedMa18 = rollingAverage(prices, 18);
+  const allRows = TechnicalOverlays.history(history, S.meta.date);
+  if (allRows.length <= 1) return;
+  S.technicalStock = s;
+  S.technicalHistory = allRows;
+  const settings = technicalChartState(s, allRows);
+  const rows = allRows.slice(-settings.visible);
+  const clip = values => values.slice(-settings.visible);
+  const prices = allRows.map(h => h.price);
+  const ma18 = mergeLatestMa(allRows.map(h => techValue(h, 'movingAverage18', 'ma18')), s, 'movingAverage18');
+  const computedMa5 = clip(rollingAverage(prices, 5));
+  const computedMa10 = clip(rollingAverage(prices, 10));
+  const computedMa18 = clip(rollingAverage(prices, 18));
   const pickSeries = (primary, computed) => primary.map((v, i) => v || computed[i]);
   const volumeRatios = rows.map(h => {
     const value = Number(h.volumeRatio || 0);
     return Number.isFinite(value) && value > 0 ? value : null;
   });
-  S.tc = new Chart(ctx, {
-    data: {
-      labels: rows.map(h => fmtDateShort(h.date)),
-      datasets: [
+  const datasets = [
         {type:'bar',label:'量比',data:volumeRatios,yAxisID:'vol',
          backgroundColor:'rgba(148,163,184,.22)',borderColor:'rgba(148,163,184,.35)',borderWidth:1,order:5},
-        {type:'line',label:'股價',data:prices,yAxisID:'price',borderColor:'#f97316',backgroundColor:'transparent',
+        {type:'line',label:'股價',data:clip(prices),yAxisID:'price',borderColor:'#f97316',backgroundColor:'transparent',
          tension:.25,pointRadius:2.5,pointHoverRadius:5,borderWidth:2.2,order:1},
         {type:'line',label:'MA5',data:computedMa5,yAxisID:'price',borderColor:'#22c55e',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:2},
         {type:'line',label:'MA10',data:computedMa10,yAxisID:'price',borderColor:'#a855f7',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.8,order:3},
-        {type:'line',label:'MA18',data:pickSeries(ma18, computedMa18),yAxisID:'price',borderColor:'#94a3b8',
+        {type:'line',label:'MA18',data:pickSeries(clip(ma18), computedMa18),yAxisID:'price',borderColor:'#94a3b8',
          backgroundColor:'transparent',tension:.2,pointRadius:0,borderWidth:1.6,borderDash:[5,4],order:4}
-      ]
-    },
+  ];
+  const notes = ['依歷史收盤快照計算；1 期為 1 筆資料，缺少交易日的快照不等於完整日線。'];
+  let levelHtml = '';
+  if (settings.bands) {
+    const bb = TechnicalOverlays.bollinger(prices, settings.period, settings.deviations);
+    const lowerIndex = datasets.length;
+    const base = {type:'line',yAxisID:'price',borderColor:'#38bdf8',pointRadius:0,borderWidth:1.3,tension:0,order:6};
+    datasets.push({...base,label:`BB 下軌 (${settings.period}, ${settings.deviations})`,data:clip(bb.lower),fill:false});
+    datasets.push({...base,label:`BB 中軌 (${settings.period})`,data:clip(bb.middle),borderDash:[4,3],fill:false});
+    datasets.push({...base,label:`BB 上軌 (${settings.period}, ${settings.deviations})`,data:clip(bb.upper),
+      fill:lowerIndex,backgroundColor:'rgba(56,189,248,.08)'});
+    if (prices.length < settings.period) notes.push(`布林通道需要 ${settings.period} 筆資料，目前只有 ${prices.length} 筆。`);
+    else notes.push(`布林通道：${settings.period} 期均價 ± ${settings.deviations} 倍標準差。`);
+  }
+  if (settings.fibonacci) {
+    try {
+      const fib = TechnicalOverlays.fibonacci(allRows, settings.start, settings.end);
+      for (const level of fib.levels) {
+        datasets.push({type:'line',label:`Fib ${(level.ratio * 100).toFixed(1)}%`,data:clip(level.values),yAxisID:'price',
+          borderColor:level.ratio === .5 ? '#facc15' : '#d4a55a',borderDash:[6,4],borderWidth:level.ratio === .5 ? 1.7 : 1,
+          pointRadius:0,tension:0,fill:false,order:7,fibonacci:true});
+      }
+      notes.push(`Fibonacci ${fib.direction}：${fmtDate(fib.start.date)} $${formatMoney(fib.start.price)} → ${fmtDate(fib.end.date)} $${formatMoney(fib.end.price)}。起終點為收盤價，可自行改選。`);
+      levelHtml = '<div class="tech-levels">' + fib.levels.map(level => `<span>${(level.ratio * 100).toFixed(1)}%：$${formatMoney(level.price)}</span>`).join('') + '</div>';
+    } catch(error) { notes.push(error.message); }
+  }
+  const note = document.getElementById('technical-overlay-note');
+  if (note) note.innerHTML = notes.map(escapeHtml).join('<br>') + levelHtml;
+  S.tc = new Chart(ctx, {
+    data: {labels:rows.map(h => fmtDateShort(h.date)), datasets},
     options: {
       animation:false,responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       scales:{
@@ -3538,8 +3625,8 @@ function drawTechnicalChart(s, history) {
              title:{display:true,text:'量比',color:'#94a3b8',font:{size:10}}}
       },
       plugins:{
-        legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:10}},
-        tooltip:{callbacks:{label:ctx=>{
+        legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:10,filter:item=>!item.text.startsWith('Fib ')}},
+        tooltip:{filter:context=>!context.dataset.fibonacci,callbacks:{label:ctx=>{
           const label = ctx.dataset.label || '';
           const value = Number(ctx.parsed.y || 0);
           return label === '量比' ? `${label}：${value.toFixed(2)}` : `${label}：$${formatMoney(value)}`;

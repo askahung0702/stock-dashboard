@@ -38,6 +38,7 @@ if (Test-Path -LiteralPath $historyExporter) {
 $trackedPaths = @(
     "history_dashboard.html",
     "web/index.html",
+    "web/technical-overlays.js",
     "web/swing.js",
     "web/swing-ui.js",
     "web/swing.css",

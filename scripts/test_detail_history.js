@@ -22,7 +22,7 @@ function setup(fetcher, hostname = 'example.github.io') {
     document:{getElementById:element,addEventListener(){},querySelectorAll(){return []}},
     Chart:class {constructor(node, config){charts.push({id:node.id, config})}destroy(){}},
     fetch:async (url, options) => {calls.push(url); return fetcher(url, options)}});
-  for (const name of ['swing.js', 'swing-ui.js']) vm.runInContext(fs.readFileSync(path.join(root, 'web', name), 'utf8'), c);
+  for (const name of ['technical-overlays.js', 'swing.js', 'swing-ui.js']) vm.runInContext(fs.readFileSync(path.join(root, 'web', name), 'utf8'), c);
   vm.runInContext(script, c);
   c.latest = latest;
   vm.runInContext('S.all=latest.rows;S.meta=latest;S.hotThemes=new Set();', c);
@@ -32,13 +32,37 @@ const ok = payload => ({ok:true,json:async()=>payload});
 const deferred = () => {let resolve; const promise=new Promise(r=>resolve=r); return {promise,resolve}};
 (async () => {
   const small = {...stock('2330'), latestDate:latest.date};
-  const one = setup(async()=>ok(small));
+  const one = setup(async url => ok({...stock(url.match(/history\/(\d+)/)[1]), latestDate:latest.date}));
   await one.run('openDetail("2330")');
   assert.deepStrictEqual(one.calls, ['data/history/2330.json']);
   assert.deepStrictEqual(one.charts.slice(-3).map(x=>x.id), ['cv-r','cv-t','cv-h']);
   assert(one.charts.find(x=>x.id==='cv-t').config.data.datasets[1].data.length > 1);
   await one.run('openDetail("2330")');
   assert.strictEqual(one.calls.length, 1, 'reopen uses valid history cache');
+  await one.run('updateTechnicalChart({name:"bands",type:"checkbox",checked:true})');
+  let config = one.charts.at(-1).config;
+  assert.strictEqual(config.data.datasets.filter(series => series.label.startsWith('BB ')).length,3);
+  assert(config.data.datasets.find(series => series.label.startsWith('BB 中軌')).data[0] > 0, 'warmup uses history preceding the visible 90 observations');
+  await one.run('updateTechnicalChart({name:"fibonacci",type:"checkbox",checked:true})');
+  config = one.charts.at(-1).config;
+  assert.strictEqual(config.data.datasets.filter(series => series.fibonacci).length,7);
+  assert(config.data.datasets.every(series => series.data.length === config.data.labels.length));
+  assert(one.element('technical-overlay-note').innerHTML.includes('收盤快照'));
+  await one.run('updateTechnicalChart({name:"period",type:"number",value:"30"})');
+  assert(one.charts.at(-1).config.data.datasets.some(series => series.label === 'BB 中軌 (30)'));
+  const beforeInvalid = one.charts.length;
+  await one.run('updateTechnicalChart({name:"deviations",type:"number",value:"99"})');
+  assert.strictEqual(one.charts.length,beforeInvalid,'invalid settings leave the chart intact');
+  await one.run('updateTechnicalChart({name:"bands",type:"checkbox",checked:false})');
+  assert(!one.charts.at(-1).config.data.datasets.some(series => series.label.startsWith('BB ')));
+  await one.run('updateTechnicalChart({name:"start",type:"select-one",value:S.technicalOptions[2330].end})');
+  assert(!one.charts.at(-1).config.data.datasets.some(series => series.fibonacci));
+  assert(one.element('technical-overlay-note').innerHTML.includes('起點日期須早於'));
+  await one.run('openDetail("2317")');
+  // Each stock retains its own anchors and settings instead of carrying 2330 prices over.
+  assert(!one.charts.at(-1).config.data.datasets.some(series => series.fibonacci));
+  assert.strictEqual(one.run('S.technicalOptions[2317].bands'), false);
+  assert.strictEqual(one.run('S.technicalOptions[2317].period'), 20);
 
   const fallback = setup(async url => url.includes('/history/') ? {ok:false,status:404} : ok(fixture));
   await fallback.run('openDetail("2330")');
@@ -96,6 +120,11 @@ const deferred = () => {let resolve; const promise=new Promise(r=>resolve=r); re
   assert(apiEmpty.calls.includes('/api/stock/7723'));
   assert(apiEmpty.calls.includes('/web/data/history.json'));
   assert(apiEmpty.charts.some(x=>x.id==='cv-t'), 'empty API must not suppress valid static history');
+  await local.run('updateTechnicalChart({name:"bands",type:"checkbox",checked:true})');
+  await local.run('updateTechnicalChart({name:"fibonacci",type:"checkbox",checked:true})');
+  assert.strictEqual(local.charts.at(-1).config.data.datasets.filter(series => series.fibonacci).length,7);
+  assert.strictEqual(local.charts.at(-1).config.data.datasets.filter(series => series.label.startsWith('BB ')).length,3);
+  assert(local.run('S.historyMap[7723].length') > 1);
   if (process.argv.includes('--live-local')) {
     const live = setup(async (url, options) => fetch(new URL(url, 'http://localhost:8788/web/index.html'), options), 'localhost');
     await live.run('openDetail("7723")');
