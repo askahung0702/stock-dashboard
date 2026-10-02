@@ -5,7 +5,7 @@
   "count": 1968,
   "errors": [],
   "warnings": [
-    "EPS 加速值：42 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：43 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
@@ -18,10 +18,10 @@
     "institutionalReady": 1968,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1926,
+  "epsAccelerationReadyCount": 1925,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "intraday-close": 1968
+    "close": 1968
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -49,7 +49,7 @@
     "evaluationDate": "2026-10-02",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 29
+    "reviewRequiredCount": 38
   },
   "nightlyFull": {
     "dataDate": "20261001",
@@ -74,5 +74,5 @@
     ]
   },
   "earlyBreakoutDate": "20261002",
-  "generatedAt": "2026-10-02T07:02:54.298763+00:00"
+  "generatedAt": "2026-10-02T10:54:19.047943+00:00"
 }
