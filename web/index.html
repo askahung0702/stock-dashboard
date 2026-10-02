@@ -631,7 +631,7 @@ function stockHistoryCandidates(code) {
   const stockFile = 'data/history/' + encodeURIComponent(code) + '.json';
   return isStaticPagesMode()
     ? [stockFile, 'data/history.json']
-    : ['/api/stock/' + encodeURIComponent(code), '/web/' + stockFile, stockFile,
+    : ['/web/' + stockFile, stockFile, '/api/stock/' + encodeURIComponent(code),
        '/web/data/history.json', 'web/data/history.json', 'data/history.json'];
 }
 
@@ -2942,6 +2942,7 @@ async function loadStockHistory(code) {
   S.historyMap = S.historyMap || {};
   S.historyRequests = S.historyRequests || new Map();
   let lastError = null;
+  let partialHistory = null;
   for (const url of stockHistoryCandidates(code)) {
     try {
       if (!S.historyRequests.has(url)) {
@@ -2974,11 +2975,20 @@ async function loadStockHistory(code) {
       } else {
         throw new Error('Unexpected history payload @ ' + url);
       }
-      if (Array.isArray(S.historyMap[code])) return S.historyMap[code];
+      if (Array.isArray(S.historyMap[code])) {
+        const rows = S.historyMap[code];
+        if (rows.length >= 2) return rows;
+        if (partialHistory === null || rows.length > partialHistory.length) partialHistory = rows;
+        continue;
+      }
       throw new Error('Stock history missing @ ' + url);
     } catch (err) {
       lastError = err;
     }
+  }
+  if (partialHistory !== null) {
+    S.historyMap[code] = partialHistory;
+    return partialHistory;
   }
   throw lastError || new Error('history unavailable');
 }

@@ -7,7 +7,7 @@ const script = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
 const fixture = JSON.parse(fs.readFileSync(path.join(root, 'web/data/history.json'), 'utf8'));
 const latest = JSON.parse(fs.readFileSync(path.join(root, 'web/data/latest.json'), 'utf8'));
 const stock = code => fixture.stocks.find(s => s.code === code);
-function setup(fetcher) {
+function setup(fetcher, hostname = 'example.github.io') {
   const nodes = new Map(), charts = [], calls = [], errors = [];
   function element(id) {
     if (!nodes.has(id)) nodes.set(id, {id, innerHTML:'', textContent:'', value:'', style:{},
@@ -18,7 +18,7 @@ function setup(fetcher) {
   const c = vm.createContext({URL, AbortController, setTimeout, clearTimeout,
     console:{error(...args){errors.push(args)},log(){}},
     localStorage:{getItem(){return null},setItem(){}},
-    window:{addEventListener(){},location:{hostname:'example.github.io',protocol:'https:'}},
+    window:{addEventListener(){},location:{hostname,protocol:'https:'}},
     document:{getElementById:element,addEventListener(){},querySelectorAll(){return []}},
     Chart:class {constructor(node, config){charts.push({id:node.id, config})}destroy(){}},
     fetch:async (url, options) => {calls.push(url); return fetcher(url, options)}});
@@ -80,5 +80,28 @@ const deferred = () => {let resolve; const promise=new Promise(r=>resolve=r); re
   const stale=setup(async url=>ok(url.includes('/history/')?{...small,latestDate:'20000101'}:fixture));
   await stale.run('openDetail("2330")');
   assert(stale.charts.some(x=>x.id==='cv-t'),'stale stock file falls back to current full history');
+
+  const target = {...stock('7723'), latestDate:latest.date};
+  const local = setup(async url => url.startsWith('/api/') ? ok({code:'7723',history:[]}) : ok(target), 'localhost');
+  await local.run('openDetail("7723")');
+  assert.deepStrictEqual(local.calls, ['/web/data/history/7723.json']);
+  assert(local.charts.some(x=>x.id==='cv-h'));
+  assert.strictEqual(local.run('S.historyMap[7723].length'), target.history.length);
+
+  const apiEmpty = setup(async url => {
+    if (url.includes('/history/')) return {ok:false,status:404};
+    return ok(url.startsWith('/api/') ? {code:'7723',history:[]} : fixture);
+  }, 'localhost');
+  await apiEmpty.run('openDetail("7723")');
+  assert(apiEmpty.calls.includes('/api/stock/7723'));
+  assert(apiEmpty.calls.includes('/web/data/history.json'));
+  assert(apiEmpty.charts.some(x=>x.id==='cv-t'), 'empty API must not suppress valid static history');
+  if (process.argv.includes('--live-local')) {
+    const live = setup(async (url, options) => fetch(new URL(url, 'http://localhost:8788/web/index.html'), options), 'localhost');
+    await live.run('openDetail("7723")');
+    assert(live.charts.some(x=>x.id==='cv-t') && live.charts.some(x=>x.id==='cv-h'));
+    assert(live.run('S.historyMap[7723].length') > 1);
+    console.log('Live localhost 7723: ' + live.run('S.historyMap[7723].length') + ' history rows; technical and score-price charts configured');
+  }
   console.log('Detail history: charts, small-file loading, fallback, retry, loading state, close and switching races, insufficient data and stale file checks passed');
 })().catch(error=>{console.error(error);process.exitCode=1});
