@@ -47,20 +47,20 @@
   },
   "officialTradingAnnouncements": {
     "date": "20261002",
-    "evaluationDate": "2026-10-02",
+    "evaluationDate": "2026-10-03",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 38
+    "reviewRequiredCount": 32
   },
   "nightlyFull": {
-    "dataDate": "20261002",
-    "status": "completed",
-    "startedAt": "2026-10-02T13:00:00.965824+00:00",
-    "finishedAt": "2026-10-02T15:23:55.361180+00:00",
+    "dataDate": "20261003",
+    "status": "skipped_nontrading_day",
+    "startedAt": "2026-10-03T13:00:01.038495+00:00",
+    "finishedAt": "2026-10-03T13:00:27.376575+00:00",
     "fullExitCode": 0,
     "insiderExitCode": 0,
     "futuresExitCode": 0,
-    "message": "夜間完整分析、內部人資料及期貨部位均完成"
+    "message": "非交易日：週末休市"
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -75,5 +75,5 @@
     ]
   },
   "earlyBreakoutDate": "20261002",
-  "generatedAt": "2026-10-02T15:24:36.904000+00:00"
+  "generatedAt": "2026-10-03T13:01:13.079417+00:00"
 }
