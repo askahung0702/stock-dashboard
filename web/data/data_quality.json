@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261002",
+  "date": "20261005",
   "count": 1969,
   "errors": [],
   "warnings": [
@@ -10,14 +10,16 @@
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "本次僅更新資料來源狀態，行情日期與分析分數未重算",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
+    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
+    "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料",
+    "起漲篩選日期與行情快照不同，篩選結果尚未更新至此行情日"
   ],
   "readiness": {
     "techReady": 1969,
     "marketReady": 1969,
     "financialReady": 1968,
     "institutionalReady": 1969,
-    "newsReady": 1969
+    "newsReady": 1963
   },
   "epsAccelerationReadyCount": 1927,
   "insiderTransferCompleteCount": 0,
@@ -39,33 +41,33 @@
     ]
   },
   "ohlcv": {
-    "date": "20261002",
+    "date": "20261005",
     "capturedCount": 1969,
-    "availableCount": 1946,
-    "complete40DayCount": 1757,
+    "availableCount": 0,
+    "complete40DayCount": 0,
     "universeCount": 1969
   },
   "officialTradingAnnouncements": {
-    "date": "20261002",
-    "evaluationDate": "2026-10-03",
+    "date": "20261005",
+    "evaluationDate": "2026-10-05",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
     "reviewRequiredCount": 32
   },
   "nightlyFull": {
-    "dataDate": "20261003",
-    "status": "skipped_nontrading_day",
-    "startedAt": "2026-10-03T13:00:01.038495+00:00",
-    "finishedAt": "2026-10-03T13:00:27.376575+00:00",
-    "fullExitCode": 0,
+    "dataDate": "20261005",
+    "status": "failed",
+    "startedAt": "2026-10-04T19:00:38.620278+00:00",
+    "finishedAt": "2026-10-05T03:01:57.521472+00:00",
+    "fullExitCode": 1,
     "insiderExitCode": 0,
     "futuresExitCode": 0,
-    "message": "非交易日：週末休市"
+    "message": "夜間完整分析失敗，沿用前次已驗證資料"
   },
   "swingBacktest": {
     "status": "validated_sample_available",
-    "signalCount": 742,
-    "independentSignalCount": 278,
+    "signalCount": 747,
+    "independentSignalCount": 279,
     "tradeCount": 641,
     "pointInTimeConsistentTradeCount": 396,
     "horizons": [
@@ -75,5 +77,5 @@
     ]
   },
   "earlyBreakoutDate": "20261002",
-  "generatedAt": "2026-10-03T13:01:13.079417+00:00"
+  "generatedAt": "2026-10-05T03:02:39.836043+00:00"
 }
