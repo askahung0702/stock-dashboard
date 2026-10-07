@@ -92,6 +92,18 @@ $notFoundHtml = @'
 '@
 Set-Content -LiteralPath (Join-Path $siteDir "404.html") -Value $notFoundHtml -Encoding UTF8
 
+# The default entry must show the current JSON dashboard, not an older generated HTML archive.
+if (Test-Path -LiteralPath (Join-Path $siteDir 'web/index.html')) {
+    $latestEntry = @'
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=./web/index.html">
+<title>最新台股選股系統</title></head>
+<body><a href="./web/index.html">開啟最新台股選股系統</a></body></html>
+'@
+    Set-Content -LiteralPath (Join-Path $siteDir 'index.html') -Value $latestEntry -Encoding UTF8
+}
+
 New-Item -ItemType File -Path (Join-Path $siteDir ".nojekyll") | Out-Null
 
 $siteReadme = @'

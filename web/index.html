@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="source-evidence.js"></script>
 <script>
 // The Java server serves this page at / and assets at /web/.
 if (location.pathname === '/' && !location.hostname.endsWith('github.io') && location.protocol !== 'file:') {
@@ -982,8 +983,16 @@ function renderDataQualityNotice(data) {
     const n = data.nightlyStatus;
     if (n.status === 'completed') messages.push(`夜間完整分析已完成（${n.dataDate}）。`);
     else if (n.status === 'failed') messages.push(`夜間完整分析失敗（${n.dataDate}），EPS、財報、新聞或事件資料可能沿用舊值。`);
+    else if (n.status === 'publication_failed') messages.push(`夜間完整分析與報表已完成（${n.dataDate}），但 GitHub 上傳失敗，線上網站尚未更新。`);
+    else if (n.status === 'reports_failed') messages.push(`夜間完整分析已完成（${n.dataDate}），但報表或資料驗證失敗，尚未發布。`);
     else if (n.status === 'partial') messages.push(`夜間更新部分完成（${n.dataDate}）：${n.message || '部分來源失敗'}。`);
     else if (n.status === 'running') messages.push('夜間完整分析執行中，完整資料尚未確認。');
+  }
+  if (data.sourceEvidenceSummary) {
+    const e = data.sourceEvidenceSummary, c = e.priceStatusCounts || {};
+    if (c.carried) messages.push(`${c.carried} 檔實際行情日早於快照日，停牌或漏抓原因待查。`);
+    if (c.mismatch_requires_recompute) messages.push(`${c.mismatch_requires_recompute} 檔價格與封存行情不同，指標待重算或核對官方收盤依據。`);
+    if (e.legacyScoreCount) messages.push("題材標籤與來源狀態已校正；既有綜合分數仍待完整分析重算。");
   }
   if (data.swingBacktest) {
     const b = data.swingBacktest;
@@ -1572,24 +1581,27 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
-    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest, tradingCalendar] = await Promise.all([
+    const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest, tradingCalendar, sourceEvidence] = await Promise.all([
       fetchLatestData(),
       loadEarlyBreakout().catch(() => null),
       fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/trading_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/nightly_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('performance/swing_backtest_latest.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('data/trading_calendar.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
+      fetch('data/trading_calendar.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('data/source_evidence.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     const d = latestResp;
     if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
     if (tradingStatus && tradingStatus.date === d.date) d.tradingStatus = tradingStatus;
+    if (sourceEvidence && sourceEvidence.date === d.date) d.sourceEvidenceSummary = sourceEvidence;
     if (nightlyStatus && nightlyStatus.dataDate <= d.date) d.nightlyStatus = nightlyStatus;
     if (swingBacktest) d.swingBacktest = swingBacktest;
     S.hotThemes = hotThemeNamesFromMeta(d);
 
     // 預計算短線/中線分
-    S.all = (d.rows || []).map(s => {
+    S.all = (d.rows || []).map(original => {
+      const s = attachSourceEvidence(original, sourceEvidence, d.date);
       const chipsFallback = parseChipsFallback(s);
       const normalized = {
         ...s,
@@ -3267,6 +3279,8 @@ function renderDB(s, history) {
       ${trackHtml}
     </div>
     ${buyCard}
+    ${buildSourceEvidenceCard(s)}
+    ${buildThemeEvidenceCard(s)}
     ${buildShareholderInsiderCard(s)}
     ${buildOhlcvCard(s)}
     ${buildTradingStatusCard(s)}

@@ -17,6 +17,14 @@ if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
     throw "No git repository found; site was not published."
 }
 
+# Check before the expensive history/chart exports. Never remove a Git lock
+# automatically: an active Git operation may still own it.
+$indexLock = & git rev-parse --git-path index.lock
+if ($LASTEXITCODE -ne 0) { throw "Cannot locate the Git index lock." }
+if (Test-Path -LiteralPath $indexLock) {
+    throw "Git index lock exists at $indexLock; site was not published. Check for active Git processes before archiving a stale lock and retrying."
+}
+
 $branch = & git symbolic-ref --short HEAD
 if ($LASTEXITCODE -ne 0 -or $branch -ne "main") {
     throw "Auto publish requires the main branch."
@@ -26,6 +34,10 @@ if ($LASTEXITCODE -eq 0) { throw "An unfinished merge exists; resolve it before 
 # Do not include or disturb changes staged by a person or another task.
 & git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) { throw "The index already contains staged changes; finish them before publishing." }
+
+$evidencePython = if ($env:STOCK_PYTHON) { $env:STOCK_PYTHON } else { "python" }
+& $evidencePython (Join-Path $PSScriptRoot "source_evidence_report.py")
+if ($LASTEXITCODE -ne 0) { throw "Source evidence export failed; site was not published." }
 
 # Keep local detail pages current too; Pages also rebuilds these from history.json.
 $historyExporter = Join-Path $PSScriptRoot "export_stock_history.py"
@@ -44,8 +56,12 @@ if (Test-Path -LiteralPath $chartExporter) {
 }
 
 $trackedPaths = @(
+    "scripts/auto_git_push.ps1",
+    "scripts/build_pages_site.ps1",
+    "scripts/run_stock_job.py",
     "history_dashboard.html",
     "web/index.html",
+    "web/source-evidence.js",
     "web/technical-overlays.js",
     "web/video-entry.js",
     "web/data/ohlcv",
@@ -61,6 +77,11 @@ $trackedPaths = @(
     "scripts/build_pages_site.ps1",
     "web/data/snapshot_status.json",
     "web/data/data_quality.json",
+    "web/data/source_evidence.json",
+    "scripts/source_evidence_report.py",
+    "scripts/ohlcv_report.py",
+    "scripts/trading_calendar.py",
+    "config/theme_baskets.csv",
     "web/data/ohlcv_quality.json",
     "web/data/trading_status.json",
     "web/data/nightly_status.json",
@@ -134,3 +155,13 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "GitHub auto push completed."
+$publishedCommit = & git rev-parse --short HEAD
+$latestSnapshot = Join-Path $repoRoot "web/data/latest.json"
+if (Test-Path -LiteralPath $latestSnapshot) {
+    try {
+        $publishedData = Get-Content -LiteralPath $latestSnapshot -Raw -Encoding UTF8 | ConvertFrom-Json
+        Write-Host "Published data date=$($publishedData.date) rows=$($publishedData.rows.Count) commit=$publishedCommit. GitHub Pages deployment follows this push."
+    } catch {
+        Write-Warning "Push completed (commit=$publishedCommit), but the snapshot summary could not be read."
+    }
+}

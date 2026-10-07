@@ -2,7 +2,7 @@
   "snapshot_start": "20260317",
   "snapshot_end": "20261005",
   "snapshot_count": 144,
-  "candidate_rows": 3065,
+  "candidate_rows": 3062,
   "weeks": [
     1,
     2,
@@ -18,30 +18,30 @@
       "screen_style_label": "早期起漲",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 2386,
+      "sample_count_max": 2425,
       "1w": {
-        "count": 2386,
-        "avg_return_pct": 2.59,
-        "median_return_pct": -0.2,
-        "win_rate_pct": 48.49
+        "count": 2425,
+        "avg_return_pct": 2.58,
+        "median_return_pct": -0.19,
+        "win_rate_pct": 48.62
       },
       "2w": {
-        "count": 2347,
-        "avg_return_pct": 4.36,
-        "median_return_pct": 1.07,
-        "win_rate_pct": 53.39
+        "count": 2383,
+        "avg_return_pct": 4.37,
+        "median_return_pct": 1.16,
+        "win_rate_pct": 53.55
       },
       "3w": {
-        "count": 2283,
-        "avg_return_pct": 7.25,
-        "median_return_pct": 2.27,
-        "win_rate_pct": 56.68
+        "count": 2318,
+        "avg_return_pct": 7.28,
+        "median_return_pct": 2.37,
+        "win_rate_pct": 56.86
       },
       "4w": {
-        "count": 2159,
-        "avg_return_pct": 8.63,
-        "median_return_pct": 2.18,
-        "win_rate_pct": 55.4
+        "count": 2192,
+        "avg_return_pct": 8.64,
+        "median_return_pct": 2.46,
+        "win_rate_pct": 55.79
       }
     },
     "ma2060_early_focus": {
@@ -51,30 +51,30 @@
       "screen_style_label": "早期起漲",
       "scope": "focus",
       "scope_label": "Focus",
-      "sample_count_max": 1415,
+      "sample_count_max": 1522,
       "1w": {
-        "count": 1415,
-        "avg_return_pct": 1.0,
-        "median_return_pct": -0.31,
-        "win_rate_pct": 47.49
+        "count": 1522,
+        "avg_return_pct": 1.23,
+        "median_return_pct": -0.2,
+        "win_rate_pct": 48.23
       },
       "2w": {
-        "count": 1393,
-        "avg_return_pct": 2.49,
-        "median_return_pct": 0.45,
-        "win_rate_pct": 51.18
+        "count": 1492,
+        "avg_return_pct": 2.77,
+        "median_return_pct": 0.95,
+        "win_rate_pct": 52.68
       },
       "3w": {
-        "count": 1364,
-        "avg_return_pct": 4.91,
-        "median_return_pct": 1.75,
-        "win_rate_pct": 55.28
+        "count": 1452,
+        "avg_return_pct": 5.21,
+        "median_return_pct": 1.96,
+        "win_rate_pct": 56.54
       },
       "4w": {
-        "count": 1287,
-        "avg_return_pct": 6.42,
-        "median_return_pct": 1.67,
-        "win_rate_pct": 54.0
+        "count": 1361,
+        "avg_return_pct": 6.76,
+        "median_return_pct": 1.98,
+        "win_rate_pct": 54.81
       }
     },
     "ma2060_continuation_all": {
@@ -87,27 +87,27 @@
       "sample_count_max": 429,
       "1w": {
         "count": 429,
-        "avg_return_pct": 1.26,
+        "avg_return_pct": 1.29,
         "median_return_pct": -0.46,
         "win_rate_pct": 46.62
       },
       "2w": {
         "count": 420,
-        "avg_return_pct": 2.82,
+        "avg_return_pct": 2.8,
         "median_return_pct": 1.03,
         "win_rate_pct": 54.76
       },
       "3w": {
         "count": 417,
-        "avg_return_pct": 5.72,
+        "avg_return_pct": 5.75,
         "median_return_pct": 3.76,
         "win_rate_pct": 59.95
       },
       "4w": {
         "count": 401,
-        "avg_return_pct": 5.54,
+        "avg_return_pct": 5.56,
         "median_return_pct": 2.92,
-        "win_rate_pct": 55.86
+        "win_rate_pct": 56.11
       }
     },
     "ma2060_continuation_focus": {
@@ -120,27 +120,27 @@
       "sample_count_max": 349,
       "1w": {
         "count": 349,
-        "avg_return_pct": 0.74,
+        "avg_return_pct": 0.77,
         "median_return_pct": -0.64,
         "win_rate_pct": 45.27
       },
       "2w": {
         "count": 344,
-        "avg_return_pct": 2.11,
+        "avg_return_pct": 2.09,
         "median_return_pct": 0.53,
         "win_rate_pct": 53.49
       },
       "3w": {
         "count": 341,
-        "avg_return_pct": 4.41,
+        "avg_return_pct": 4.44,
         "median_return_pct": 2.01,
         "win_rate_pct": 57.18
       },
       "4w": {
         "count": 326,
-        "avg_return_pct": 4.52,
+        "avg_return_pct": 4.54,
         "median_return_pct": 2.01,
-        "win_rate_pct": 53.68
+        "win_rate_pct": 53.99
       }
     },
     "ma1854_early_all": {
@@ -150,30 +150,30 @@
       "screen_style_label": "早期起漲",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 2342,
+      "sample_count_max": 2373,
       "1w": {
-        "count": 2342,
-        "avg_return_pct": 2.04,
+        "count": 2373,
+        "avg_return_pct": 2.03,
         "median_return_pct": 0.0,
-        "win_rate_pct": 49.83
+        "win_rate_pct": 49.81
       },
       "2w": {
-        "count": 2303,
-        "avg_return_pct": 3.81,
-        "median_return_pct": 1.32,
-        "win_rate_pct": 55.02
+        "count": 2331,
+        "avg_return_pct": 3.83,
+        "median_return_pct": 1.37,
+        "win_rate_pct": 55.21
       },
       "3w": {
-        "count": 2252,
-        "avg_return_pct": 6.7,
-        "median_return_pct": 3.0,
-        "win_rate_pct": 59.01
+        "count": 2279,
+        "avg_return_pct": 6.74,
+        "median_return_pct": 3.12,
+        "win_rate_pct": 59.06
       },
       "4w": {
-        "count": 2133,
+        "count": 2156,
         "avg_return_pct": 7.96,
-        "median_return_pct": 2.7,
-        "win_rate_pct": 56.63
+        "median_return_pct": 2.96,
+        "win_rate_pct": 56.96
       }
     },
     "ma1854_early_focus": {
@@ -183,30 +183,30 @@
       "screen_style_label": "早期起漲",
       "scope": "focus",
       "scope_label": "Focus",
-      "sample_count_max": 1416,
+      "sample_count_max": 1517,
       "1w": {
-        "count": 1416,
-        "avg_return_pct": 1.39,
+        "count": 1517,
+        "avg_return_pct": 1.6,
         "median_return_pct": 0.0,
-        "win_rate_pct": 48.94
+        "win_rate_pct": 49.64
       },
       "2w": {
-        "count": 1395,
-        "avg_return_pct": 2.77,
-        "median_return_pct": 0.78,
-        "win_rate_pct": 52.97
+        "count": 1488,
+        "avg_return_pct": 3.02,
+        "median_return_pct": 1.17,
+        "win_rate_pct": 54.37
       },
       "3w": {
-        "count": 1370,
-        "avg_return_pct": 5.36,
-        "median_return_pct": 2.27,
-        "win_rate_pct": 57.37
+        "count": 1456,
+        "avg_return_pct": 5.63,
+        "median_return_pct": 2.49,
+        "win_rate_pct": 58.45
       },
       "4w": {
-        "count": 1296,
-        "avg_return_pct": 6.76,
-        "median_return_pct": 2.17,
-        "win_rate_pct": 55.48
+        "count": 1369,
+        "avg_return_pct": 7.05,
+        "median_return_pct": 2.49,
+        "win_rate_pct": 56.03
       }
     },
     "ma1854_continuation_all": {
@@ -219,27 +219,27 @@
       "sample_count_max": 333,
       "1w": {
         "count": 333,
-        "avg_return_pct": -0.15,
+        "avg_return_pct": -0.12,
         "median_return_pct": -1.23,
         "win_rate_pct": 41.74
       },
       "2w": {
         "count": 327,
-        "avg_return_pct": 2.21,
+        "avg_return_pct": 2.18,
         "median_return_pct": 0.0,
         "win_rate_pct": 49.85
       },
       "3w": {
         "count": 322,
-        "avg_return_pct": 4.65,
+        "avg_return_pct": 4.68,
         "median_return_pct": 1.48,
         "win_rate_pct": 55.28
       },
       "4w": {
         "count": 307,
-        "avg_return_pct": 4.41,
-        "median_return_pct": 0.65,
-        "win_rate_pct": 51.14
+        "avg_return_pct": 4.48,
+        "median_return_pct": 1.29,
+        "win_rate_pct": 51.79
       }
     },
     "ma1854_continuation_focus": {
@@ -252,27 +252,27 @@
       "sample_count_max": 265,
       "1w": {
         "count": 265,
-        "avg_return_pct": -0.41,
+        "avg_return_pct": -0.38,
         "median_return_pct": -1.08,
         "win_rate_pct": 42.26
       },
       "2w": {
         "count": 260,
-        "avg_return_pct": 1.41,
+        "avg_return_pct": 1.38,
         "median_return_pct": -0.23,
         "win_rate_pct": 48.08
       },
       "3w": {
         "count": 255,
-        "avg_return_pct": 3.55,
+        "avg_return_pct": 3.59,
         "median_return_pct": 1.04,
         "win_rate_pct": 52.55
       },
       "4w": {
         "count": 241,
-        "avg_return_pct": 3.67,
+        "avg_return_pct": 3.69,
         "median_return_pct": 0.0,
-        "win_rate_pct": 49.38
+        "win_rate_pct": 49.79
       }
     }
   }

@@ -1,11 +1,17 @@
 {
   "schemaVersion": 1,
   "dataDate": "20261005",
-  "status": "failed",
-  "startedAt": "2026-10-04T19:00:38.620278+00:00",
-  "finishedAt": "2026-10-05T03:01:57.521472+00:00",
+  "status": "publication_failed",
+  "startedAt": "2026-10-05T13:00:00.955979+00:00",
+  "finishedAt": "2026-10-05T15:35:00.080316+00:00",
   "fullExitCode": 1,
   "insiderExitCode": 0,
   "futuresExitCode": 0,
-  "message": "夜間完整分析失敗，沿用前次已驗證資料"
+  "message": "完整分析與報表已完成；GitHub 上傳失敗，線上網站尚未更新",
+  "publicationExitCode": 1,
+  "collectionExitCode": 0,
+  "reportsExitCode": 0,
+  "failurePhase": "publication",
+  "fullRunId": "20261005-210031-57f9b0dd",
+  "classificationCorrectedAt": "2026-10-07T00:55:15.136652+00:00"
 }
