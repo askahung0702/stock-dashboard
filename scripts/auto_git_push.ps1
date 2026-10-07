@@ -56,6 +56,7 @@ if (Test-Path -LiteralPath $chartExporter) {
 }
 
 $trackedPaths = @(
+    "index.html",
     "scripts/auto_git_push.ps1",
     "scripts/build_pages_site.ps1",
     "scripts/run_stock_job.py",
