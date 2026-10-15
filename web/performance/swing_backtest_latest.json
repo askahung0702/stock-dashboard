@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-06T15:35:41.774312+08:00",
+  "generatedAt": "2026-10-15T19:24:48.535260+08:00",
   "status": "validated_sample_available",
   "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
   "signalCount": 744,
   "independentSignalCount": 278,
-  "tradeCount": 661,
-  "pointInTimeConsistentTradeCount": 396,
+  "tradeCount": 689,
+  "pointInTimeConsistentTradeCount": 404,
   "horizons": [
     10,
     20,
@@ -14,46 +14,46 @@
   ],
   "summary": {
     "10": {
-      "sampleCount": 250,
-      "winRatePct": 30.4,
-      "averageNetReturnPct": -0.4071,
+      "sampleCount": 251,
+      "winRatePct": 30.28,
+      "averageNetReturnPct": -0.4327,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -6.4632,
-      "stopHitRatePct": 62.4
+      "averageMaxIntradayDrawdownPct": -6.4664,
+      "stopHitRatePct": 62.55
     },
     "20": {
-      "sampleCount": 231,
-      "winRatePct": 28.57,
-      "averageNetReturnPct": 1.1353,
+      "sampleCount": 239,
+      "winRatePct": 28.45,
+      "averageNetReturnPct": 0.9363,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -6.7287,
-      "stopHitRatePct": 66.67
+      "averageMaxIntradayDrawdownPct": -6.7222,
+      "stopHitRatePct": 66.95
     },
     "40": {
-      "sampleCount": 180,
-      "winRatePct": 25.56,
-      "averageNetReturnPct": 2.1131,
+      "sampleCount": 199,
+      "winRatePct": 25.63,
+      "averageNetReturnPct": 1.9249,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.0235,
-      "stopHitRatePct": 73.89
+      "averageMaxIntradayDrawdownPct": -7.0335,
+      "stopHitRatePct": 73.87
     }
   },
   "pointInTimeConsistentSummary": {
     "10": {
-      "sampleCount": 138,
-      "winRatePct": 23.91,
-      "averageNetReturnPct": -1.836,
+      "sampleCount": 139,
+      "winRatePct": 23.74,
+      "averageNetReturnPct": -1.8719,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.2084,
-      "stopHitRatePct": 71.74
+      "averageMaxIntradayDrawdownPct": -7.2089,
+      "stopHitRatePct": 71.94
     },
     "20": {
-      "sampleCount": 129,
-      "winRatePct": 22.48,
-      "averageNetReturnPct": 0.0722,
+      "sampleCount": 136,
+      "winRatePct": 22.79,
+      "averageNetReturnPct": -0.1642,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.4201,
-      "stopHitRatePct": 75.19
+      "averageMaxIntradayDrawdownPct": -7.3722,
+      "stopHitRatePct": 75.0
     },
     "40": {
       "sampleCount": 129,
@@ -66,7 +66,7 @@
   },
   "rejected": {
     "missing_or_invalid_bar": 83,
-    "insufficient_future_sessions": 90
+    "insufficient_future_sessions": 62
   },
   "assumptions": {
     "entry": "next verified trading-session adjusted open",
