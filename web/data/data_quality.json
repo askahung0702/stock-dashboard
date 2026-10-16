@@ -2,30 +2,28 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261016",
-  "count": 1969,
+  "count": 1968,
   "errors": [],
   "warnings": [
     "EPS 加速值：32 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
-    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "31 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "30 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "31 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "30 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
   ],
   "readiness": {
     "techReady": 1938,
-    "marketReady": 1969,
+    "marketReady": 1968,
     "financialReady": 0,
-    "institutionalReady": 0,
+    "institutionalReady": 1832,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1937,
+  "epsAccelerationReadyCount": 1936,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "intraday-close": 1969
+    "close": 1968
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -43,32 +41,32 @@
   },
   "ohlcv": {
     "date": "20261016",
-    "capturedCount": 1969,
+    "capturedCount": 1968,
     "availableCount": 1938,
     "complete40DayCount": 1758,
-    "universeCount": 1969
+    "universeCount": 1968
   },
   "sourceEvidence": {
     "date": "20261016",
-    "count": 1969,
+    "count": 1968,
     "priceStatusCounts": {
       "current": 1938,
-      "carried": 31
+      "carried": 30
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
     "techReady": 1938,
     "financialReady": 0,
-    "institutionalReady": 0,
-    "brokerReady": 0
+    "institutionalReady": 1832,
+    "brokerReady": 1063
   },
   "officialTradingAnnouncements": {
     "date": "20261016",
     "evaluationDate": "2026-10-16",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 28
+    "reviewRequiredCount": 37
   },
   "nightlyFull": {
     "dataDate": "20261016",
@@ -98,5 +96,5 @@
     ]
   },
   "earlyBreakoutDate": "20261016",
-  "generatedAt": "2026-10-16T08:08:04.470769+00:00"
+  "generatedAt": "2026-10-16T11:30:59.096566+00:00"
 }
