@@ -48,10 +48,10 @@
   <div class="metric"><div class="label">已辨識起漲點</div><div class="value">0</div></div>
   <div class="metric"><div class="label">窗起點命中</div><div class="value">0</div></div>
   <div class="metric"><div class="label">回退代理點</div><div class="value">1</div></div>
-  <div class="metric"><div class="label">目前候選數</div><div class="value">29</div></div>
-  <div class="metric"><div class="label">Focus 候選</div><div class="value">16</div></div>
+  <div class="metric"><div class="label">目前候選數</div><div class="value">30</div></div>
+  <div class="metric"><div class="label">Focus 候選</div><div class="value">13</div></div>
   <div class="metric"><div class="label">寬鬆度判斷</div><div class="value">偏寬</div></div>
-  <div class="metric"><div class="label">寬版學習</div><div class="value">180</div></div>
+  <div class="metric"><div class="label">寬版學習</div><div class="value">146</div></div>
 </div>
 
 <div class="panel">
@@ -71,7 +71,7 @@
 
 <div class="panel">
   <b>月檢視判讀</b><br>
-  研究區間 20261001 → 20261016 的前 20 大漲股中，identified 0 檔、window_start 0 檔、fallback 1 檔。<br>真正 identified 樣本最穩的共同特徵：股價站上 MA20 0.0%；EPS/獲利有支撐 0.0%；法人/主力籌碼未明顯轉弱 0.0%；距 60 日高點回檔介於 -12% 到 +1% 0.0%<br>寬版學習名單 180 檔；MA20/60 strict 主名單 29 檔，其中早期起漲 25 檔、強勢續攻 4 檔；MA18/54 strict 主名單 24 檔，其中早期起漲 17 檔、強勢續攻 7 檔；合併前端主名單 29 檔。判定為「偏寬」。目前名單 29 檔，占全市場 1.5% ，約為 identified 樣本的 29.0 倍，比較像品質趨勢籃子，不夠像剛起漲名單。<br>MA20/60 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20/MA60/MA120 至少一項轉強，20日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 0/0、identified 0/1。<br>MA18/54 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA18/MA54/MA120 至少一項轉強，18日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA18 &gt; MA54，18日報酬介於 3% 到 25%；強勢續攻：54日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 0/0、identified 0/1。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。<br>前次可比較區間：20260825 → 20261015。
+  研究區間 20261001 → 20261016 的前 20 大漲股中，identified 0 檔、window_start 0 檔、fallback 1 檔。<br>真正 identified 樣本最穩的共同特徵：股價站上 MA20 0.0%；EPS/獲利有支撐 0.0%；法人/主力籌碼未明顯轉弱 0.0%；距 60 日高點回檔介於 -12% 到 +1% 0.0%<br>寬版學習名單 146 檔；MA20/60 strict 主名單 30 檔，其中早期起漲 27 檔、強勢續攻 3 檔；MA18/54 strict 主名單 23 檔，其中早期起漲 18 檔、強勢續攻 5 檔；合併前端主名單 30 檔。判定為「偏寬」。目前名單 30 檔，占全市場 1.5% ，約為 identified 樣本的 30.0 倍，比較像品質趨勢籃子，不夠像剛起漲名單。<br>MA20/60 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA20/MA60/MA120 至少一項轉強，20日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA20 &gt; MA60，20日報酬介於 3% 到 25%；強勢續攻：60日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 0/0、identified 0/1。<br>MA18/54 路徑：早期起漲：必須命中目前熱門題材，排除傳產 / 材料 / 航運；早期起漲：近3月平均營收年增 &gt; 5% 且正成長月 &gt;= 2；早期起漲：MA18/MA54/MA120 至少一項轉強，18日報酬介於 0% 到 35%；早期起漲：距60日高點回檔介於 -28% 到 1%，量比 0.5~3.2；早期起漲：5日法人占比 &gt; -5% 或 broker 主力買超，新聞風險 &lt; 70；強勢續攻：股價 &gt; MA18 &gt; MA54，18日報酬介於 3% 到 25%；強勢續攻：54日報酬 &gt; 10% ，距60日高點介於 -6% 到 1%。回頭看本次樣本，可命中 non-fallback 0/0、identified 0/1。<br>建議每月持續檢視，並做 rolling backtest，比較現行版與 strict 版在 10/20/40 日報酬、命中率與最大回撤的差異。<br>前次可比較區間：20260825 → 20261015。
 </div>
 
 <table>
@@ -105,9 +105,9 @@
   <td>聯詠</td>
   <td>MA20/60 強勢續攻 / MA18/54 強勢續攻</td>
   <td>577.00</td>
-  <td class="score-hi">96.53</td>
-  <td>91.31</td>
-  <td>93.53</td>
+  <td class="score-hi">94.61</td>
+  <td>85.85</td>
+  <td>90.72</td>
   <td>+26.0%</td>
   <td>+5.3%</td>
   <td>+15.2%</td>
@@ -125,9 +125,9 @@
   <td>華碩</td>
   <td>MA20/60 強勢續攻 / MA18/54 強勢續攻</td>
   <td>994.00</td>
-  <td class="score-hi">94.69</td>
-  <td>84.55</td>
-  <td>92.76</td>
+  <td class="score-hi">93.86</td>
+  <td>81.31</td>
+  <td>92.66</td>
   <td>+40.7%</td>
   <td>+5.9%</td>
   <td>+31.3%</td>
@@ -145,9 +145,9 @@
   <td>長科*</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>83.40</td>
-  <td class="score-hi">94.16</td>
-  <td>83.89</td>
-  <td>90.95</td>
+  <td class="score-hi">92.92</td>
+  <td>79.23</td>
+  <td>90.57</td>
   <td>+40.7%</td>
   <td>+16.5%</td>
   <td>+16.2%</td>
@@ -165,9 +165,9 @@
   <td>瑞昱</td>
   <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
   <td>778.00</td>
-  <td class="score-hi">94.00</td>
-  <td>83.00</td>
-  <td>91.26</td>
+  <td class="score-hi">92.72</td>
+  <td>79.53</td>
+  <td>89.20</td>
   <td>+28.0%</td>
   <td>+8.1%</td>
   <td>+4.7%</td>
@@ -181,33 +181,13 @@
 <tr>
   <td>5</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>6285</b></td>
-  <td>啟碁</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>255.00</td>
-  <td class="score-hi">92.02</td>
-  <td>78.67</td>
-  <td>86.78</td>
-  <td>+78.4%</td>
-  <td>+16.4%</td>
-  <td>+0.8%</td>
-  <td>2.13</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">低軌衛星</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>6</td>
-  <td><span class="grade grade-b">B</span></td>
   <td><b>3264</b></td>
   <td>欣銓</td>
   <td>MA20/60 早期起漲</td>
   <td>258.50</td>
-  <td class="score-hi">91.87</td>
-  <td>78.61</td>
-  <td>86.09</td>
+  <td class="score-hi">92.12</td>
+  <td>79.34</td>
+  <td>86.44</td>
   <td>+48.6%</td>
   <td>+15.9%</td>
   <td>+19.1%</td>
@@ -219,15 +199,35 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
+  <td>6</td>
+  <td><span class="grade grade-b">B</span></td>
+  <td><b>6285</b></td>
+  <td>啟碁</td>
+  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
+  <td>255.00</td>
+  <td class="score-hi">91.62</td>
+  <td>77.74</td>
+  <td>85.91</td>
+  <td>+78.4%</td>
+  <td>+16.4%</td>
+  <td>+0.8%</td>
+  <td>2.13</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">低軌衛星</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
+</tr>
+<tr>
   <td>7</td>
   <td><span class="grade grade-b">B</span></td>
   <td><b>6187</b></td>
   <td>萬潤</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>1,410.00</td>
-  <td class="score-hi">91.53</td>
-  <td>87.22</td>
-  <td>93.27</td>
+  <td class="score-hi">90.53</td>
+  <td>84.53</td>
+  <td>91.63</td>
   <td>+95.2%</td>
   <td>+15.6%</td>
   <td>+33.6%</td>
@@ -241,33 +241,13 @@
 <tr>
   <td>8</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>4961</b></td>
-  <td>天鈺</td>
-  <td>MA20/60 強勢續攻 / MA18/54 強勢續攻</td>
-  <td>190.00</td>
-  <td class="score-hi">91.36</td>
-  <td>73.43</td>
-  <td>90.01</td>
-  <td>+46.7%</td>
-  <td>+5.0%</td>
-  <td>+15.5%</td>
-  <td>2.60</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>9</td>
-  <td><span class="grade grade-b">B</span></td>
   <td><b>6526</b></td>
   <td>達發</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>783.00</td>
-  <td class="score-hi">90.56</td>
-  <td>74.84</td>
-  <td>84.26</td>
+  <td class="score-hi">89.70</td>
+  <td>72.43</td>
+  <td>82.97</td>
   <td>+23.4%</td>
   <td>+24.5%</td>
   <td>+32.5%</td>
@@ -279,15 +259,35 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
+  <td>9</td>
+  <td><span class="grade grade-b">B</span></td>
+  <td><b>4961</b></td>
+  <td>天鈺</td>
+  <td>MA20/60 強勢續攻 / MA18/54 強勢續攻</td>
+  <td>190.00</td>
+  <td class="score-hi">89.52</td>
+  <td>67.15</td>
+  <td>88.67</td>
+  <td>+46.7%</td>
+  <td>+5.0%</td>
+  <td>+15.5%</td>
+  <td>2.60</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td></td>
+  <td></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
+</tr>
+<tr>
   <td>10</td>
   <td><span class="grade grade-b">B</span></td>
   <td><b>6438</b></td>
   <td>迅得</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>170.50</td>
-  <td class="score-hi">88.17</td>
-  <td>66.05</td>
-  <td>83.30</td>
+  <td class="score-hi">87.31</td>
+  <td>63.64</td>
+  <td>82.01</td>
   <td>+17.2%</td>
   <td>+18.4%</td>
   <td>+12.5%</td>
@@ -301,33 +301,13 @@
 <tr>
   <td>11</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>8016</b></td>
-  <td>矽創</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>302.00</td>
-  <td class="score-hi">86.99</td>
-  <td>75.22</td>
-  <td>85.59</td>
-  <td>+25.9%</td>
-  <td>+8.8%</td>
-  <td>+0.8%</td>
-  <td>2.77</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">車用AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>12</td>
-  <td><span class="grade grade-b">B</span></td>
   <td><b>3498</b></td>
   <td>陽程</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>237.50</td>
-  <td class="score-hi">85.46</td>
-  <td>70.32</td>
-  <td>84.06</td>
+  <td class="score-hi">86.76</td>
+  <td>73.59</td>
+  <td>86.48</td>
   <td>+440.8%</td>
   <td>+24.7%</td>
   <td>+113.0%</td>
@@ -339,15 +319,15 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
-  <td>13</td>
+  <td>12</td>
   <td><span class="grade grade-b">B</span></td>
   <td><b>3653</b></td>
   <td>健策</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>6,730.00</td>
-  <td class="score-hi">85.16</td>
-  <td>72.25</td>
-  <td>80.12</td>
+  <td class="score-hi">85.12</td>
+  <td>72.18</td>
+  <td>80.04</td>
   <td>+87.3%</td>
   <td>+28.4%</td>
   <td>+92.3%</td>
@@ -359,40 +339,60 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
-  <td>14</td>
+  <td>13</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>3455</b></td>
-  <td>由田</td>
+  <td><b>8016</b></td>
+  <td>矽創</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>277.00</td>
-  <td class="score-hi">82.92</td>
-  <td>63.86</td>
-  <td>79.43</td>
-  <td>+12.2%</td>
-  <td>+15.2%</td>
-  <td>+37.5%</td>
-  <td>1.38</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td><span class="tag tag-theme">CoPoS</span></td>
-  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td>302.00</td>
+  <td class="score-hi">84.88</td>
+  <td>69.50</td>
+  <td>82.15</td>
+  <td>+25.9%</td>
+  <td>+8.8%</td>
+  <td>+0.8%</td>
+  <td>2.77</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
+  <td><span class="tag tag-theme">車用AI</span></td>
+  <td></td>
   <td><span class="tag tag-signal">未明確</span></td>
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
+  <td>14</td>
+  <td><span class="grade grade-b">B</span></td>
+  <td><b>2330</b></td>
+  <td>台積電</td>
+  <td>MA20/60 早期起漲</td>
+  <td>2,420.00</td>
+  <td class="score-hi">85.02</td>
+  <td>77.86</td>
+  <td>72.44</td>
+  <td>+50.9%</td>
+  <td>+1.7%</td>
+  <td>+0.8%</td>
+  <td>1.74</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">CoPoS</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
+</tr>
+<tr>
   <td>15</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>8081</b></td>
-  <td>致新</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>269.50</td>
-  <td class="score-hi">82.71</td>
-  <td>65.36</td>
-  <td>76.47</td>
-  <td>+11.6%</td>
-  <td>+8.9%</td>
-  <td>+6.5%</td>
-  <td>2.42</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
+  <td><b>6532</b></td>
+  <td>瑞耘</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>123.00</td>
+  <td class="score-mid">80.52</td>
+  <td>61.53</td>
+  <td>70.31</td>
+  <td>+61.3%</td>
+  <td>+33.7%</td>
+  <td>+75.0%</td>
+  <td>1.77</td>
+  <td><span class="tag tag-structure">回踩承接</span></td>
   <td></td>
   <td></td>
   <td><span class="tag tag-signal">未明確</span></td>
@@ -401,93 +401,33 @@
 <tr>
   <td>16</td>
   <td><span class="grade grade-b">B</span></td>
-  <td><b>9945</b></td>
-  <td>潤泰新</td>
-  <td>MA20/60 強勢續攻 / MA18/54 早期起漲</td>
-  <td>29.70</td>
-  <td class="score-hi">82.14</td>
-  <td>61.01</td>
-  <td>79.08</td>
-  <td>+11.1%</td>
-  <td>+5.9%</td>
-  <td>+12.5%</td>
-  <td>0.68</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td><span class="tag tag-theme">機器人</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>17</td>
-  <td><span class="grade grade-b">B</span></td>
-  <td><b>6788</b></td>
-  <td>華景電</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>361.50</td>
-  <td class="score-mid">81.34</td>
-  <td>61.93</td>
-  <td>73.94</td>
-  <td>+41.1%</td>
-  <td>+10.7%</td>
-  <td>+2.0%</td>
-  <td>0.74</td>
-  <td><span class="tag tag-structure">回踩承接</span></td>
-  <td></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>18</td>
-  <td><span class="grade grade-b">B</span></td>
-  <td><b>6271</b></td>
-  <td>同欣電</td>
+  <td><b>2421</b></td>
+  <td>建準</td>
   <td>MA20/60 早期起漲</td>
-  <td>229.00</td>
-  <td class="score-mid">79.70</td>
-  <td>61.65</td>
-  <td>66.09</td>
-  <td>+22.5%</td>
-  <td>+0.4%</td>
-  <td>+12.8%</td>
-  <td>0.70</td>
+  <td>166.00</td>
+  <td class="score-mid">79.39</td>
+  <td>60.90</td>
+  <td>65.46</td>
+  <td>+24.7%</td>
+  <td>+3.4%</td>
+  <td>+25.8%</td>
+  <td>0.60</td>
   <td><span class="tag tag-structure">結構未完成</span></td>
-  <td></td>
+  <td><span class="tag tag-theme">散熱</span></td>
   <td></td>
   <td><span class="tag tag-signal">未明確</span></td>
   <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
 </tr>
 <tr>
-  <td>19</td>
-  <td><span class="grade grade-b">B</span></td>
-  <td><b>3592</b></td>
-  <td>瑞鼎</td>
-  <td>MA20/60 早期起漲 / MA18/54 強勢續攻</td>
-  <td>255.00</td>
-  <td class="score-mid">79.00</td>
-  <td>62.60</td>
-  <td>61.40</td>
-  <td>+21.0%</td>
-  <td>+14.6%</td>
-  <td>+8.1%</td>
-  <td>2.98</td>
-  <td><span class="tag tag-structure">平台突破</span></td>
-  <td></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>20</td>
+  <td>17</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>3189</b></td>
   <td>景碩</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>1,000.00</td>
-  <td class="score-mid">81.39</td>
-  <td>71.37</td>
-  <td>82.00</td>
+  <td class="score-hi">82.16</td>
+  <td>73.67</td>
+  <td>82.99</td>
   <td>+40.3%</td>
   <td>+21.9%</td>
   <td>+25.6%</td>
@@ -499,15 +439,15 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
-  <td>21</td>
+  <td>18</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>8046</b></td>
   <td>南電</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>1,355.00</td>
-  <td class="score-mid">81.15</td>
-  <td>70.45</td>
-  <td>81.99</td>
+  <td class="score-mid">81.92</td>
+  <td>72.74</td>
+  <td>82.97</td>
   <td>+49.5%</td>
   <td>+22.6%</td>
   <td>+3.8%</td>
@@ -519,15 +459,75 @@
   <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 <tr>
+  <td>19</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>3026</b></td>
+  <td>禾伸堂</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>806.00</td>
+  <td class="score-mid">81.37</td>
+  <td>72.62</td>
+  <td>80.35</td>
+  <td>+32.5%</td>
+  <td>+4.4%</td>
+  <td>+21.6%</td>
+  <td>1.14</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">被動元件</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>3711</b></td>
+  <td>日月光投控</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>671.00</td>
+  <td class="score-mid">79.78</td>
+  <td>71.27</td>
+  <td>74.11</td>
+  <td>+44.8%</td>
+  <td>+10.9%</td>
+  <td>+2.3%</td>
+  <td>1.28</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">CoPoS</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>3017</b></td>
+  <td>奇鋐</td>
+  <td>MA20/60 早期起漲</td>
+  <td>3,315.00</td>
+  <td class="score-mid">79.05</td>
+  <td>65.67</td>
+  <td>77.44</td>
+  <td>+52.2%</td>
+  <td>+4.4%</td>
+  <td>+46.4%</td>
+  <td>1.28</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">AI</span></td>
+  <td></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
+</tr>
+<tr>
   <td>22</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>8996</b></td>
   <td>高力</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>1,570.00</td>
-  <td class="score-mid">80.23</td>
-  <td>70.25</td>
-  <td>77.64</td>
+  <td class="score-mid">78.67</td>
+  <td>65.97</td>
+  <td>75.15</td>
   <td>+108.1%</td>
   <td>+20.8%</td>
   <td>+45.4%</td>
@@ -541,53 +541,33 @@
 <tr>
   <td>23</td>
   <td><span class="grade grade-c">C</span></td>
-  <td><b>3017</b></td>
-  <td>奇鋐</td>
+  <td><b>3374</b></td>
+  <td>精材</td>
   <td>MA20/60 早期起漲</td>
-  <td>3,315.00</td>
-  <td class="score-mid">79.52</td>
+  <td>433.50</td>
+  <td class="score-mid">78.47</td>
+  <td>71.82</td>
   <td>66.84</td>
-  <td>78.32</td>
-  <td>+52.2%</td>
-  <td>+4.4%</td>
-  <td>+46.4%</td>
-  <td>1.28</td>
-  <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">AI</span></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
-</tr>
-<tr>
-  <td>24</td>
-  <td><span class="grade grade-c">C</span></td>
-  <td><b>3443</b></td>
-  <td>創意</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>7,480.00</td>
-  <td class="score-mid">76.61</td>
-  <td>74.23</td>
-  <td>74.19</td>
-  <td>+122.4%</td>
-  <td>+21.2%</td>
-  <td>+71.2%</td>
-  <td>1.31</td>
+  <td>+29.7%</td>
+  <td>+2.2%</td>
+  <td>+3.7%</td>
+  <td>1.30</td>
   <td><span class="tag tag-structure">結構未完成</span></td>
   <td></td>
-  <td></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
   <td><span class="tag tag-signal">未明確</span></td>
   <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
 </tr>
 <tr>
-  <td>25</td>
+  <td>24</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>3491</b></td>
   <td>昇達科</td>
   <td>MA20/60 早期起漲</td>
   <td>1,455.00</td>
-  <td class="score-mid">76.56</td>
-  <td>71.38</td>
-  <td>77.51</td>
+  <td class="score-mid">76.33</td>
+  <td>70.88</td>
+  <td>77.00</td>
   <td>+75.9%</td>
   <td>+1.0%</td>
   <td>+11.9%</td>
@@ -599,55 +579,55 @@
   <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
 </tr>
 <tr>
-  <td>26</td>
+  <td>25</td>
   <td><span class="grade grade-c">C</span></td>
-  <td><b>5388</b></td>
-  <td>中磊</td>
+  <td><b>3443</b></td>
+  <td>創意</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>75.50</td>
-  <td class="score-lo">74.61</td>
-  <td>72.98</td>
-  <td>65.74</td>
-  <td>+47.9%</td>
-  <td>+5.0%</td>
-  <td>-13.4%</td>
-  <td>1.62</td>
+  <td>7,480.00</td>
+  <td class="score-mid">75.26</td>
+  <td>70.61</td>
+  <td>71.95</td>
+  <td>+122.4%</td>
+  <td>+21.2%</td>
+  <td>+71.2%</td>
+  <td>1.31</td>
   <td><span class="tag tag-structure">結構未完成</span></td>
-  <td><span class="tag tag-theme">低軌衛星</span></td>
+  <td></td>
   <td><span class="tag tag-signal">3-5日延續</span></td>
   <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>6257</b></td>
+  <td>矽格</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>252.00</td>
+  <td class="score-lo">74.85</td>
+  <td>66.85</td>
+  <td>54.99</td>
+  <td>+27.2%</td>
+  <td>+20.0%</td>
+  <td>+12.8%</td>
+  <td>0.68</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td></td>
+  <td></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
 </tr>
 <tr>
   <td>27</td>
-  <td><span class="grade grade-c">C</span></td>
-  <td><b>8131</b></td>
-  <td>福懋科</td>
-  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
-  <td>63.50</td>
-  <td class="score-lo">73.71</td>
-  <td>60.12</td>
-  <td>57.68</td>
-  <td>+31.2%</td>
-  <td>+7.8%</td>
-  <td>-11.6%</td>
-  <td>0.66</td>
-  <td><span class="tag tag-structure">整理待確認</span></td>
-  <td></td>
-  <td></td>
-  <td><span class="tag tag-signal">未明確</span></td>
-  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
-</tr>
-<tr>
-  <td>28</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>3529</b></td>
   <td>力旺</td>
   <td>MA20/60 早期起漲</td>
   <td>2,750.00</td>
-  <td class="score-lo">73.33</td>
-  <td>65.18</td>
-  <td>69.09</td>
+  <td class="score-lo">74.35</td>
+  <td>67.90</td>
+  <td>70.79</td>
   <td>+26.7%</td>
   <td>+1.9%</td>
   <td>+5.8%</td>
@@ -659,15 +639,35 @@
   <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
 </tr>
 <tr>
+  <td>28</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>3037</b></td>
+  <td>欣興</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>1,090.00</td>
+  <td class="score-lo">74.25</td>
+  <td>70.89</td>
+  <td>66.59</td>
+  <td>+54.9%</td>
+  <td>+13.4%</td>
+  <td>+20.2%</td>
+  <td>1.01</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">CoPoS</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；量比介於 0.5 到 3.2</td>
+</tr>
+<tr>
   <td>29</td>
   <td><span class="grade grade-c">C</span></td>
   <td><b>3035</b></td>
   <td>智原</td>
   <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
   <td>197.50</td>
-  <td class="score-lo">73.08</td>
-  <td>60.09</td>
-  <td>74.24</td>
+  <td class="score-lo">74.10</td>
+  <td>62.81</td>
+  <td>75.94</td>
   <td>+14.8%</td>
   <td>+13.8%</td>
   <td>-0.8%</td>
@@ -677,6 +677,26 @@
   <td></td>
   <td><span class="tag tag-signal">未明確</span></td>
   <td class="small">EPS/獲利有支撐；法人/主力籌碼未明顯轉弱；距 60 日高點回檔介於 -12% 到 +1%</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><span class="grade grade-c">C</span></td>
+  <td><b>5388</b></td>
+  <td>中磊</td>
+  <td>MA20/60 早期起漲 / MA18/54 早期起漲</td>
+  <td>75.50</td>
+  <td class="score-lo">72.67</td>
+  <td>67.74</td>
+  <td>62.62</td>
+  <td>+47.9%</td>
+  <td>+5.0%</td>
+  <td>-13.4%</td>
+  <td>1.62</td>
+  <td><span class="tag tag-structure">結構未完成</span></td>
+  <td><span class="tag tag-theme">低軌衛星</span></td>
+  <td><span class="tag tag-signal">3-5日延續</span></td>
+  <td><span class="tag tag-signal">未明確</span></td>
+  <td class="small">股價站上 MA20；EPS/獲利有支撐；法人/主力籌碼未明顯轉弱</td>
 </tr>
 </tbody>
 </table>

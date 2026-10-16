@@ -11,7 +11,8 @@
     "30 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "30 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
-    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
+    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
+    "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
     "techReady": 1938,
@@ -23,7 +24,7 @@
   "epsAccelerationReadyCount": 1936,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "close": 1968
+    "official-chip": 1968
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -70,13 +71,13 @@
   },
   "nightlyFull": {
     "dataDate": "20261016",
-    "status": "completed",
-    "startedAt": "2026-10-15T13:00:01.019457+00:00",
-    "finishedAt": "2026-10-15T17:25:08.206653+00:00",
-    "fullExitCode": 0,
-    "insiderExitCode": 0,
-    "futuresExitCode": 0,
-    "message": "夜間完整分析、內部人資料及期貨部位均完成",
+    "status": "running",
+    "startedAt": "2026-10-16T13:00:02.524847+00:00",
+    "finishedAt": null,
+    "fullExitCode": null,
+    "insiderExitCode": null,
+    "futuresExitCode": null,
+    "message": "夜間完整分析執行中",
     "collectionExitCode": null,
     "reportsExitCode": null,
     "publicationExitCode": null,
@@ -96,5 +97,5 @@
     ]
   },
   "earlyBreakoutDate": "20261016",
-  "generatedAt": "2026-10-16T11:30:59.096566+00:00"
+  "generatedAt": "2026-10-16T13:34:42.514141+00:00"
 }
