@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-16T01:22:40.777164+08:00",
+  "generatedAt": "2026-10-16T16:06:51.376006+08:00",
   "status": "validated_sample_available",
   "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
   "signalCount": 755,
   "independentSignalCount": 289,
-  "tradeCount": 689,
-  "pointInTimeConsistentTradeCount": 404,
+  "tradeCount": 702,
+  "pointInTimeConsistentTradeCount": 415,
   "horizons": [
     10,
     20,
@@ -14,12 +14,12 @@
   ],
   "summary": {
     "10": {
-      "sampleCount": 251,
-      "winRatePct": 30.28,
-      "averageNetReturnPct": -0.4327,
+      "sampleCount": 262,
+      "winRatePct": 30.92,
+      "averageNetReturnPct": -0.1595,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -6.4664,
-      "stopHitRatePct": 62.55
+      "averageMaxIntradayDrawdownPct": -6.3651,
+      "stopHitRatePct": 61.07
     },
     "20": {
       "sampleCount": 239,
@@ -30,22 +30,22 @@
       "stopHitRatePct": 66.95
     },
     "40": {
-      "sampleCount": 199,
-      "winRatePct": 25.63,
-      "averageNetReturnPct": 1.9249,
+      "sampleCount": 201,
+      "winRatePct": 25.87,
+      "averageNetReturnPct": 2.7143,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.0335,
-      "stopHitRatePct": 73.87
+      "averageMaxIntradayDrawdownPct": -7.0262,
+      "stopHitRatePct": 73.63
     }
   },
   "pointInTimeConsistentSummary": {
     "10": {
-      "sampleCount": 139,
-      "winRatePct": 23.74,
-      "averageNetReturnPct": -1.8719,
+      "sampleCount": 150,
+      "winRatePct": 25.33,
+      "averageNetReturnPct": -1.2892,
       "medianNetReturnPct": -6.8291,
-      "averageMaxIntradayDrawdownPct": -7.2089,
-      "stopHitRatePct": 71.94
+      "averageMaxIntradayDrawdownPct": -6.9775,
+      "stopHitRatePct": 68.67
     },
     "20": {
       "sampleCount": 136,
@@ -66,7 +66,7 @@
   },
   "rejected": {
     "missing_or_invalid_bar": 83,
-    "insufficient_future_sessions": 95
+    "insufficient_future_sessions": 82
   },
   "assumptions": {
     "entry": "next verified trading-session adjusted open",

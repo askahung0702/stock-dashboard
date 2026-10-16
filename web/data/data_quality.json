@@ -1,30 +1,31 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261015",
+  "date": "20261016",
   "count": 1969,
   "errors": [],
   "warnings": [
     "EPS 加速值：32 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
+    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
+    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "本次僅更新資料來源狀態，行情日期與分析分數未重算",
-    "22 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "31 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "22 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "31 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
   ],
   "readiness": {
-    "techReady": 1947,
+    "techReady": 1938,
     "marketReady": 1969,
     "financialReady": 0,
-    "institutionalReady": 1850,
-    "newsReady": 1969
+    "institutionalReady": 0,
+    "newsReady": 0
   },
   "epsAccelerationReadyCount": 1937,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "full": 1969
+    "intraday-close": 1969
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -41,33 +42,33 @@
     ]
   },
   "ohlcv": {
-    "date": "20261015",
+    "date": "20261016",
     "capturedCount": 1969,
-    "availableCount": 1947,
+    "availableCount": 1938,
     "complete40DayCount": 1758,
     "universeCount": 1969
   },
   "sourceEvidence": {
-    "date": "20261015",
+    "date": "20261016",
     "count": 1969,
     "priceStatusCounts": {
-      "current": 1947,
-      "carried": 22
+      "current": 1938,
+      "carried": 31
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1947,
+    "techReady": 1938,
     "financialReady": 0,
-    "institutionalReady": 1850,
-    "brokerReady": 1225
+    "institutionalReady": 0,
+    "brokerReady": 0
   },
   "officialTradingAnnouncements": {
-    "date": "20261015",
+    "date": "20261016",
     "evaluationDate": "2026-10-16",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 38
+    "reviewRequiredCount": 28
   },
   "nightlyFull": {
     "dataDate": "20261016",
@@ -88,14 +89,14 @@
     "status": "validated_sample_available",
     "signalCount": 755,
     "independentSignalCount": 289,
-    "tradeCount": 689,
-    "pointInTimeConsistentTradeCount": 404,
+    "tradeCount": 702,
+    "pointInTimeConsistentTradeCount": 415,
     "horizons": [
       10,
       20,
       40
     ]
   },
-  "earlyBreakoutDate": "20261015",
-  "generatedAt": "2026-10-15T17:25:37.246400+00:00"
+  "earlyBreakoutDate": "20261016",
+  "generatedAt": "2026-10-16T08:08:04.470769+00:00"
 }
