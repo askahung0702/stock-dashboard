@@ -1,11 +1,15 @@
 {
   "schemaVersion": 1,
-  "dataDate": "20261018",
-  "status": "skipped_nontrading_day",
-  "startedAt": "2026-10-17T19:00:18.931734+00:00",
-  "finishedAt": "2026-10-17T19:00:52.323430+00:00",
-  "fullExitCode": 0,
+  "dataDate": "20261019",
+  "status": "reports_failed",
+  "startedAt": "2026-10-18T19:01:09.927908+00:00",
+  "finishedAt": "2026-10-19T04:05:24.020651+00:00",
+  "fullExitCode": 1,
   "insiderExitCode": 1,
   "futuresExitCode": 0,
-  "message": "非交易日：週末休市"
+  "message": "完整分析已完成；報表或資料驗證失敗，未發布網站",
+  "collectionExitCode": 0,
+  "reportsExitCode": 1,
+  "failurePhase": "reports",
+  "fullRunId": "20261019-030136-a6a9396e"
 }
