@@ -1,15 +1,11 @@
 {
   "schemaVersion": 1,
-  "dataDate": "20261019",
-  "status": "reports_failed",
-  "startedAt": "2026-10-18T19:01:09.927908+00:00",
-  "finishedAt": "2026-10-19T04:05:24.020651+00:00",
+  "dataDate": "20261020",
+  "status": "failed",
+  "startedAt": "2026-10-19T13:00:01.441307+00:00",
+  "finishedAt": "2026-10-19T17:07:38.825162+00:00",
   "fullExitCode": 1,
   "insiderExitCode": 1,
   "futuresExitCode": 0,
-  "message": "完整分析已完成；報表或資料驗證失敗，未發布網站",
-  "collectionExitCode": 0,
-  "reportsExitCode": 1,
-  "failurePhase": "reports",
-  "fullRunId": "20261019-030136-a6a9396e"
+  "message": "夜間完整分析失敗，沿用前次已驗證資料"
 }
