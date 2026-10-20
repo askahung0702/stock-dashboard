@@ -1,31 +1,32 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261019",
-  "count": 1974,
+  "date": "20261020",
+  "count": 1975,
   "errors": [],
   "warnings": [
-    "EPS 加速值：32 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：33 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "本次僅更新資料來源狀態，行情日期與分析分數未重算",
-    "29 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "28 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "29 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "28 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
-    "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料"
+    "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料",
+    "起漲篩選日期與行情快照不同，篩選結果尚未更新至此行情日"
   ],
   "readiness": {
-    "techReady": 1945,
-    "marketReady": 1974,
+    "techReady": 1947,
+    "marketReady": 1975,
     "financialReady": 0,
-    "institutionalReady": 1841,
-    "newsReady": 1974
+    "institutionalReady": 1837,
+    "newsReady": 1970
   },
   "epsAccelerationReadyCount": 1942,
   "insiderTransferCompleteCount": 0,
   "stageCounts": {
-    "full": 1974
+    "full": 1975
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -42,41 +43,41 @@
     ]
   },
   "ohlcv": {
-    "date": "20261019",
-    "capturedCount": 1974,
-    "availableCount": 1945,
-    "complete40DayCount": 1758,
-    "universeCount": 1974
+    "date": "20261020",
+    "capturedCount": 1975,
+    "availableCount": 1947,
+    "complete40DayCount": 1761,
+    "universeCount": 1975
   },
   "sourceEvidence": {
-    "date": "20261019",
-    "count": 1974,
+    "date": "20261020",
+    "count": 1975,
     "priceStatusCounts": {
-      "current": 1945,
-      "carried": 29
+      "current": 1947,
+      "carried": 28
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1945,
+    "techReady": 1947,
     "financialReady": 0,
-    "institutionalReady": 1841,
-    "brokerReady": 1054
+    "institutionalReady": 1837,
+    "brokerReady": 1064
   },
   "officialTradingAnnouncements": {
-    "date": "20261019",
-    "evaluationDate": "2026-10-20",
+    "date": "20261020",
+    "evaluationDate": "2026-10-21",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 31
+    "reviewRequiredCount": 29
   },
   "nightlyFull": {
-    "dataDate": "20261020",
+    "dataDate": "20261021",
     "status": "failed",
-    "startedAt": "2026-10-19T13:00:01.441307+00:00",
-    "finishedAt": "2026-10-19T17:07:38.825162+00:00",
+    "startedAt": "2026-10-20T13:00:01.262141+00:00",
+    "finishedAt": "2026-10-20T17:05:50.746549+00:00",
     "fullExitCode": 1,
-    "insiderExitCode": 1,
+    "insiderExitCode": 0,
     "futuresExitCode": 0,
     "message": "夜間完整分析失敗，沿用前次已驗證資料",
     "collectionExitCode": null,
@@ -98,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261019",
-  "generatedAt": "2026-10-19T17:08:43.215274+00:00"
+  "generatedAt": "2026-10-20T17:06:58.266971+00:00"
 }
