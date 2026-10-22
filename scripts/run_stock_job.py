@@ -168,6 +168,35 @@ def scheduled_window(mode, now):
     start = starts.get(mode)
     return start is None or (now.hour, now.minute) >= start
 
+def maintain_after_full_run(root, args, state, status_path):
+    """Run once after releasing collection's lock; preserve its exit code."""
+    if (args not in ([], ['full']) or os.environ.get('STOCK_STORAGE_DEFER') == '1'
+            or state.get('status') not in ('completed', 'failed')):
+        return
+    log_path = status_path.with_suffix('.storage.log')
+    command = [sys.executable, str(root / 'scripts/stock_storage_maintenance.py'),
+               'run', '--wait-seconds', '600']
+    archive_only = state.get('exitCode', 1) != 0
+    if archive_only:
+        command.append('--archive-only')
+    print('[storage] Running after full analysis; log: ' + str(log_path), flush=True)
+    try:
+        with log_path.open('wb') as log:
+            result = subprocess.run(command, cwd=root, stdout=log, stderr=subprocess.STDOUT)
+        state['storageMaintenance'] = dict(exitCode=result.returncode, archiveOnly=archive_only,
+                                          log=str(log_path), finishedAt=stamp())
+        if result.returncode:
+            print('[storage] Pending or failed; analysis exit code preserved. See ' + str(log_path), flush=True)
+    except Exception as exc:
+        state['storageMaintenance'] = dict(exitCode=1, archiveOnly=archive_only, error=str(exc), log=str(log_path))
+        print('[storage] Failed; analysis exit code preserved: ' + str(exc), flush=True)
+    # A subsequent collector may already own pipeline_status.json. Update only
+    # this run's record; maintenance has its own shared status and lock.
+    try:
+        atomic_json(status_path, state)
+    except OSError as exc:
+        print('[storage] Could not save maintenance result: ' + str(exc), flush=True)
+
 def run(args):
     configure_output()
     scheduled = "--scheduled" in args or os.environ.get("STOCK_SCHEDULED_RUN") == "1"
@@ -247,6 +276,8 @@ def run(args):
             atomic_json(root / 'logs/pipeline_status.json', state)
         lease.close()
         print('[pipeline] ' + state['status'] + ': ' + run_id, flush=True)
+        if process is not None:
+            maintain_after_full_run(root, args, state, status_path)
 
 if __name__ == '__main__':
     sys.exit(run(sys.argv[1:]))

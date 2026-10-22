@@ -1,32 +1,36 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261021",
-  "count": 1975,
+  "date": "20261022",
+  "count": 1976,
   "errors": [],
   "warnings": [
-    "EPS 加速值：33 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：34 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：137 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：138 檔尚未備齊，不以單月代替三個月",
+    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
+    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "27 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "34 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "27 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "34 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "部分官方交易公告收取失敗；舊公告只供核對，不代表狀態已更新",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
+    "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認",
     "完整分析已完成；報表或資料驗證失敗，未發布網站"
   ],
   "readiness": {
-    "techReady": 1948,
-    "marketReady": 1975,
+    "techReady": 1942,
+    "marketReady": 1976,
     "financialReady": 0,
-    "institutionalReady": 1854,
-    "newsReady": 1975
+    "institutionalReady": 0,
+    "newsReady": 0
   },
   "epsAccelerationReadyCount": 1942,
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1838,
   "stageCounts": {
-    "full": 1975
+    "intraday-close": 1976
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -43,33 +47,33 @@
     ]
   },
   "ohlcv": {
-    "date": "20261021",
-    "capturedCount": 1975,
-    "availableCount": 1948,
-    "complete40DayCount": 1763,
-    "universeCount": 1975
+    "date": "20261022",
+    "capturedCount": 1976,
+    "availableCount": 1942,
+    "complete40DayCount": 1764,
+    "universeCount": 1976
   },
   "sourceEvidence": {
-    "date": "20261021",
-    "count": 1975,
+    "date": "20261022",
+    "count": 1976,
     "priceStatusCounts": {
-      "current": 1948,
-      "carried": 27
+      "current": 1942,
+      "carried": 34
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1948,
+    "techReady": 1942,
     "financialReady": 0,
-    "institutionalReady": 1854,
-    "brokerReady": 988
+    "institutionalReady": 0,
+    "brokerReady": 0
   },
   "officialTradingAnnouncements": {
-    "date": "20261021",
+    "date": "20261022",
     "evaluationDate": "2026-10-22",
-    "fetchedSourceCount": 6,
+    "fetchedSourceCount": 5,
     "sourceCount": 6,
-    "reviewRequiredCount": 37
+    "reviewRequiredCount": 33
   },
   "nightlyFull": {
     "dataDate": "20261021",
@@ -88,16 +92,16 @@
   },
   "swingBacktest": {
     "status": "validated_sample_available",
-    "signalCount": 755,
-    "independentSignalCount": 289,
-    "tradeCount": 702,
-    "pointInTimeConsistentTradeCount": 415,
+    "signalCount": 776,
+    "independentSignalCount": 294,
+    "tradeCount": 711,
+    "pointInTimeConsistentTradeCount": 419,
     "horizons": [
       10,
       20,
       40
     ]
   },
-  "earlyBreakoutDate": "20261021",
-  "generatedAt": "2026-10-22T01:26:45.856700+00:00"
+  "earlyBreakoutDate": "20261022",
+  "generatedAt": "2026-10-22T07:28:21.976086+00:00"
 }
