@@ -975,6 +975,11 @@ function renderDataQualityNotice(data) {
   const eps = rows.filter(s => s.epsAccelerationReady === true && Number.isFinite(s.epsAccelerationPct)).length;
   const insider = rows.filter(s => s.insiderTransferDataReady === true).length;
   const messages = [`資料日期：${data.date || '未知'}。`];
+  const repair = data.historyRepair;
+  const repaired = repair?.date === data.date && repair.pricesPreserved === true;
+  if (repaired) messages.push('歷史營收與籌碼已補齊後重算，行情日期及價格保持原值；更新後分數不能視為當時已知訊號。');
+  const revenueHistory = rows.filter(s => s.sourceEvidence?.financial?.revenueHistory?.complete === true).length;
+  messages.push(`連續三個月營收已備齊 ${revenueHistory}／${rows.length} 檔；不足者不以單月代替。`);
   if (eps < rows.length) messages.push(`EPS 加速值 ${rows.length - eps} 檔資料不足。`);
   if (insider < rows.length) messages.push('內部人轉讓資料不完整，不能解讀成沒有轉讓。');
   if (data.ohlcvQuality) messages.push(`逐日行情已保存 ${data.ohlcvQuality.capturedCount} 檔；10／20／40 日還原報酬資料完整 ${data.ohlcvQuality.complete40DayCount} 檔，仍待官方公司行動核對。`);
@@ -984,7 +989,9 @@ function renderDataQualityNotice(data) {
     if (n.status === 'completed') messages.push(`夜間完整分析已完成（${n.dataDate}）。`);
     else if (n.status === 'failed') messages.push(`夜間完整分析失敗（${n.dataDate}），EPS、財報、新聞或事件資料可能沿用舊值。`);
     else if (n.status === 'publication_failed') messages.push(`夜間完整分析與報表已完成（${n.dataDate}），但 GitHub 上傳失敗，線上網站尚未更新。`);
-    else if (n.status === 'reports_failed') messages.push(`夜間完整分析已完成（${n.dataDate}），但報表或資料驗證失敗，尚未發布。`);
+    else if (n.status === 'reports_failed') messages.push(repaired && Date.parse(repair.finishedAt) > Date.parse(n.finishedAt)
+      ? `前次夜間報表失敗（${n.dataDate}）；其後已完成本快照的歷史資料修復與重算。`
+      : `夜間完整分析已完成（${n.dataDate}），但報表或資料驗證失敗，尚未發布。`);
     else if (n.status === 'partial') messages.push(`夜間更新部分完成（${n.dataDate}）：${n.message || '部分來源失敗'}。`);
     else if (n.status === 'running') messages.push('夜間完整分析執行中，完整資料尚未確認。');
   }
@@ -1595,7 +1602,7 @@ async function init() {
     if (ohlcv && ohlcv.date === d.date) d.ohlcvQuality = ohlcv;
     if (tradingStatus && tradingStatus.date === d.date) d.tradingStatus = tradingStatus;
     if (sourceEvidence && sourceEvidence.date === d.date) d.sourceEvidenceSummary = sourceEvidence;
-    if (nightlyStatus && nightlyStatus.dataDate <= d.date) d.nightlyStatus = nightlyStatus;
+    if (nightlyStatus) d.nightlyStatus = nightlyStatus;
     if (swingBacktest) d.swingBacktest = swingBacktest;
     S.hotThemes = hotThemeNamesFromMeta(d);
 

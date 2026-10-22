@@ -13,7 +13,7 @@ function buildSourceEvidenceCard(s) {
     return `${label}：${escapeHtml(states[item.status] || '日期尚未確認')}；資料日 ${escapeHtml(item.dataDate || '未知')}；${escapeHtml(item.source || '來源待確認')}`;
   });
   const financial = evidence.financial || {};
-  const names = {revenue:'月營收', eps:'單季EPS', epsTtm:'連續四季EPS', income:'損益', balance:'資產負債', cashFlow:'營業及自由現金流'};
+  const names = {revenue:'月營收', revenueHistory:'連續三個月營收', eps:'單季EPS', epsTtm:'連續四季EPS', income:'損益', balance:'資產負債', cashFlow:'營業及自由現金流'};
   for (const [key, label] of Object.entries(names)) {
     const item = financial[key] || {};
     lines.push(`${label}：${item.complete === true ? '已收取' : '資料不足或尚未核實'}；期間 ${escapeHtml(item.period || '未知')}；收取日 ${escapeHtml(item.fetchedAt || '未知')}`);
