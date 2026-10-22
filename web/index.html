@@ -1588,9 +1588,10 @@ async function init() {
   syncSaved();
   persistWatchGroups();
   try {
+    const latestRequest = fetchLatestData();
     const [latestResp, earlyBreakout, ohlcv, tradingStatus, nightlyStatus, swingBacktest, tradingCalendar, sourceEvidence] = await Promise.all([
-      fetchLatestData(),
-      loadEarlyBreakout().catch(() => null),
+      latestRequest,
+      latestRequest.then(data => loadEarlyBreakout(String(data.date || ''))).catch(() => null),
       fetch('data/ohlcv_quality.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/trading_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch('data/nightly_status.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null),
@@ -1815,7 +1816,7 @@ function normalizeEarlyBreakoutRow(headers, values) {
   return row;
 }
 
-async function loadEarlyBreakout() {
+async function loadEarlyBreakout(snapshotDate) {
   let lastError = null;
   for (const url of earlyBreakoutCsvCandidates()) {
     try {
@@ -1834,10 +1835,6 @@ async function loadEarlyBreakout() {
       const rows = dataRows
         .filter(values => values.length && values[0] !== '')
         .map(values => normalizeEarlyBreakoutRow(headers, values));
-      if (!rows.length) {
-        lastError = new Error('no rows @ ' + url);
-        continue;
-      }
       const htmlUrl = earlyBreakoutHtmlCandidates().find(candidate => candidate.replace(/\.html$/, '') === url.replace(/\.csv$/, '').replace(/_latest$/, '_latest')) || earlyBreakoutHtmlCandidates()[0];
       let summary = null;
       let summaryUrl = '';
@@ -1852,6 +1849,11 @@ async function loadEarlyBreakout() {
           lastError = error;
         }
       }
+      if (!summary || String(summary.screen_date || '') !== snapshotDate ||
+          Number(summary.candidate_union_count ?? summary.candidate_count) !== rows.length) {
+        lastError = new Error('breakout summary missing or differs from current snapshot @ ' + url);
+        continue;
+      }
       return { rows, csvUrl: url, htmlUrl, summary, summaryUrl };
     } catch (error) {
       lastError = error;
@@ -1862,7 +1864,7 @@ async function loadEarlyBreakout() {
 
 function applyEarlyBreakoutMeta(payload) {
   const state = { rows: [], byCode: {}, codeSet: new Set(), focusCount: 0, earlyCount: 0, continuationCount: 0, earlyCount1854: 0, continuationCount1854: 0, loaded: false, csvUrl: '', htmlUrl: '', summary: null, summaryUrl: '' };
-  if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
+  if (!payload || !Array.isArray(payload.rows)) {
     S.earlyBreakout = state;
     return;
   }
