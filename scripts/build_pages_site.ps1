@@ -4,6 +4,12 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $siteDir = Join-Path $repoRoot "site"
 
 if (Test-Path -LiteralPath $siteDir) {
+    $resolvedRoot = (Resolve-Path -LiteralPath $repoRoot).Path
+    $siteItem = Get-Item -LiteralPath $siteDir
+    if ($siteItem.FullName -ne (Join-Path $resolvedRoot 'site') -or
+        ($siteItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+        throw 'Refusing to rebuild a linked or out-of-workspace site directory.'
+    }
     Remove-Item -LiteralPath $siteDir -Recurse -Force
 }
 
@@ -70,7 +76,7 @@ if ($null -ne $selectedDashboard) {
 }
 
 foreach ($dashboard in $datedDashboards) {
-    Copy-Item -LiteralPath $dashboard.FullName -Destination (Join-Path $siteDir "daily" $dashboard.Name)
+    Copy-Item -LiteralPath $dashboard.FullName -Destination (Join-Path (Join-Path $siteDir "daily") $dashboard.Name)
 }
 
 if (Test-Path -LiteralPath $historyDashboard) {
