@@ -1,33 +1,33 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261022",
-  "count": 1976,
+  "date": "20261028",
+  "count": 1978,
   "errors": [],
   "warnings": [
-    "EPS 加速值：34 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：38 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：138 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：142 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "34 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "26 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "34 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "26 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認",
     "完整分析已完成；報表或資料驗證失敗，未發布網站"
   ],
   "readiness": {
-    "techReady": 1942,
-    "marketReady": 1976,
+    "techReady": 1952,
+    "marketReady": 1978,
     "financialReady": 0,
-    "institutionalReady": 1854,
+    "institutionalReady": 780,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1942,
+  "epsAccelerationReadyCount": 1940,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1838,
+  "revenueThreeMonthReadyCount": 1836,
   "stageCounts": {
-    "close": 1976
+    "close": 1978
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -44,33 +44,33 @@
     ]
   },
   "ohlcv": {
-    "date": "20261022",
-    "capturedCount": 1976,
-    "availableCount": 1942,
-    "complete40DayCount": 1764,
-    "universeCount": 1976
+    "date": "20261028",
+    "capturedCount": 1978,
+    "availableCount": 1952,
+    "complete40DayCount": 0,
+    "universeCount": 1978
   },
   "sourceEvidence": {
-    "date": "20261022",
-    "count": 1976,
+    "date": "20261028",
+    "count": 1978,
     "priceStatusCounts": {
-      "current": 1942,
-      "carried": 34
+      "current": 1952,
+      "carried": 26
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1942,
+    "techReady": 1952,
     "financialReady": 0,
-    "institutionalReady": 1854,
-    "brokerReady": 950
+    "institutionalReady": 780,
+    "brokerReady": 524
   },
   "officialTradingAnnouncements": {
-    "date": "20261022",
-    "evaluationDate": "2026-10-22",
+    "date": "20261028",
+    "evaluationDate": "2026-10-28",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 38
+    "reviewRequiredCount": 24
   },
   "nightlyFull": {
     "dataDate": "20261021",
@@ -99,6 +99,6 @@
       40
     ]
   },
-  "earlyBreakoutDate": "20261022",
-  "generatedAt": "2026-10-22T10:53:59.552769+00:00"
+  "earlyBreakoutDate": "20261028",
+  "generatedAt": "2026-10-28T09:48:59.660872+00:00"
 }
