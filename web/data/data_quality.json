@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261028",
-  "count": 1978,
+  "count": 1981,
   "errors": [],
   "warnings": [
     "EPS 加速值：38 檔資料不足，不應解讀為零成長",
@@ -17,17 +17,17 @@
     "完整分析已完成；報表或資料驗證失敗，未發布網站"
   ],
   "readiness": {
-    "techReady": 1952,
-    "marketReady": 1978,
+    "techReady": 1955,
+    "marketReady": 1981,
     "financialReady": 0,
-    "institutionalReady": 780,
+    "institutionalReady": 1862,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1940,
+  "epsAccelerationReadyCount": 1943,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1836,
+  "revenueThreeMonthReadyCount": 1839,
   "stageCounts": {
-    "close": 1978
+    "official-chip": 1981
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -45,32 +45,32 @@
   },
   "ohlcv": {
     "date": "20261028",
-    "capturedCount": 1978,
-    "availableCount": 1952,
+    "capturedCount": 1981,
+    "availableCount": 1955,
     "complete40DayCount": 0,
-    "universeCount": 1978
+    "universeCount": 1981
   },
   "sourceEvidence": {
     "date": "20261028",
-    "count": 1978,
+    "count": 1981,
     "priceStatusCounts": {
-      "current": 1952,
+      "current": 1955,
       "carried": 26
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1952,
+    "techReady": 1955,
     "financialReady": 0,
-    "institutionalReady": 780,
-    "brokerReady": 524
+    "institutionalReady": 1862,
+    "brokerReady": 526
   },
   "officialTradingAnnouncements": {
     "date": "20261028",
     "evaluationDate": "2026-10-28",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 24
+    "reviewRequiredCount": 35
   },
   "nightlyFull": {
     "dataDate": "20261021",
@@ -100,5 +100,5 @@
     ]
   },
   "earlyBreakoutDate": "20261028",
-  "generatedAt": "2026-10-28T09:48:59.660872+00:00"
+  "generatedAt": "2026-10-28T12:46:34.428721+00:00"
 }
