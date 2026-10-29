@@ -9,11 +9,12 @@
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "連續三個月營收：141 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
+    "本次僅更新資料來源狀態，行情日期與分析分數未重算",
     "31 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "31 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
-    "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
+    "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料"
   ],
   "readiness": {
     "techReady": 1946,
@@ -72,19 +73,19 @@
     "reviewRequiredCount": 32
   },
   "nightlyFull": {
-    "dataDate": "20261028",
-    "status": "completed",
-    "startedAt": "2026-10-28T13:00:01.341943+00:00",
-    "finishedAt": "2026-10-28T16:56:02.612427+00:00",
-    "fullExitCode": 0,
-    "insiderExitCode": 0,
+    "dataDate": "20261029",
+    "status": "failed",
+    "startedAt": "2026-10-29T13:00:01.431878+00:00",
+    "finishedAt": "2026-10-29T13:00:22.179531+00:00",
+    "fullExitCode": 1,
+    "insiderExitCode": 1,
     "futuresExitCode": 0,
-    "message": "夜間完整分析、內部人資料及期貨部位均完成",
-    "collectionExitCode": 0,
-    "reportsExitCode": 0,
-    "publicationExitCode": 0,
-    "failurePhase": null,
-    "fullRunId": "20261028-210014-484e5c20"
+    "message": "夜間完整分析失敗，沿用前次已驗證資料",
+    "collectionExitCode": 1,
+    "reportsExitCode": null,
+    "publicationExitCode": null,
+    "failurePhase": "collection",
+    "fullRunId": "20261029-210016-6ea742c8"
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -99,5 +100,5 @@
     ]
   },
   "earlyBreakoutDate": "20261029",
-  "generatedAt": "2026-10-29T12:52:40.262640+00:00"
+  "generatedAt": "2026-10-29T13:00:38.843393+00:00"
 }

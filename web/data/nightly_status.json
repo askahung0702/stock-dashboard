@@ -1,16 +1,15 @@
 {
   "schemaVersion": 1,
-  "dataDate": "20261028",
+  "dataDate": "20261029",
   "executionDate": "20261029",
-  "status": "completed",
-  "startedAt": "2026-10-28T13:00:01.341943+00:00",
-  "finishedAt": "2026-10-28T16:56:02.612427+00:00",
-  "fullExitCode": 0,
-  "insiderExitCode": 0,
+  "status": "failed",
+  "startedAt": "2026-10-29T13:00:01.431878+00:00",
+  "finishedAt": "2026-10-29T13:00:22.179531+00:00",
+  "fullExitCode": 1,
+  "insiderExitCode": 1,
   "futuresExitCode": 0,
-  "message": "夜間完整分析、內部人資料及期貨部位均完成",
-  "collectionExitCode": 0,
-  "reportsExitCode": 0,
-  "publicationExitCode": 0,
-  "fullRunId": "20261028-210014-484e5c20"
+  "message": "夜間完整分析失敗，沿用前次已驗證資料",
+  "collectionExitCode": 1,
+  "failurePhase": "collection",
+  "fullRunId": "20261029-210016-6ea742c8"
 }
