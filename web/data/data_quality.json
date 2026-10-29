@@ -2,33 +2,31 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261029",
-  "count": 1980,
+  "count": 1977,
   "errors": [],
   "warnings": [
     "EPS 加速值：37 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "連續三個月營收：141 檔尚未備齊，不以單月代替三個月",
-    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
-    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "34 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "31 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "34 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "31 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
   ],
   "readiness": {
     "techReady": 1946,
-    "marketReady": 1980,
+    "marketReady": 1977,
     "financialReady": 0,
-    "institutionalReady": 0,
+    "institutionalReady": 1831,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1943,
+  "epsAccelerationReadyCount": 1940,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1839,
+  "revenueThreeMonthReadyCount": 1836,
   "stageCounts": {
-    "intraday-close": 1980
+    "close": 1977
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -46,32 +44,32 @@
   },
   "ohlcv": {
     "date": "20261029",
-    "capturedCount": 1980,
+    "capturedCount": 1977,
     "availableCount": 1946,
     "complete40DayCount": 0,
-    "universeCount": 1980
+    "universeCount": 1977
   },
   "sourceEvidence": {
     "date": "20261029",
-    "count": 1980,
+    "count": 1977,
     "priceStatusCounts": {
       "current": 1946,
-      "carried": 34
+      "carried": 31
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
     "techReady": 1946,
     "financialReady": 0,
-    "institutionalReady": 0,
-    "brokerReady": 0
+    "institutionalReady": 1831,
+    "brokerReady": 950
   },
   "officialTradingAnnouncements": {
     "date": "20261029",
     "evaluationDate": "2026-10-29",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 27
+    "reviewRequiredCount": 32
   },
   "nightlyFull": {
     "dataDate": "20261028",
@@ -101,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261029",
-  "generatedAt": "2026-10-29T07:12:31.920476+00:00"
+  "generatedAt": "2026-10-29T10:52:58.931714+00:00"
 }
