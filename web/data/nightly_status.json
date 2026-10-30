@@ -1,15 +1,11 @@
 {
   "schemaVersion": 1,
-  "dataDate": "20261029",
-  "executionDate": "20261029",
-  "status": "failed",
-  "startedAt": "2026-10-29T13:00:01.431878+00:00",
-  "finishedAt": "2026-10-29T13:00:22.179531+00:00",
-  "fullExitCode": 1,
-  "insiderExitCode": 1,
-  "futuresExitCode": 0,
-  "message": "夜間完整分析失敗，沿用前次已驗證資料",
-  "collectionExitCode": 1,
-  "failurePhase": "collection",
-  "fullRunId": "20261029-210016-6ea742c8"
+  "dataDate": "20261030",
+  "status": "running",
+  "startedAt": "2026-10-30T13:00:02.186990+00:00",
+  "finishedAt": null,
+  "fullExitCode": null,
+  "insiderExitCode": null,
+  "futuresExitCode": null,
+  "message": "夜間完整分析執行中"
 }

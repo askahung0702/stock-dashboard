@@ -13,8 +13,7 @@
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "24 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
-    "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認",
-    "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料"
+    "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
     "techReady": 1954,
@@ -27,7 +26,7 @@
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1836,
   "stageCounts": {
-    "close": 1978
+    "official-chip": 1978
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -73,19 +72,19 @@
     "reviewRequiredCount": 35
   },
   "nightlyFull": {
-    "dataDate": "20261029",
-    "status": "failed",
-    "startedAt": "2026-10-29T13:00:01.431878+00:00",
-    "finishedAt": "2026-10-29T13:00:22.179531+00:00",
-    "fullExitCode": 1,
-    "insiderExitCode": 1,
-    "futuresExitCode": 0,
-    "message": "夜間完整分析失敗，沿用前次已驗證資料",
-    "collectionExitCode": 1,
+    "dataDate": "20261030",
+    "status": "running",
+    "startedAt": "2026-10-30T13:00:02.186990+00:00",
+    "finishedAt": null,
+    "fullExitCode": null,
+    "insiderExitCode": null,
+    "futuresExitCode": null,
+    "message": "夜間完整分析執行中",
+    "collectionExitCode": null,
     "reportsExitCode": null,
     "publicationExitCode": null,
-    "failurePhase": "collection",
-    "fullRunId": "20261029-210016-6ea742c8"
+    "failurePhase": null,
+    "fullRunId": null
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -100,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261030",
-  "generatedAt": "2026-10-30T11:57:34.410491+00:00"
+  "generatedAt": "2026-10-30T13:02:44.437580+00:00"
 }
