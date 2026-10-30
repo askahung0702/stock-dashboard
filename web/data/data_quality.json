@@ -2,14 +2,12 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261030",
-  "count": 1977,
+  "count": 1978,
   "errors": [],
   "warnings": [
-    "EPS 加速值：37 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：38 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：141 檔尚未備齊，不以單月代替三個月",
-    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
-    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
+    "連續三個月營收：142 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "24 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
@@ -19,17 +17,17 @@
     "最近一次夜間完整分析失敗；目前可能沿用舊財報、EPS、新聞或事件資料"
   ],
   "readiness": {
-    "techReady": 1953,
-    "marketReady": 1977,
+    "techReady": 1954,
+    "marketReady": 1978,
     "financialReady": 0,
-    "institutionalReady": 0,
+    "institutionalReady": 1869,
     "newsReady": 0
   },
   "epsAccelerationReadyCount": 1940,
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1836,
   "stageCounts": {
-    "intraday-close": 1977
+    "close": 1978
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -47,32 +45,32 @@
   },
   "ohlcv": {
     "date": "20261030",
-    "capturedCount": 1977,
-    "availableCount": 1953,
+    "capturedCount": 1978,
+    "availableCount": 1954,
     "complete40DayCount": 0,
-    "universeCount": 1977
+    "universeCount": 1978
   },
   "sourceEvidence": {
     "date": "20261030",
-    "count": 1977,
+    "count": 1978,
     "priceStatusCounts": {
-      "current": 1953,
+      "current": 1954,
       "carried": 24
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1953,
+    "techReady": 1954,
     "financialReady": 0,
-    "institutionalReady": 0,
-    "brokerReady": 0
+    "institutionalReady": 1869,
+    "brokerReady": 1543
   },
   "officialTradingAnnouncements": {
     "date": "20261030",
     "evaluationDate": "2026-10-30",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 26
+    "reviewRequiredCount": 35
   },
   "nightlyFull": {
     "dataDate": "20261029",
@@ -102,5 +100,5 @@
     ]
   },
   "earlyBreakoutDate": "20261030",
-  "generatedAt": "2026-10-30T09:12:56.351713+00:00"
+  "generatedAt": "2026-10-30T11:57:34.410491+00:00"
 }
