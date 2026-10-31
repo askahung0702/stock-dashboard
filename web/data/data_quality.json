@@ -13,8 +13,7 @@
     "24 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "24 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
-    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
-    "最近一次夜間更新部分完成：完整分析完成；內部人／集保每日資料更新不完整"
+    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
   ],
   "readiness": {
     "techReady": 1954,
@@ -70,22 +69,22 @@
     "evaluationDate": "2026-10-31",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 32
+    "reviewRequiredCount": 24
   },
   "nightlyFull": {
-    "dataDate": "20261030",
-    "status": "partial",
-    "startedAt": "2026-10-30T13:00:02.186990+00:00",
-    "finishedAt": "2026-10-30T17:40:55.875040+00:00",
+    "dataDate": "20261031",
+    "status": "skipped_nontrading_day",
+    "startedAt": "2026-10-31T13:00:02.859692+00:00",
+    "finishedAt": "2026-10-31T13:00:27.959351+00:00",
     "fullExitCode": 0,
-    "insiderExitCode": 1,
+    "insiderExitCode": 0,
     "futuresExitCode": 0,
-    "message": "完整分析完成；內部人／集保每日資料更新不完整",
-    "collectionExitCode": 0,
-    "reportsExitCode": 0,
-    "publicationExitCode": 0,
+    "message": "非交易日：週末休市",
+    "collectionExitCode": null,
+    "reportsExitCode": null,
+    "publicationExitCode": null,
     "failurePhase": null,
-    "fullRunId": "20261030-210453-efb7f5d9"
+    "fullRunId": null
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -100,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261030",
-  "generatedAt": "2026-10-30T17:42:49.375119+00:00"
+  "generatedAt": "2026-10-31T13:02:38.361097+00:00"
 }
