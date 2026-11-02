@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20261005",
-  "latest_track_date": "20261030",
+  "latest_track_date": "20261102",
   "stock_count": 30,
   "groups": {
     "all": [
@@ -91,6 +91,14 @@
         "avg_return_pct": -17.51,
         "median_return_pct": -18.38,
         "win_rate_pct": 6.67
+      },
+      {
+        "track_date": "20261102",
+        "days_since_buy": 28,
+        "stock_count": 30,
+        "avg_return_pct": -18.07,
+        "median_return_pct": -18.29,
+        "win_rate_pct": 3.33
       }
     ],
     "continuation": [
@@ -181,6 +189,14 @@
         "avg_return_pct": -17.09,
         "median_return_pct": -17.2,
         "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20261102",
+        "days_since_buy": 28,
+        "stock_count": 6,
+        "avg_return_pct": -17.38,
+        "median_return_pct": -17.93,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -271,6 +287,14 @@
         "avg_return_pct": -17.09,
         "median_return_pct": -17.2,
         "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20261102",
+        "days_since_buy": 28,
+        "stock_count": 6,
+        "avg_return_pct": -17.38,
+        "median_return_pct": -17.93,
+        "win_rate_pct": 0.0
       }
     ],
     "early": [
@@ -361,6 +385,14 @@
         "avg_return_pct": -17.61,
         "median_return_pct": -18.38,
         "win_rate_pct": 4.17
+      },
+      {
+        "track_date": "20261102",
+        "days_since_buy": 28,
+        "stock_count": 24,
+        "avg_return_pct": -18.24,
+        "median_return_pct": -18.29,
+        "win_rate_pct": 4.17
       }
     ],
     "early_focus": [
@@ -450,6 +482,14 @@
         "stock_count": 14,
         "avg_return_pct": -17.62,
         "median_return_pct": -18.95,
+        "win_rate_pct": 7.14
+      },
+      {
+        "track_date": "20261102",
+        "days_since_buy": 28,
+        "stock_count": 14,
+        "avg_return_pct": -18.16,
+        "median_return_pct": -18.64,
         "win_rate_pct": 7.14
       }
     ]
