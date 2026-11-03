@@ -1,15 +1,15 @@
 {
   "snapshot_start": "20260317",
-  "snapshot_end": "20261102",
-  "snapshot_count": 159,
-  "candidate_rows": 3074,
+  "snapshot_end": "20261103",
+  "snapshot_count": 160,
+  "candidate_rows": 3075,
   "weeks": [
     1,
     2,
     3,
     4
   ],
-  "latest_snapshot_pending": "20261102",
+  "latest_snapshot_pending": "20261103",
   "groups": {
     "ma2060_early_all": {
       "variant": "ma2060",
@@ -38,10 +38,10 @@
         "win_rate_pct": 55.98
       },
       "4w": {
-        "count": 2359,
-        "avg_return_pct": 8.71,
-        "median_return_pct": 2.13,
-        "win_rate_pct": 54.81
+        "count": 2390,
+        "avg_return_pct": 8.32,
+        "median_return_pct": 1.88,
+        "win_rate_pct": 54.1
       }
     },
     "ma2060_early_focus": {
@@ -71,10 +71,10 @@
         "win_rate_pct": 58.4
       },
       "4w": {
-        "count": 978,
-        "avg_return_pct": 7.79,
-        "median_return_pct": 2.83,
-        "win_rate_pct": 56.24
+        "count": 988,
+        "avg_return_pct": 7.53,
+        "median_return_pct": 2.56,
+        "win_rate_pct": 55.67
       }
     },
     "ma2060_continuation_all": {
@@ -104,10 +104,10 @@
         "win_rate_pct": 58.81
       },
       "4w": {
-        "count": 485,
-        "avg_return_pct": 5.47,
-        "median_return_pct": 2.97,
-        "win_rate_pct": 55.67
+        "count": 488,
+        "avg_return_pct": 5.3,
+        "median_return_pct": 2.9,
+        "win_rate_pct": 55.33
       }
     },
     "ma2060_continuation_focus": {
@@ -137,10 +137,10 @@
         "win_rate_pct": 60.34
       },
       "4w": {
-        "count": 347,
-        "avg_return_pct": 5.55,
-        "median_return_pct": 3.94,
-        "win_rate_pct": 57.06
+        "count": 348,
+        "avg_return_pct": 5.45,
+        "median_return_pct": 3.69,
+        "win_rate_pct": 56.9
       }
     },
     "ma1854_early_all": {
@@ -170,10 +170,10 @@
         "win_rate_pct": 58.3
       },
       "4w": {
-        "count": 2294,
-        "avg_return_pct": 8.08,
-        "median_return_pct": 2.66,
-        "win_rate_pct": 56.02
+        "count": 2319,
+        "avg_return_pct": 7.77,
+        "median_return_pct": 2.49,
+        "win_rate_pct": 55.41
       }
     },
     "ma1854_early_focus": {
@@ -203,10 +203,10 @@
         "win_rate_pct": 60.12
       },
       "4w": {
-        "count": 992,
-        "avg_return_pct": 7.87,
-        "median_return_pct": 3.58,
-        "win_rate_pct": 57.26
+        "count": 998,
+        "avg_return_pct": 7.71,
+        "median_return_pct": 3.22,
+        "win_rate_pct": 56.91
       }
     },
     "ma1854_continuation_all": {
@@ -236,10 +236,10 @@
         "win_rate_pct": 54.52
       },
       "4w": {
-        "count": 390,
-        "avg_return_pct": 4.3,
-        "median_return_pct": 1.06,
-        "win_rate_pct": 52.05
+        "count": 398,
+        "avg_return_pct": 3.79,
+        "median_return_pct": 0.58,
+        "win_rate_pct": 51.01
       }
     },
     "ma1854_continuation_focus": {
@@ -269,10 +269,10 @@
         "win_rate_pct": 57.62
       },
       "4w": {
-        "count": 265,
-        "avg_return_pct": 5.31,
-        "median_return_pct": 2.42,
-        "win_rate_pct": 55.09
+        "count": 269,
+        "avg_return_pct": 4.93,
+        "median_return_pct": 2.11,
+        "win_rate_pct": 54.28
       }
     }
   }

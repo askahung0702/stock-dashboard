@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260721",
-  "latest_track_date": "20261102",
+  "latest_track_date": "20261103",
   "stock_count": 2,
   "groups": {
     "all": [
@@ -514,6 +514,14 @@
         "stock_count": 2,
         "avg_return_pct": 4.17,
         "median_return_pct": 4.17,
+        "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20261103",
+        "days_since_buy": 105,
+        "stock_count": 2,
+        "avg_return_pct": -2.02,
+        "median_return_pct": -2.02,
         "win_rate_pct": 50.0
       }
     ],
@@ -1029,6 +1037,14 @@
         "avg_return_pct": -15.74,
         "median_return_pct": -15.74,
         "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20261103",
+        "days_since_buy": 105,
+        "stock_count": 1,
+        "avg_return_pct": -17.21,
+        "median_return_pct": -17.21,
+        "win_rate_pct": 0.0
       }
     ],
     "continuation_focus": [
@@ -1542,6 +1558,14 @@
         "stock_count": 1,
         "avg_return_pct": -15.74,
         "median_return_pct": -15.74,
+        "win_rate_pct": 0.0
+      },
+      {
+        "track_date": "20261103",
+        "days_since_buy": 105,
+        "stock_count": 1,
+        "avg_return_pct": -17.21,
+        "median_return_pct": -17.21,
         "win_rate_pct": 0.0
       }
     ],
@@ -2057,6 +2081,14 @@
         "avg_return_pct": 24.08,
         "median_return_pct": 24.08,
         "win_rate_pct": 100.0
+      },
+      {
+        "track_date": "20261103",
+        "days_since_buy": 105,
+        "stock_count": 1,
+        "avg_return_pct": 13.16,
+        "median_return_pct": 13.16,
+        "win_rate_pct": 100.0
       }
     ],
     "early_focus": [
@@ -2570,6 +2602,14 @@
         "stock_count": 1,
         "avg_return_pct": 24.08,
         "median_return_pct": 24.08,
+        "win_rate_pct": 100.0
+      },
+      {
+        "track_date": "20261103",
+        "days_since_buy": 105,
+        "stock_count": 1,
+        "avg_return_pct": 13.16,
+        "median_return_pct": 13.16,
         "win_rate_pct": 100.0
       }
     ]
