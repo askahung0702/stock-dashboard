@@ -1,11 +1,16 @@
 {
   "schemaVersion": 1,
   "dataDate": "20261103",
-  "status": "running",
+  "executionDate": "20261104",
+  "status": "partial",
   "startedAt": "2026-11-03T13:00:01.217684+00:00",
-  "finishedAt": null,
-  "fullExitCode": null,
-  "insiderExitCode": null,
-  "futuresExitCode": null,
-  "message": "夜間完整分析執行中"
+  "finishedAt": "2026-11-03T17:01:33.321518+00:00",
+  "fullExitCode": 0,
+  "insiderExitCode": 1,
+  "futuresExitCode": 0,
+  "message": "完整分析完成；內部人／集保每日資料更新不完整",
+  "collectionExitCode": 0,
+  "reportsExitCode": 0,
+  "publicationExitCode": 0,
+  "fullRunId": "20261103-210018-576bdb99"
 }
