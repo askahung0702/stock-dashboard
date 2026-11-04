@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260914",
-  "latest_track_date": "20261103",
+  "latest_track_date": "20261104",
   "stock_count": 15,
   "groups": {
     "all": [
@@ -226,6 +226,14 @@
         "stock_count": 15,
         "avg_return_pct": -9.37,
         "median_return_pct": -9.35,
+        "win_rate_pct": 26.67
+      },
+      {
+        "track_date": "20261104",
+        "days_since_buy": 51,
+        "stock_count": 15,
+        "avg_return_pct": -9.22,
+        "median_return_pct": -8.8,
         "win_rate_pct": 26.67
       }
     ],
@@ -453,6 +461,14 @@
         "avg_return_pct": 6.54,
         "median_return_pct": 6.54,
         "win_rate_pct": 100.0
+      },
+      {
+        "track_date": "20261104",
+        "days_since_buy": 51,
+        "stock_count": 2,
+        "avg_return_pct": 8.85,
+        "median_return_pct": 8.85,
+        "win_rate_pct": 100.0
       }
     ],
     "continuation_focus": [
@@ -678,6 +694,14 @@
         "stock_count": 2,
         "avg_return_pct": 6.54,
         "median_return_pct": 6.54,
+        "win_rate_pct": 100.0
+      },
+      {
+        "track_date": "20261104",
+        "days_since_buy": 51,
+        "stock_count": 2,
+        "avg_return_pct": 8.85,
+        "median_return_pct": 8.85,
         "win_rate_pct": 100.0
       }
     ],
@@ -905,6 +929,14 @@
         "avg_return_pct": -11.81,
         "median_return_pct": -9.93,
         "win_rate_pct": 15.38
+      },
+      {
+        "track_date": "20261104",
+        "days_since_buy": 51,
+        "stock_count": 13,
+        "avg_return_pct": -12.0,
+        "median_return_pct": -11.87,
+        "win_rate_pct": 15.38
       }
     ],
     "early_focus": [
@@ -1130,6 +1162,14 @@
         "stock_count": 9,
         "avg_return_pct": -9.06,
         "median_return_pct": -9.35,
+        "win_rate_pct": 11.11
+      },
+      {
+        "track_date": "20261104",
+        "days_since_buy": 51,
+        "stock_count": 9,
+        "avg_return_pct": -8.99,
+        "median_return_pct": -8.8,
         "win_rate_pct": 11.11
       }
     ]
