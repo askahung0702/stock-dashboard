@@ -5,7 +5,7 @@
   "count": 1977,
   "errors": [],
   "warnings": [
-    "EPS 加速值：69 檔資料不足，不應解讀為零成長",
+    "EPS 加速值：68 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "連續三個月營收：11 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
@@ -20,13 +20,13 @@
     "marketReady": 1977,
     "financialReady": 0,
     "institutionalReady": 1878,
-    "newsReady": 0
+    "newsReady": 1977
   },
-  "epsAccelerationReadyCount": 1908,
+  "epsAccelerationReadyCount": 1909,
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1966,
   "stageCounts": {
-    "official-chip": 1977
+    "full": 1977
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -66,10 +66,10 @@
   },
   "officialTradingAnnouncements": {
     "date": "20261106",
-    "evaluationDate": "2026-11-06",
+    "evaluationDate": "2026-11-07",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 43
+    "reviewRequiredCount": 41
   },
   "nightlyFull": {
     "dataDate": "20261106",
@@ -88,7 +88,7 @@
   },
   "swingBacktest": {
     "status": "validated_sample_available",
-    "signalCount": 801,
+    "signalCount": 802,
     "independentSignalCount": 308,
     "tradeCount": 711,
     "pointInTimeConsistentTradeCount": 419,
@@ -99,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261106",
-  "generatedAt": "2026-11-06T13:10:41.946831+00:00"
+  "generatedAt": "2026-11-06T17:48:06.841376+00:00"
 }
