@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261106",
-  "count": 1974,
+  "count": 1977,
   "errors": [],
   "warnings": [
     "EPS 加速值：69 檔資料不足，不應解讀為零成長",
@@ -13,20 +13,20 @@
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "21 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
-    "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
+    "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
-    "techReady": 1953,
-    "marketReady": 1974,
+    "techReady": 1956,
+    "marketReady": 1977,
     "financialReady": 0,
-    "institutionalReady": 1875,
+    "institutionalReady": 1878,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1905,
+  "epsAccelerationReadyCount": 1908,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1963,
+  "revenueThreeMonthReadyCount": 1966,
   "stageCounts": {
-    "close": 1974
+    "official-chip": 1977
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -44,25 +44,25 @@
   },
   "ohlcv": {
     "date": "20261106",
-    "capturedCount": 1974,
-    "availableCount": 1953,
+    "capturedCount": 1977,
+    "availableCount": 1956,
     "complete40DayCount": 0,
-    "universeCount": 1974
+    "universeCount": 1977
   },
   "sourceEvidence": {
     "date": "20261106",
-    "count": 1974,
+    "count": 1977,
     "priceStatusCounts": {
-      "current": 1953,
+      "current": 1956,
       "carried": 21
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1953,
+    "techReady": 1956,
     "financialReady": 0,
-    "institutionalReady": 1875,
-    "brokerReady": 1307
+    "institutionalReady": 1878,
+    "brokerReady": 1309
   },
   "officialTradingAnnouncements": {
     "date": "20261106",
@@ -72,19 +72,19 @@
     "reviewRequiredCount": 43
   },
   "nightlyFull": {
-    "dataDate": "20261105",
-    "status": "completed",
-    "startedAt": "2026-11-05T13:00:01.057105+00:00",
-    "finishedAt": "2026-11-05T17:33:56.303655+00:00",
-    "fullExitCode": 0,
-    "insiderExitCode": 0,
-    "futuresExitCode": 0,
-    "message": "夜間完整分析、內部人資料及期貨部位均完成",
-    "collectionExitCode": 0,
-    "reportsExitCode": 0,
-    "publicationExitCode": 0,
+    "dataDate": "20261106",
+    "status": "running",
+    "startedAt": "2026-11-06T13:00:00.945327+00:00",
+    "finishedAt": null,
+    "fullExitCode": null,
+    "insiderExitCode": null,
+    "futuresExitCode": null,
+    "message": "夜間完整分析執行中",
+    "collectionExitCode": null,
+    "reportsExitCode": null,
+    "publicationExitCode": null,
     "failurePhase": null,
-    "fullRunId": "20261105-210917-76408e93"
+    "fullRunId": null
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -99,5 +99,5 @@
     ]
   },
   "earlyBreakoutDate": "20261106",
-  "generatedAt": "2026-11-06T11:27:15.214050+00:00"
+  "generatedAt": "2026-11-06T13:10:41.946831+00:00"
 }

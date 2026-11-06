@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "date": "20261106",
-  "count": 1974,
-  "generatedAt": "2026-11-06T11:27:21.773782+00:00",
+  "count": 1977,
+  "generatedAt": "2026-11-06T13:10:48.164580+00:00",
   "priceStatusCounts": {
-    "current": 1953,
+    "current": 1956,
     "carried": 21
   },
   "legacyScoreCount": 0,
@@ -6253,6 +6253,75 @@
           "dataDate": "2026/11/05",
           "source": "Yahoo broker",
           "status": "carried"
+        }
+      },
+      "financialReady": false,
+      "techReady": true,
+      "institutionalReady": true,
+      "brokerReady": false,
+      "legacyScoresNeedRecompute": false
+    },
+    "1456": {
+      "sourceEvidence": {
+        "news": {
+          "publishedHint": "",
+          "status": "missing_or_deferred"
+        },
+        "institutional": {
+          "dataDate": "2026/11/06",
+          "source": "Official exchange",
+          "status": "current"
+        },
+        "price": {
+          "dataDate": "20261106",
+          "source": "Yahoo aligned OHLCV",
+          "status": "current",
+          "vendorClose": 15.300000190734863,
+          "indicatorsNeedRecompute": false
+        },
+        "financial": {
+          "income": {
+            "period": "2026 Q2",
+            "fetchedAt": "20261105",
+            "source": "Yahoo",
+            "complete": true
+          },
+          "revenue": {
+            "period": "2026/09",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "balance": {
+            "period": "2026 Q2",
+            "fetchedAt": "20261105",
+            "source": "Yahoo",
+            "complete": true
+          },
+          "eps": {
+            "period": "2026 Q2",
+            "fetchedAt": "20261105",
+            "source": "Yahoo",
+            "complete": true
+          },
+          "epsTtm": {
+            "period": "2026 Q2",
+            "fetchedAt": "20261105",
+            "source": "Yahoo",
+            "complete": true
+          },
+          "revenueHistory": {
+            "period": "2026/09",
+            "availableMonths": 12,
+            "fetchedAt": "20261105",
+            "source": "MOPS monthly history + current source",
+            "complete": true
+          }
+        },
+        "broker": {
+          "dataDate": "",
+          "source": "Yahoo broker",
+          "status": "missing"
         }
       },
       "financialReady": false,
@@ -44433,6 +44502,81 @@
       "brokerReady": true,
       "legacyScoresNeedRecompute": false
     },
+    "3081": {
+      "sourceEvidence": {
+        "news": {
+          "publishedHint": "",
+          "status": "missing_or_deferred"
+        },
+        "officialCloseCheck": {
+          "dataDate": "20261106",
+          "source": "Official exchange / date-checked post-close MIS fallback",
+          "close": 1750.0,
+          "status": "matched"
+        },
+        "institutional": {
+          "dataDate": "2026/11/06",
+          "source": "Official exchange",
+          "status": "current"
+        },
+        "price": {
+          "dataDate": "20261106",
+          "source": "Official close + Yahoo aligned OHLCV",
+          "status": "current",
+          "vendorClose": 1750.0,
+          "indicatorsNeedRecompute": false
+        },
+        "financial": {
+          "income": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "revenue": {
+            "period": "2026/10",
+            "fetchedAt": "20261105",
+            "source": "Yahoo",
+            "complete": true
+          },
+          "balance": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "eps": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "epsTtm": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "revenueHistory": {
+            "period": "2026/10",
+            "availableMonths": 12,
+            "fetchedAt": "20261105",
+            "source": "MOPS monthly history + current source",
+            "complete": true
+          }
+        },
+        "broker": {
+          "dataDate": "2026/11/06",
+          "source": "Yahoo broker",
+          "status": "current"
+        }
+      },
+      "financialReady": false,
+      "techReady": true,
+      "institutionalReady": true,
+      "brokerReady": true,
+      "legacyScoresNeedRecompute": false
+    },
     "3083": {
       "sourceEvidence": {
         "news": {
@@ -44630,6 +44774,81 @@
             "period": "2026 Q2",
             "fetchedAt": "20261105",
             "source": "Yahoo",
+            "complete": true
+          },
+          "revenueHistory": {
+            "period": "2026/09",
+            "availableMonths": 12,
+            "fetchedAt": "20261105",
+            "source": "MOPS monthly history + current source",
+            "complete": true
+          }
+        },
+        "broker": {
+          "dataDate": "2026/11/06",
+          "source": "Yahoo broker",
+          "status": "current"
+        }
+      },
+      "financialReady": false,
+      "techReady": true,
+      "institutionalReady": true,
+      "brokerReady": true,
+      "legacyScoresNeedRecompute": false
+    },
+    "3088": {
+      "sourceEvidence": {
+        "news": {
+          "publishedHint": "",
+          "status": "missing_or_deferred"
+        },
+        "officialCloseCheck": {
+          "dataDate": "20261106",
+          "source": "Official exchange / date-checked post-close MIS fallback",
+          "close": 99.5,
+          "status": "matched"
+        },
+        "institutional": {
+          "dataDate": "2026/11/06",
+          "source": "Official exchange",
+          "status": "current"
+        },
+        "price": {
+          "dataDate": "20261106",
+          "source": "Official close + Yahoo aligned OHLCV",
+          "status": "current",
+          "vendorClose": 99.5,
+          "indicatorsNeedRecompute": false
+        },
+        "financial": {
+          "income": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "revenue": {
+            "period": "2026/09",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "balance": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "eps": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
+            "complete": true
+          },
+          "epsTtm": {
+            "period": "2026 Q3",
+            "fetchedAt": "20261105",
+            "source": "TWSE/TPEx OpenAPI+TWSE/TPEx OpenAPI",
             "complete": true
           },
           "revenueHistory": {

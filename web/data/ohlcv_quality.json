@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "date": "20261106",
-  "generatedAt": "2026-11-06T11:11:11.488302+00:00",
-  "universeCount": 1974,
-  "attemptedCount": 1974,
-  "capturedCount": 1974,
-  "availableCount": 1953,
+  "generatedAt": "2026-11-06T12:57:58.703933+00:00",
+  "universeCount": 1977,
+  "attemptedCount": 1977,
+  "capturedCount": 1977,
+  "availableCount": 1956,
   "complete40DayCount": 0,
   "status": "partial",
   "source": "Yahoo Chart",
@@ -3314,6 +3314,34 @@
         "2026-10-23"
       ],
       "lastClose": 8.779999732971191,
+      "maxDrawdown40Pct": null,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "1456": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-06T12:16:47.777988200Z",
+      "barsThrough": "2026-11-06",
+      "barCount": 243,
+      "eventCount": 0,
+      "events": [],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": null,
+        "20": null,
+        "40": null
+      },
+      "missingTradingDates": [
+        "2026-10-23"
+      ],
+      "lastClose": 15.300000190734863,
       "maxDrawdown40Pct": null,
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
@@ -23432,6 +23460,53 @@
       "unexplainedAdjustmentDates": [],
       "snapshotPriceDifferencePct": -0.0
     },
+    "3081": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-06T12:31:10.358842800Z",
+      "barsThrough": "2026-11-06",
+      "barCount": 243,
+      "eventCount": 2,
+      "events": [
+        {
+          "date": "2026-07-15",
+          "type": "dividends",
+          "details": {
+            "amount": 3.0,
+            "date": 1784077200
+          }
+        },
+        {
+          "date": "2026-07-15",
+          "type": "splits",
+          "details": {
+            "date": 1784077200,
+            "numerator": 1100.0,
+            "denominator": 1000.0,
+            "splitRatio": "1100:1000"
+          }
+        }
+      ],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": null,
+        "20": null,
+        "40": null
+      },
+      "missingTradingDates": [
+        "2026-10-23"
+      ],
+      "lastClose": 1750.0,
+      "maxDrawdown40Pct": null,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
     "3083": {
       "available": true,
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
@@ -23553,6 +23628,43 @@
         "2026-10-23"
       ],
       "lastClose": 23.0,
+      "maxDrawdown40Pct": null,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "3088": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-06T12:31:15.604862700Z",
+      "barsThrough": "2026-11-06",
+      "barCount": 243,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-07-23",
+          "type": "dividends",
+          "details": {
+            "amount": 2.930445,
+            "date": 1784768400
+          }
+        }
+      ],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": null,
+        "20": null,
+        "40": null
+      },
+      "missingTradingDates": [
+        "2026-10-23"
+      ],
+      "lastClose": 99.5,
       "maxDrawdown40Pct": null,
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
