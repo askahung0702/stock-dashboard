@@ -1,16 +1,12 @@
 {
   "schemaVersion": 1,
-  "dataDate": "20261106",
+  "dataDate": "20261107",
   "executionDate": "20261107",
-  "status": "completed",
-  "startedAt": "2026-11-06T13:00:00.945327+00:00",
-  "finishedAt": "2026-11-06T17:49:07.093582+00:00",
+  "status": "skipped_nontrading_day",
+  "startedAt": "2026-11-07T13:00:01.632425+00:00",
+  "finishedAt": "2026-11-07T13:00:25.561872+00:00",
   "fullExitCode": 0,
   "insiderExitCode": 0,
   "futuresExitCode": 0,
-  "message": "夜間完整分析、內部人資料及期貨部位均完成",
-  "collectionExitCode": 0,
-  "reportsExitCode": 0,
-  "publicationExitCode": 0,
-  "fullRunId": "20261106-211213-bcdc685f"
+  "message": "非交易日：週末休市"
 }
