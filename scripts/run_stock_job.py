@@ -128,6 +128,16 @@ def normalize_args(args):
         values.append(value)
     return values
 
+def java_tool_options():
+    """JVM flags for every Java step: trust the Windows certificate store (corporate TLS inspection
+    such as FortiGate injects certificates Java's own cacerts never contains) and let Java fetch
+    missing intermediate certificates instead of failing with PKIX."""
+    wanted = ['-Djavax.net.ssl.trustStoreType=Windows-ROOT', '-Dcom.sun.security.enableAIAcaIssuers=true']
+    if os.name != 'nt':
+        wanted = wanted[1:]
+    current = os.environ.get('JAVA_TOOL_OPTIONS', '').split()
+    return ' '.join(current + [flag for flag in wanted if flag.split('=')[0] not in {c.split('=')[0] for c in current}])
+
 def core_command(root, args):
     # Modes and numeric limits only; never feed arbitrary metacharacters to cmd.exe.
     modes = {'intraday-close', 'intraday', 'close', 'official-chip', 'official-chips', 'full',
@@ -246,7 +256,8 @@ def run(args):
         env = os.environ.copy()
         env.update(STOCK_PIPELINE_TOKEN=token, STOCK_CLASSES_DIR=str(classes), STOCK_JAVA_CMD=runtime,
                    STOCK_PYTHON=sys.executable, STOCK_ANALYSIS_NO_PAUSE='1',
-                   STOCK_PREVIOUS_ROW_COUNT=str(previous_count), STOCK_PIPELINE_STARTED_EPOCH=str(time.time()))
+                   STOCK_PREVIOUS_ROW_COUNT=str(previous_count), STOCK_PIPELINE_STARTED_EPOCH=str(time.time()),
+                   JAVA_TOOL_OPTIONS=java_tool_options())
         if mode in scheduled_price_modes or mode.isdecimal():
             env['STOCK_EXPECTED_DATA_DATE'] = datetime.now().strftime('%Y%m%d')
         state.update(status='running', acquiredAt=stamp(), log=str(log_path))

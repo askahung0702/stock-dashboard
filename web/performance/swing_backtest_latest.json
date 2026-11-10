@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T01:53:14.537014+08:00",
+  "generatedAt": "2026-11-10T15:56:46.111772+08:00",
   "status": "validated_sample_available",
   "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
   "signalCount": 803,
@@ -65,8 +65,8 @@
     }
   },
   "rejected": {
-    "missing_or_invalid_bar": 120,
-    "insufficient_future_sessions": 96
+    "missing_or_invalid_bar": 122,
+    "insufficient_future_sessions": 94
   },
   "assumptions": {
     "entry": "next verified trading-session adjusted open",

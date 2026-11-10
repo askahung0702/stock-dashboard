@@ -1,7 +1,7 @@
 {
   "snapshot_start": "20260317",
-  "snapshot_end": "20261109",
-  "snapshot_count": 164,
+  "snapshot_end": "20261110",
+  "snapshot_count": 165,
   "candidate_rows": 3076,
   "weeks": [
     1,
@@ -9,7 +9,7 @@
     3,
     4
   ],
-  "latest_snapshot_pending": "20261109",
+  "latest_snapshot_pending": "20261110",
   "groups": {
     "ma2060_early_all": {
       "variant": "ma2060",
@@ -18,9 +18,9 @@
       "screen_style_label": "早期起漲",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 2471,
+      "sample_count_max": 2473,
       "1w": {
-        "count": 2471,
+        "count": 2473,
         "avg_return_pct": 2.79,
         "median_return_pct": -0.26,
         "win_rate_pct": 48.24
@@ -150,9 +150,9 @@
       "screen_style_label": "早期起漲",
       "scope": "all",
       "scope_label": "全部候選",
-      "sample_count_max": 2400,
+      "sample_count_max": 2402,
       "1w": {
-        "count": 2400,
+        "count": 2402,
         "avg_return_pct": 2.34,
         "median_return_pct": 0.0,
         "win_rate_pct": 49.71

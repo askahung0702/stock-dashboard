@@ -10,6 +10,10 @@ from ohlcv_report import parse_chart
 from run_stock_job import atomic_json
 
 ROOT = Path(__file__).resolve().parents[1]
+# Sections every enabled financial source supplies (TWSE/TPEx OpenAPI + Yahoo fallback).
+FINANCIAL_REQUIRED_SECTIONS = ['revenue', 'eps', 'epsTtm', 'income', 'balance']
+# Sections only an optional provider (FinMind with a token) can fill; reported, never required.
+FINANCIAL_OPTIONAL_SECTIONS = ['cashFlow']
 
 def memberships(root):
     baskets = []
@@ -44,13 +48,18 @@ def assess_row(row, date, baskets, bars=None, archive_error=None, financial=None
         evidence['price'] = dict(status='missing', dataDate='', issue=archive_error or 'archive_not_available')
     sections = financial or evidence.get('financial') or {}
     evidence['financial'] = sections
+    # Required sections are the ones an enabled provider actually supplies. cashFlow only exists when the
+    # FinMind provider has a token, so it is optional: a section no source feeds must never zero the metric.
     finance_complete = not legacy and all((sections.get(name) or {}).get('complete') is True
-                           for name in ['revenue', 'eps', 'epsTtm', 'income', 'balance', 'cashFlow'])
+                           for name in FINANCIAL_REQUIRED_SECTIONS)
+    finance_optional_missing = [name for name in FINANCIAL_OPTIONAL_SECTIONS
+                                if (sections.get(name) or {}).get('complete') is not True]
     if not evidence.get('institutional'):
         evidence['institutional'] = dict(status='unknown', dataDate='', source='legacy_snapshot_date_unverified')
     if not evidence.get('broker'):
         evidence['broker'] = dict(status='unknown', dataDate='', source='legacy_snapshot_date_unverified')
     overlay = dict(sourceEvidence=evidence, financialReady=finance_complete,
+                   financialOptionalMissing=finance_optional_missing,
                    techReady=(evidence['price'].get('status') == 'current' and not legacy),
                    institutionalReady=(evidence['institutional'].get('status') == 'current'),
                    brokerReady=(evidence['broker'].get('status') == 'current'))
