@@ -2,38 +2,34 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261111",
-  "count": 1981,
+  "count": 1978,
   "errors": [],
   "warnings": [
     "EPS 加速值：69 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：74 檔尚未備齊，不以單月代替三個月",
-    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
-    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
+    "連續三個月營收：73 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "28 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "26 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "三大法人當日覆蓋率 0.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "主力買賣超當日覆蓋率 0.0% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "就緒指標 institutionalReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
-    "就緒指標 brokerReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
-    "28 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "三大法人當日覆蓋率 93.6% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "主力買賣超當日覆蓋率 31.3% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "26 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認",
     "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
-    "techReady": 1953,
-    "marketReady": 1981,
+    "techReady": 1952,
+    "marketReady": 1978,
     "financialReady": 0,
-    "institutionalReady": 0,
+    "institutionalReady": 1852,
     "newsReady": 0
   },
-  "epsAccelerationReadyCount": 1912,
+  "epsAccelerationReadyCount": 1909,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1907,
+  "revenueThreeMonthReadyCount": 1905,
   "stageCounts": {
-    "intraday-close": 1981
+    "close": 1978
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -51,76 +47,78 @@
   },
   "ohlcv": {
     "date": "20261111",
-    "capturedCount": 1981,
-    "availableCount": 1953,
+    "capturedCount": 1978,
+    "availableCount": 1952,
     "complete40DayCount": 0,
-    "universeCount": 1981
+    "universeCount": 1978
   },
   "sourceEvidence": {
     "date": "20261111",
-    "count": 1981,
+    "count": 1978,
     "priceStatusCounts": {
-      "current": 1953,
-      "carried": 28
+      "current": 1952,
+      "carried": 26
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1953,
-    "financialReady": 1901,
-    "institutionalReady": 0,
-    "brokerReady": 0
+    "techReady": 1952,
+    "financialReady": 1898,
+    "institutionalReady": 1852,
+    "brokerReady": 620
   },
   "feedCoverage": {
     "price": {
       "status": {
-        "current": 1953,
-        "carried": 28
+        "current": 1952,
+        "carried": 26
       },
-      "currentRatio": 0.9859
+      "currentRatio": 0.9869
     },
     "institutional": {
       "status": {
-        "carried": 1931,
-        "missing": 50
+        "current": 1852,
+        "carried": 126
       },
-      "currentRatio": 0.0
+      "currentRatio": 0.9363
     },
     "broker": {
       "status": {
-        "missing": 1981
+        "carried": 896,
+        "missing": 462,
+        "current": 620
       },
-      "currentRatio": 0.0
+      "currentRatio": 0.3134
     },
     "news": {
       "status": {
-        "missing_or_deferred": 1981
+        "missing_or_deferred": 1978
       },
       "currentRatio": 0.0
     },
     "financial": {
       "income": {
-        "complete": 1980,
+        "complete": 1977,
         "incomplete": 0
       },
       "revenue": {
-        "complete": 1981,
+        "complete": 1978,
         "incomplete": 0
       },
       "balance": {
-        "complete": 1980,
+        "complete": 1977,
         "incomplete": 0
       },
       "eps": {
-        "complete": 1964,
+        "complete": 1961,
         "incomplete": 0
       },
       "epsTtm": {
-        "complete": 1901,
+        "complete": 1898,
         "incomplete": 63
       },
       "revenueHistory": {
-        "complete": 1971,
+        "complete": 1968,
         "incomplete": 10
       }
     }
@@ -130,7 +128,7 @@
     "evaluationDate": "2026-11-11",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 21
+    "reviewRequiredCount": 28
   },
   "nightlyFull": {
     "dataDate": "20261110",
@@ -160,5 +158,5 @@
     ]
   },
   "earlyBreakoutDate": "20261111",
-  "generatedAt": "2026-11-11T08:20:40.162480+00:00"
+  "generatedAt": "2026-11-11T10:19:22.096628+00:00"
 }
