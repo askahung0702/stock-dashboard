@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261110",
+  "date": "20261111",
   "count": 1981,
   "errors": [],
   "warnings": [
     "EPS 加速值：69 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：10 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：74 檔尚未備齊，不以單月代替三個月",
     "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
     "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "31 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "28 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "三大法人當日覆蓋率 0.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
     "主力買賣超當日覆蓋率 0.0% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
     "就緒指標 institutionalReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
     "就緒指標 brokerReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
-    "31 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "28 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認",
-    "最近一次夜間更新部分完成：完整分析完成；內部人／集保每日資料更新不完整"
+    "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
-    "techReady": 1950,
+    "techReady": 1953,
     "marketReady": 1981,
     "financialReady": 0,
     "institutionalReady": 0,
@@ -31,7 +31,7 @@
   },
   "epsAccelerationReadyCount": 1912,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1971,
+  "revenueThreeMonthReadyCount": 1907,
   "stageCounts": {
     "intraday-close": 1981
   },
@@ -50,23 +50,23 @@
     ]
   },
   "ohlcv": {
-    "date": "20261110",
+    "date": "20261111",
     "capturedCount": 1981,
-    "availableCount": 1950,
+    "availableCount": 1953,
     "complete40DayCount": 0,
     "universeCount": 1981
   },
   "sourceEvidence": {
-    "date": "20261110",
+    "date": "20261111",
     "count": 1981,
     "priceStatusCounts": {
-      "current": 1950,
-      "carried": 31
+      "current": 1953,
+      "carried": 28
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1950,
+    "techReady": 1953,
     "financialReady": 1901,
     "institutionalReady": 0,
     "brokerReady": 0
@@ -74,15 +74,15 @@
   "feedCoverage": {
     "price": {
       "status": {
-        "current": 1950,
-        "carried": 31
+        "current": 1953,
+        "carried": 28
       },
-      "currentRatio": 0.9844
+      "currentRatio": 0.9859
     },
     "institutional": {
       "status": {
-        "carried": 1941,
-        "missing": 40
+        "carried": 1931,
+        "missing": 50
       },
       "currentRatio": 0.0
     },
@@ -126,26 +126,26 @@
     }
   },
   "officialTradingAnnouncements": {
-    "date": "20261110",
-    "evaluationDate": "2026-11-10",
+    "date": "20261111",
+    "evaluationDate": "2026-11-11",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 24
+    "reviewRequiredCount": 21
   },
   "nightlyFull": {
-    "dataDate": "20261109",
-    "status": "partial",
-    "startedAt": "2026-11-09T13:00:01.602860+00:00",
-    "finishedAt": "2026-11-09T17:54:45.055967+00:00",
-    "fullExitCode": 0,
-    "insiderExitCode": 1,
-    "futuresExitCode": 0,
-    "message": "完整分析完成；內部人／集保每日資料更新不完整",
-    "collectionExitCode": 0,
-    "reportsExitCode": 0,
-    "publicationExitCode": 0,
+    "dataDate": "20261110",
+    "status": "running",
+    "startedAt": "2026-11-10T13:00:00.996655+00:00",
+    "finishedAt": null,
+    "fullExitCode": null,
+    "insiderExitCode": null,
+    "futuresExitCode": null,
+    "message": "夜間完整分析執行中",
+    "collectionExitCode": null,
+    "reportsExitCode": null,
+    "publicationExitCode": null,
     "failurePhase": null,
-    "fullRunId": "20261109-211353-793a5760"
+    "fullRunId": null
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -159,6 +159,6 @@
       40
     ]
   },
-  "earlyBreakoutDate": "20261110",
-  "generatedAt": "2026-11-10T07:57:54.851525+00:00"
+  "earlyBreakoutDate": "20261111",
+  "generatedAt": "2026-11-11T08:20:40.162480+00:00"
 }
