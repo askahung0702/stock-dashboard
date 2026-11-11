@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock Backup｜隱私權政策</title>
+  <meta name="description" content="Stock Backup 的 Google Drive 資料存取、備份、保留及撤銷授權說明。">
+  <style>
+    :root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f4f6f8;color:#203047;font:17px/1.85 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:860px;margin:56px auto;padding:36px;background:white;border:1px solid #dce3eb;border-radius:16px}h1{line-height:1.3;font-size:34px}h2{margin-top:30px;font-size:22px}a{color:#1956a5;text-underline-offset:3px}.date{color:#5d6d80}footer{border-top:1px solid #e2e7ed;padding-top:18px;margin-top:30px}li{margin-bottom:8px}@media(max-width:620px){main{margin:18px 12px;padding:24px}h1{font-size:28px}}
+  </style>
+</head>
+<body>
+<main>
+  <a href="index.html">← Stock Backup 首頁</a>
+  <h1>Stock Backup 隱私權政策</h1>
+  <p class="date">更新日期：2026 年 11 月 11 日</p>
+  <p>本政策說明 Stock Backup 的本機備份模組如何使用 Google Drive 授權及處理備份資料。維護者的聯絡方式列於頁面底部。</p>
+  <h2>存取及處理的資料</h2>
+  <ul>
+    <li>使用者授權後產生的 OAuth 存取與更新權杖，用於向 Google Drive 驗證程式身分。</li>
+    <li>程式設定的 StockArchive 資料夾與其中備份檔案的名稱、檔案 ID、大小、校驗碼及備份對照表。</li>
+    <li>本機產生的股票資料快照、分析報表、壓縮歷史資料，以及使用者要求還原的備份內容。</li>
+  </ul>
+  <p>目前授權範圍為 Google Drive 完整存取，以支援既有資料夾的備份與還原。程式的實際遠端備份路徑固定在設定的 StockArchive 資料夾。Google 帳號的密碼由 Google 登入頁處理，本程式不接收或儲存該密碼。</p>
+  <h2>使用目的</h2>
+  <p>上述資料用於建立及核對備份、記錄已備份版本、重試未完成的傳送，以及依使用者要求還原歷史資料。備份模組不會將 Google 帳戶資料用於廣告或出售資料。</p>
+  <h2>資料儲存與傳送</h2>
+  <p>備份檔案直接透過 Google Drive API 傳送至使用者授權帳號可存取的 StockArchive 資料夾，不經由本工具維護者另設的中轉伺服器。Google Drive 是提供雲端儲存與授權服務的服務提供者。</p>
+  <p>OAuth 設定與權杖保存在本機受 Windows 存取權限限制的設定目錄，不納入 Git 版本控制、不上傳到公開網站，也不包含在股票備份檔案中。程式會在本機記錄備份狀態及校驗資訊。</p>
+  <h2>資料保留與刪除</h2>
+  <p>本機股票資料依使用者設定的保留與壓縮規則管理。雲端備份保留不同內容版本，備份流程不會自動刪除雲端檔案。使用者可在 Google Drive 中管理或刪除雲端備份，並在本機管理設定、權杖及備份紀錄。</p>
+  <h2>撤銷 Google 授權</h2>
+  <p>使用者可到 <a href="https://myaccount.google.com/connections">Google 帳戶的第三方連線設定</a>撤銷 Stock Backup 的存取權。撤銷後，程式將無法再執行需要 Google 授權的上傳或下載；已存在的備份不會因撤銷授權自動刪除。</p>
+  <h2>Google API 資料使用</h2>
+  <p>Stock Backup 透過 Google API 取得資訊時，其使用及傳送遵循 <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>，包括其中的 Limited Use 要求。</p>
+  <footer>
+    <p>隱私權與使用支援：<a href="mailto:askahung0702@gmail.com">askahung0702@gmail.com</a></p>
+    <a href="index.html">回 Stock Backup 首頁</a>
+  </footer>
+</main>
+</body>
+</html>
