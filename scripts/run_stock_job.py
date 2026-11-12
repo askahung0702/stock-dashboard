@@ -5,7 +5,7 @@ Windows Job Objects terminate descendants when the supervisor exits unexpectedly
 """
 import ctypes
 from ctypes import wintypes
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import os
 import re
@@ -178,6 +178,22 @@ def scheduled_window(mode, now):
     start = starts.get(mode)
     return start is None or (now.hour, now.minute) >= start
 
+
+def expected_data_date(now, override=None):
+    """Match Java's overnight date and its explicit recovery date."""
+    if override:
+        normalized = override.replace('-', '')
+        if not re.fullmatch(r'\d{8}', normalized):
+            raise ValueError('STOCK_RUN_DATE must be YYYYMMDD or YYYY-MM-DD')
+        selected = datetime.strptime(normalized, '%Y%m%d').date()
+        if selected > now.date():
+            raise ValueError('STOCK_RUN_DATE cannot be in the future')
+        return normalized
+    selected = (now - timedelta(days=1)).date() if now.hour < 5 else now.date()
+    while selected.weekday() >= 5:
+        selected -= timedelta(days=1)
+    return selected.strftime('%Y%m%d')
+
 def maintain_after_full_run(root, args, state, status_path):
     """Run once after releasing collection's lock; preserve its exit code."""
     if (args not in ([], ['full']) or os.environ.get('STOCK_STORAGE_DEFER') == '1'
@@ -227,6 +243,8 @@ def run(args):
     try:
         lease.acquire(float(os.environ.get('STOCK_PIPELINE_WAIT_SECONDS', '7200')))
         acquired = True
+        from stock_storage_preflight import check as check_storage
+        state['storagePreflight'] = check_storage(root)
         global _job_handle
         _job_handle = protect_process_tree()
         token = uuid.uuid4().hex
@@ -259,7 +277,7 @@ def run(args):
                    STOCK_PREVIOUS_ROW_COUNT=str(previous_count), STOCK_PIPELINE_STARTED_EPOCH=str(time.time()),
                    JAVA_TOOL_OPTIONS=java_tool_options())
         if mode in scheduled_price_modes or mode.isdecimal():
-            env['STOCK_EXPECTED_DATA_DATE'] = datetime.now().strftime('%Y%m%d')
+            env['STOCK_EXPECTED_DATA_DATE'] = expected_data_date(datetime.now(), env.get('STOCK_RUN_DATE'))
         state.update(status='running', acquiredAt=stamp(), log=str(log_path))
         atomic_json(status_path, state)
         atomic_json(root / 'logs/pipeline_status.json', state)
