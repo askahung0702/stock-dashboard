@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "date": "20261111",
-  "evaluatedAt": "2026-11-12T03:29:09.980968+00:00",
+  "date": "20261112",
+  "evaluatedAt": "2026-11-12T06:56:31.706581+00:00",
   "evaluationDate": "2026-11-12",
   "universeCount": 1981,
-  "reviewRequiredCount": 24,
+  "reviewRequiredCount": 21,
   "fetchedSourceCount": 6,
   "sourceCount": 6,
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-12T03:20:08.779386+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:08.779386+00:00",
+      "fetchedAt": "2026-11-12T06:56:30.162510+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:30.162510+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "ae37277db6c6d3c883292762941afa2d501980195d32c477436bd245312265c4",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-11-12T03:20:09.157821+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:09.157821+00:00",
+      "fetchedAt": "2026-11-12T06:56:30.579545+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:30.579545+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-12T03:20:09.363722+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:09.363722+00:00",
+      "fetchedAt": "2026-11-12T06:56:30.736621+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:30.736621+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "14ee8e4457fbc9e9c69635cc576a3341dec33159138721ddaf98ec0da7327f3d",
@@ -46,38 +46,38 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-12T03:20:09.600929+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:09.600929+00:00",
+      "fetchedAt": "2026-11-12T06:56:30.905255+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:30.905255+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
-      "sha256": "533580989a8c588618664a61d51caae94dfe1b0a3e6617b6e4078909d1598a1e",
+      "sha256": "c506f7172683cf5573f3df4e03a32e89da5439bb4d2ec6be49e47f902c45a8de",
       "label": "櫃買中心處置公告",
       "market": "TPEX",
-      "eventCount": 7,
+      "eventCount": 5,
       "latestAnnouncementDate": "2026-11-11"
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-11-12T03:20:09.815019+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:09.815019+00:00",
+      "fetchedAt": "2026-11-12T06:56:31.100262+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:31.100262+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
-      "sha256": "2fba8aaa5568752563166f1cd2c8177ea7d115a4c2937cbd5547c4d675be3a8b",
+      "sha256": "0e4038f8ec81e2cbfa2b1d3990bbeb63913f9264707705e422a6a379cca97695",
       "label": "櫃買中心注意公告",
       "market": "TPEX",
-      "eventCount": 33,
+      "eventCount": 18,
       "latestAnnouncementDate": "2026-11-11"
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-12T03:20:09.998330+00:00",
-      "lastAttemptAt": "2026-11-12T03:20:09.998330+00:00",
+      "fetchedAt": "2026-11-12T06:56:31.314894+00:00",
+      "lastAttemptAt": "2026-11-12T06:56:31.314894+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
-      "sha256": "4e3747a4a27c1e45542ce476ff7ccd0384e5c420e9f2d5bbfd9257b9cc48e6a2",
+      "sha256": "08ea74effbbd425224d70c3f159997b0cf0c619fabec9af59ee46678c4d2d493",
       "label": "櫃買中心停復牌公告",
       "market": "TPEX",
-      "eventCount": 362,
+      "eventCount": 363,
       "latestAnnouncementDate": null
     }
   },
@@ -1661,7 +1661,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "54b90cdf855cce984e63b0a7e5241f22b2bbdde6bf0d8ad8db386775240a976f",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -2436,7 +2436,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "184692b494fa70fea8163a0fe3b6eff520fdce8e1e6dd8857db2814905638adb",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -2496,7 +2496,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "01ae1d415ea817aacc038798ec3522a40f932dfa9e9f948f2c325d2e344dce71",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -2600,7 +2600,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "3fe5c1b8bed5d96eebc7690b4a6ea9623acacc4f30844b05fc2d0bb3a4611e15",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -3312,19 +3312,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達78.89%，當日之前一個營業日當日沖銷成交量占總成交量達82.09%（第十三款)",
-          "code": "2221",
-          "name": "大甲",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "191384372f4d2d60b1f49b6b53c16cbff67e6ead3386b26e2e6073f400ccb4fc",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "最近六十個營業日(含當日)起迄兩個營業日之最後成交價漲幅達210.98%(第二款)最近九十個營業日(含當日)起迄兩個營業日之最後成交價漲幅達248.86%(第二款)最近六個營業日(含當日)累積之最後成交價漲幅達27.6%，當日週轉率達16.58%(第四款)元大證券公司當日受託買進該有價證券之成交量占當日該有價證券總成交量之比率為33.45%(第五款)最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達77.89%，當日之前一個營業日當日沖銷成交量占總成交量達81.28%（第十三款)",
           "code": "2221",
@@ -3333,7 +3320,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "b1c0d9b221e004053d4a218bb15e7f540a5ca5ea646c4c47a336fcf895e4537f",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -7833,7 +7820,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "53c2e806e37832b526f3115dc7fe460e531498194ef6d6001e2ed4c9a6afdfe4",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -8065,25 +8052,9 @@
     },
     "3287": {
       "fetchHealthy": true,
-      "assessment": "review_required",
-      "flags": [
-        "recent_attention"
-      ],
-      "events": [
-        {
-          "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(含當日)累積之最後成交價漲幅達31.38%(第一款)當日週轉率達16.31%(第四款)",
-          "code": "3287",
-          "name": "廣寰科",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "bbcd4aca29cf58ee56336938c8b745bac0b869bc8f02a36dde57f5663638abbc",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        }
-      ],
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -8301,25 +8272,9 @@
     },
     "3324": {
       "fetchHealthy": true,
-      "assessment": "review_required",
-      "flags": [
-        "recent_attention"
-      ],
-      "events": [
-        {
-          "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達63.67%，當日之前一個營業日當日沖銷成交量占總成交量達76.09%（第十三款)",
-          "code": "3324",
-          "name": "雙鴻",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "d9ed0dd2fa4c77fa6757c3c77e15fbd12638b3c93644e0b8e902cebdd3fb1cac",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        }
-      ],
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -8497,7 +8452,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "b14ee3af87ca4febdfe2f0e70ea8d542998d0b8e15e3fb6725626c757b975071",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -8681,19 +8636,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "當日本益比為77.78、股價淨值比為8.16且為其所屬產業類別股價淨值比之4.2倍、當日週轉率達6.52%、富邦證券公司當日買進該有價證券之成交金額達1.29億元，且占當日該有價證券之總成交金額28.68%、單一投資人當日買進該有價證券之成交金額達1.1億元，且占當日該有價證券之總成交金額24.34%(第六款)",
-          "code": "3441",
-          "name": "聯一光",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "bc5110698d077b5accd73fce8262a8ead2380cab5d4b9f01b9945b753f161eec",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "當日本益比為79.56、股價淨值比為8.35且為其所屬產業類別股價淨值比之4.3倍、當日週轉率達37.7%、元大證券公司當日買進該有價證券之成交金額達6.88億元，且占當日該有價證券之總成交金額25.36%(第六款)",
           "code": "3441",
@@ -8702,7 +8644,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "da8b3ad8eeaabd6168921e9bda01fab9029d6096982e60f0b7dc58553f24eaca",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -8894,7 +8836,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "1a302c234d98f99427382bb0ac6257d8d72bce731d01f327d27bed5f84c1cc66",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -9468,7 +9410,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "780e685ac2fc9aeb67bd5fcdca7a897bc3c96acaa089c5f28854d5e359577b37",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -9645,25 +9587,9 @@
     },
     "3624": {
       "fetchHealthy": true,
-      "assessment": "review_required",
-      "flags": [
-        "recent_attention"
-      ],
-      "events": [
-        {
-          "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達68.26%，當日之前一個營業日當日沖銷成交量占總成交量達71.46%（第十三款)",
-          "code": "3624",
-          "name": "光頡",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "fd7b0e51999cb29ae27e9eb6d1844e989175bab9292c4322f4012baf3c09af3e",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        }
-      ],
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -10369,7 +10295,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "cb422b126d12c9fc5b000f08188501b460fa6219aa1501747e6ca8482029b14a",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -10792,7 +10718,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "5e135a28887d8d5b7d337ea2802fa8bf66494e0326eeb0a83508cf4a3510655a",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -11250,7 +11176,7 @@
           "source": "tpex_disposal",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
           "id": "354e973d75fe5b2f13e090295c5c08896ca0803dd837466cd6620ad73c9b8f9d",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.701211+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:30.905255+00:00",
           "sourceFresh": true,
           "phase": "announced_period"
         }
@@ -11512,19 +11438,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "當日本益比為N/A、股價淨值比為6.45且為其所屬產業類別股價淨值比之2.02倍、當日週轉率達8.8%、元大證券公司當日賣出該有價證券之成交金額達1.67億元，且占當日該有價證券之總成交金額31.55%(第六款)",
-          "code": "4577",
-          "name": "達航科技",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "1c23139fab232fcbf31a28f48ecba26fd9de69a055353977ef25005b241b234d",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "當日本益比為404.41、股價淨值比為7.23且為其所屬產業類別股價淨值比之2.21倍、當日週轉率達9.63%(第六款)",
           "code": "4577",
@@ -11533,7 +11446,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "2bca862f8edd2b1407a60a3daef0556439dbe975cd2820e00867a136bf022d84",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -11835,7 +11748,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "68270536cfc45812a9f471eb888cf858e172089659a122ee870aa4d266ab6edc",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -11906,7 +11819,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "3d29a75b4be7efbacbb1629179f2cd6f381d1cf61e57e589b5b846506b3ca76d",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -12706,19 +12619,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(含當日)累積之最後成交價漲幅達27.85%，當日之成交量較最近六十個營業日日平均成交量放大10.86倍(第三款)當日週轉率達25.76%(第四款)",
-          "code": "5202",
-          "name": "力新",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "be9e3287a211a3ee10403097aa8f32d7963e618142ed3215906b5cd38fc490b4",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "最近六個營業日(含當日)累積之最後成交價漲幅達27.98%，當日週轉率達11.84%(第四款)最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達61.6%，當日之前一個營業日當日沖銷成交量占總成交量達70.64%（第十三款)",
           "code": "5202",
@@ -12727,7 +12627,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "a3c90dba9e111a982e8f6deaa17eae64925db9c1cad9c2151d6f78568be12d75",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -13007,7 +12907,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "c2fbfbe92cf1540701594e7ba4197c4c8260d53c8c695bea0323b16312ef3ff3",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -13254,7 +13154,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "3f2903d3ecb545af1a1c4ca94219ff7bb49662fedf29968f99f4249e171af2c4",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -13702,19 +13602,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "當日本益比為143.80、股價淨值比為21.65且為其所屬產業類別股價淨值比之6.8倍、當日週轉率達5.71%(第六款)",
-          "code": "5475",
-          "name": "德宏",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "81d368231195f19499fbd98046eef11c581716cc2555789e8834aa92310be79b",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "當日本益比為158.14、股價淨值比為23.8且為其所屬產業類別股價淨值比之7.19倍、當日週轉率達5.27%、凱基證券公司當日買進該有價證券之成交金額達5.49億元，且占當日該有價證券之總成交金額40.79%、單一投資人當日買進該有價證券之成交金額達4.17億元，且占當日該有價證券之總成交金額30.95%(第六款)",
           "code": "5475",
@@ -13723,7 +13610,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "d6e141882d8ff8e9ff3c4b203d8c5fcfa2e93462081b12c628a4ba7903ce0965",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -14839,7 +14726,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "da516368769d4de880f1fc72fadf6fe7e2599bf3aee76a0b49bf4d3e035652c5",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -16461,7 +16348,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "95d8e9b4482d0ea8014e54b745701842384c763173cb67c19dc1e6b79f3ad9dc",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -16821,19 +16708,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(含當日)之累積週轉率為104.33%，當日週轉率達34.67%(第十款)",
-          "code": "6538",
-          "name": "倉和",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "8e2af137b371cab7aa22cbbcc93d5fb45a3bf22e1fcf353fd854731e64bc2e96",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達66.69%，當日之前一個營業日當日沖銷成交量占總成交量達74.83%（第十三款)",
           "code": "6538",
@@ -16842,7 +16716,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "c7cd7a49aeb2baa0969868301ebdebf5871de77db3aebfa77a1d3b112e8c07c7",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -17752,19 +17626,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(含當日)之累積週轉率為110.22%，當日週轉率達12.9%(第十款)",
-          "code": "6697",
-          "name": "東捷資訊",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "d9f08ad9aed6fa3077562b880e0730ca48924584d87e8c5a03c294f8e1fb735f",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "最近六個營業日(含當日)之日平均成交量較最近六十個營業日日平均成交量放大為5.15倍，當日成交量較最近六十個營業日之日平均成交量放大為7.32倍(第九款)",
           "code": "6697",
@@ -17773,7 +17634,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "522af92ccc9a1aac71872f0ebb8aa9398edd3d645027d9d2b5fb59fbc5cf83a8",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -17833,7 +17694,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "0a6d5abc94e0ad6403f0645ffd3a5f5b8a4f7b37a28c2ac678cb09ebd8ba716a",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -18989,25 +18850,9 @@
     },
     "6925": {
       "fetchHealthy": true,
-      "assessment": "review_required",
-      "flags": [
-        "recent_attention"
-      ],
-      "events": [
-        {
-          "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "最近六個營業日(自當日之前一個營業日起)之當日沖銷成交量占總成交量比率達65.04%，當日之前一個營業日當日沖銷成交量占總成交量達76.2%（第十三款)",
-          "code": "6925",
-          "name": "意藍",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "218a3728fb366664b0398b3f451d6459319d070d54c7b9927982027ee75cc884",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        }
-      ],
+      "assessment": "unknown",
+      "flags": [],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -20406,7 +20251,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "5515f23a4a0055e9022963cef5c6967f4bfa8749f2bd70e122a2be1776f7d032",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],
@@ -20750,24 +20595,7 @@
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
-      "events": [
-        {
-          "kind": "disposal",
-          "announcedDate": "2026-11-04",
-          "startDate": "2026-11-05",
-          "endDate": "2026-11-11",
-          "detail": "* 公布日期：115/11/04* 證券代號：8099* 證券名稱：大同世界科技股份有限公司* 處置原因：連續3個營業日達本中心「公布注意交易資訊」標準，且最近30個營業日內曾發布處置。* 處置起訖期間：自115年11月5日起5個營業日(115年11月5日至115年11月11日)，如遇：(1)有價證券最後交易日在處置期間，僅處置至其最後交易日；(2)休市、有價證券停止買賣、全日暫停交易，則順延執行。* 處置措施：(1)以人工管制之撮合終端機執行撮合作業(約每2分鐘撮合一次)；(2)證券商應就投資人每日已委託買賣該有價證券，向該投資人收取全部之買進價金或賣出證券；(3)信用交易部分，則收足融資自備款或融券保證金。但信用交易了結及違約專戶委託買賣該有價證券時，不在此限。",
-          "code": "8099",
-          "name": "大世科",
-          "market": "TPEX",
-          "source": "tpex_disposal",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
-          "id": "90ae6140aeb5ec6ac8c5934affbb0419a58aaa4c1252f1376e0ac57d2d91f368",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.701211+00:00",
-          "sourceFresh": true,
-          "phase": "announced_period_elapsed"
-        }
-      ],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -20871,19 +20699,6 @@
       "events": [
         {
           "kind": "attention",
-          "announcedDate": "2026-11-10",
-          "detail": "當日本益比為96.34、股價淨值比為6.19且為其所屬產業類別股價淨值比之3.19倍、當日週轉率達6.21%(第六款)",
-          "code": "8111",
-          "name": "立碁",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "669d82245391eff1d6e4600bf3d980a6ce2593bed58e9a58ba96e65707e87c20",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "attention",
           "announcedDate": "2026-11-11",
           "detail": "當日本益比為96.10、股價淨值比為6.17且為其所屬產業類別股價淨值比之3.18倍、當日週轉率達5.18%(第六款)",
           "code": "8111",
@@ -20892,7 +20707,7 @@
           "source": "tpex_attention",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
           "id": "46514f5e56542756238b39be4989c797314a2ef1053a009f7ee6375bfe81c77b",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.954344+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.100262+00:00",
           "sourceFresh": true
         }
       ],
@@ -21170,24 +20985,7 @@
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
-      "events": [
-        {
-          "kind": "disposal",
-          "announcedDate": "2026-11-04",
-          "startDate": "2026-11-05",
-          "endDate": "2026-11-11",
-          "detail": "* 公布日期：115/11/04* 證券代號：8272* 證券名稱：全景軟體股份有限公司* 處置原因：連續3個營業日達本中心「公布注意交易資訊」標準。* 處置起訖期間：自115年11月5日起5個營業日(115年11月5日至115年11月11日)，如遇：(1)有價證券最後交易日在處置期間，僅處置至其最後交易日；(2)休市、有價證券停止買賣、全日暫停交易，則順延執行。* 處置措施：(1)以人工管制之撮合終端機執行撮合作業(約每2分鐘撮合一次)；(2)證券商應就投資人每日已委託買賣該有價證券之數量單筆達10交易單位或多筆累積達30交易單位以上時，向該投資人收取全部之買進價金或賣出證券。但違約專戶委託買賣該有價證券時，不在此限。",
-          "code": "8272",
-          "name": "全景軟體",
-          "market": "TPEX",
-          "source": "tpex_disposal",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
-          "id": "856843b2cfeff38a3385c865a87ec1bfd7f1f7aee448c27b213674be4c384e77",
-          "payloadFirstSeenAt": "2026-11-11T10:04:35.701211+00:00",
-          "sourceFresh": true,
-          "phase": "announced_period_elapsed"
-        }
-      ],
+      "events": [],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -21493,9 +21291,27 @@
     },
     "8426": {
       "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
+      "assessment": "review_required",
+      "flags": [
+        "halt_requires_confirmation"
+      ],
+      "events": [
+        {
+          "kind": "halt",
+          "effectiveDate": "2026-11-12",
+          "effectiveTime": "08:00:00",
+          "announcedDate": null,
+          "detail": "",
+          "code": "8426",
+          "name": "紅木-KY",
+          "market": "TPEX",
+          "source": "tpex_halt",
+          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
+          "id": "fa4eb2c1692929ac5f8471f62a0842793f482412d5f490e12f41a478a153e571",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
+          "sourceFresh": true
+        }
+      ],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
@@ -22597,7 +22413,7 @@
           "source": "tpex_halt",
           "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
           "id": "cf81cf6bcb25091f78dfaf6fcb5b8816272a15c68b988ec9f0fcc62c1f100e5b",
-          "payloadFirstSeenAt": "2026-09-30T10:57:11.854254+00:00",
+          "payloadFirstSeenAt": "2026-11-12T06:56:31.314894+00:00",
           "sourceFresh": true
         }
       ],

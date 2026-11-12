@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260421",
-  "latest_track_date": "20261111",
+  "latest_track_date": "20261112",
   "stock_count": 30,
   "groups": {
     "all": [
@@ -1082,6 +1082,14 @@
         "stock_count": 30,
         "avg_return_pct": 5.28,
         "median_return_pct": -2.44,
+        "win_rate_pct": 46.67
+      },
+      {
+        "track_date": "20261112",
+        "days_since_buy": 205,
+        "stock_count": 30,
+        "avg_return_pct": 2.7,
+        "median_return_pct": -6.55,
         "win_rate_pct": 46.67
       }
     ],
@@ -2165,6 +2173,14 @@
         "avg_return_pct": 10.57,
         "median_return_pct": -0.95,
         "win_rate_pct": 47.06
+      },
+      {
+        "track_date": "20261112",
+        "days_since_buy": 205,
+        "stock_count": 17,
+        "avg_return_pct": 7.7,
+        "median_return_pct": -5.97,
+        "win_rate_pct": 47.06
       }
     ],
     "continuation_focus": [
@@ -3246,6 +3262,14 @@
         "stock_count": 10,
         "avg_return_pct": 4.25,
         "median_return_pct": -9.54,
+        "win_rate_pct": 30.0
+      },
+      {
+        "track_date": "20261112",
+        "days_since_buy": 205,
+        "stock_count": 10,
+        "avg_return_pct": 0.47,
+        "median_return_pct": -11.95,
         "win_rate_pct": 30.0
       }
     ],
@@ -4329,6 +4353,14 @@
         "avg_return_pct": -1.64,
         "median_return_pct": -3.92,
         "win_rate_pct": 46.15
+      },
+      {
+        "track_date": "20261112",
+        "days_since_buy": 205,
+        "stock_count": 13,
+        "avg_return_pct": -3.84,
+        "median_return_pct": -7.14,
+        "win_rate_pct": 46.15
       }
     ],
     "early_focus": [
@@ -5410,6 +5442,14 @@
         "stock_count": 11,
         "avg_return_pct": -3.55,
         "median_return_pct": -3.92,
+        "win_rate_pct": 45.45
+      },
+      {
+        "track_date": "20261112",
+        "days_since_buy": 205,
+        "stock_count": 11,
+        "avg_return_pct": -5.5,
+        "median_return_pct": -7.14,
         "win_rate_pct": 45.45
       }
     ]
