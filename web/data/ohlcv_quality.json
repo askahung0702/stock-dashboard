@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "date": "20261111",
-  "generatedAt": "2026-11-12T00:50:06.269384+00:00",
-  "universeCount": 1978,
-  "attemptedCount": 1978,
-  "capturedCount": 1978,
-  "availableCount": 1952,
+  "generatedAt": "2026-11-12T03:20:36.964132+00:00",
+  "universeCount": 1981,
+  "attemptedCount": 1981,
+  "capturedCount": 1981,
+  "availableCount": 1953,
   "complete40DayCount": 0,
   "status": "partial",
   "source": "Yahoo Chart",
@@ -55666,6 +55666,44 @@
         "2026-11-11"
       ]
     },
+    "6662": {
+      "available": false,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-12T02:54:19.046440100Z",
+      "barsThrough": "2026-11-11",
+      "barCount": 242,
+      "eventCount": 1,
+      "events": [
+        {
+          "date": "2026-08-07",
+          "type": "dividends",
+          "details": {
+            "amount": 1.55,
+            "date": 1786064400
+          }
+        }
+      ],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "最新預期交易日沒有完整 OHLCV 與還原收盤價"
+      ],
+      "returns": {},
+      "missingTradingDates": [
+        "2026-09-24",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-05",
+        "2026-10-07",
+        "2026-10-08",
+        "2026-10-20",
+        "2026-10-23",
+        "2026-10-27",
+        "2026-11-02",
+        "2026-11-11"
+      ]
+    },
     "6664": {
       "available": true,
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
@@ -57565,6 +57603,37 @@
         "2026-10-23"
       ],
       "lastClose": 35.35,
+      "maxDrawdown40Pct": null,
+      "recentCorporateActionCount": 0,
+      "unexplainedAdjustmentDates": [],
+      "snapshotPriceDifferencePct": 0.0
+    },
+    "6767": {
+      "available": true,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-12T02:55:52.713739200Z",
+      "barsThrough": "2026-11-11",
+      "barCount": 242,
+      "eventCount": 0,
+      "events": [],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "第三方調整僅供行情觀察；減資、配股及交易狀態尚未完成官方核對"
+      ],
+      "returns": {
+        "10": null,
+        "20": null,
+        "40": null
+      },
+      "missingTradingDates": [
+        "2026-10-05",
+        "2026-10-23",
+        "2026-11-02",
+        "2026-11-05"
+      ],
+      "lastClose": 23.850000381469727,
       "maxDrawdown40Pct": null,
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
@@ -68890,6 +68959,32 @@
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
       "snapshotPriceDifferencePct": 0.0
+    },
+    "8444": {
+      "available": false,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-12T03:06:44.521208900Z",
+      "barsThrough": "2026-11-11",
+      "barCount": 242,
+      "eventCount": 0,
+      "events": [],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "最新預期交易日沒有完整 OHLCV 與還原收盤價"
+      ],
+      "returns": {},
+      "missingTradingDates": [
+        "2026-09-15",
+        "2026-09-21",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-05",
+        "2026-10-06",
+        "2026-10-23",
+        "2026-11-11"
+      ]
     },
     "8446": {
       "available": true,

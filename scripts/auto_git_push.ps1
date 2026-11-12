@@ -60,6 +60,7 @@ $trackedPaths = @(
     "scripts/auto_git_push.ps1",
     "scripts/build_pages_site.ps1",
     "scripts/run_stock_job.py",
+    "scripts/stock_storage_preflight.py",
     "history_dashboard.html",
     "web/index.html",
     "web/source-evidence.js",

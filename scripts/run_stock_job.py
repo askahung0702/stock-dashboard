@@ -258,7 +258,10 @@ def run(args):
             return 0
         if mode in scheduled_price_modes or mode.isdecimal():
             from trading_calendar import load_schedule, decision
-            opened, reason = decision(load_schedule(root), datetime.now().date())
+            override = os.environ.get('STOCK_RUN_DATE')
+            calendar_date = (datetime.strptime(expected_data_date(datetime.now(), override), '%Y%m%d').date()
+                             if override else datetime.now().date())
+            opened, reason = decision(load_schedule(root), calendar_date)
             if not opened:
                 state.update(status='skipped_nontrading_day', exitCode=0, reason=reason)
                 print('[calendar] Skipping collection/export on non-trading day.', flush=True)
