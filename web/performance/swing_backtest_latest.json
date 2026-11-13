@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-13T21:00:41.171329+08:00",
+  "generatedAt": "2026-11-13T23:45:23.361261+08:00",
   "status": "validated_sample_available",
   "signalDefinition": "full stage likely=true; same-code signals separated by at least 10 trading sessions",
-  "signalCount": 815,
-  "independentSignalCount": 318,
+  "signalCount": 823,
+  "independentSignalCount": 324,
   "tradeCount": 718,
   "pointInTimeConsistentTradeCount": 419,
   "horizons": [
@@ -66,7 +66,7 @@
   },
   "rejected": {
     "missing_or_invalid_bar": 123,
-    "insufficient_future_sessions": 113
+    "insufficient_future_sessions": 131
   },
   "assumptions": {
     "entry": "next verified trading-session adjusted open",
