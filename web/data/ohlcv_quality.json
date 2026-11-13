@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "date": "20261113",
-  "generatedAt": "2026-11-13T10:05:16.737122+00:00",
-  "universeCount": 1980,
-  "attemptedCount": 1980,
-  "capturedCount": 1980,
+  "generatedAt": "2026-11-13T12:51:32.513724+00:00",
+  "universeCount": 1981,
+  "attemptedCount": 1981,
+  "capturedCount": 1981,
   "availableCount": 1958,
   "complete40DayCount": 0,
   "status": "partial",
@@ -32176,6 +32176,59 @@
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
       "snapshotPriceDifferencePct": 0.0
+    },
+    "3714": {
+      "available": false,
+      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
+      "corporateActionsVerified": false,
+      "pointInTimeVerified": false,
+      "fetchedAt": "2026-11-13T12:28:44.717587300Z",
+      "barsThrough": "2026-11-13",
+      "barCount": 243,
+      "eventCount": 3,
+      "events": [
+        {
+          "date": "2026-06-30",
+          "type": "dividends",
+          "details": {
+            "amount": 1.660366,
+            "date": 1782781200
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "type": "dividends",
+          "details": {
+            "amount": 4.579508,
+            "date": 1793840400
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "type": "splits",
+          "details": {
+            "date": 1793840400,
+            "numerator": 542.04913,
+            "denominator": 1000.0,
+            "splitRatio": "542.04913:1000"
+          }
+        }
+      ],
+      "warnings": [
+        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
+        "最新預期交易日沒有完整 OHLCV 與還原收盤價"
+      ],
+      "returns": {},
+      "missingTradingDates": [
+        "2026-10-23",
+        "2026-11-05",
+        "2026-11-06",
+        "2026-11-09",
+        "2026-11-10",
+        "2026-11-11",
+        "2026-11-12",
+        "2026-11-13"
+      ]
     },
     "3715": {
       "available": true,
