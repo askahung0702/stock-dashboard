@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "date": "20261113",
-  "evaluatedAt": "2026-11-14T13:00:34.593136+00:00",
-  "evaluationDate": "2026-11-14",
+  "evaluatedAt": "2026-11-15T13:00:32.446093+00:00",
+  "evaluationDate": "2026-11-15",
   "universeCount": 1981,
   "reviewRequiredCount": 30,
   "fetchedSourceCount": 6,
@@ -10,8 +10,8 @@
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-14T13:00:32.469993+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:32.469993+00:00",
+      "fetchedAt": "2026-11-15T13:00:30.851189+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:30.851189+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "8673900f16b2d4f13ff0dff5536b7bd66850b0f3b53463569e715b3994e472ee",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-11-14T13:00:32.833914+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:32.833914+00:00",
+      "fetchedAt": "2026-11-15T13:00:31.115791+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:31.115791+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-14T13:00:33.051509+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:33.051509+00:00",
+      "fetchedAt": "2026-11-15T13:00:31.290496+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:31.290496+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "14ee8e4457fbc9e9c69635cc576a3341dec33159138721ddaf98ec0da7327f3d",
@@ -46,8 +46,8 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-14T13:00:33.282664+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:33.282664+00:00",
+      "fetchedAt": "2026-11-15T13:00:31.505572+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:31.505572+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
       "sha256": "c506f7172683cf5573f3df4e03a32e89da5439bb4d2ec6be49e47f902c45a8de",
@@ -58,8 +58,8 @@
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-11-14T13:00:34.125432+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:34.125432+00:00",
+      "fetchedAt": "2026-11-15T13:00:31.893601+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:31.893601+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
       "sha256": "02ff7efe25b78ad735c49cf39f08105acfb5a36d6d43486dd7db246376ba2647",
@@ -70,8 +70,8 @@
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-14T13:00:34.354754+00:00",
-      "lastAttemptAt": "2026-11-14T13:00:34.354754+00:00",
+      "fetchedAt": "2026-11-15T13:00:32.189380+00:00",
+      "lastAttemptAt": "2026-11-15T13:00:32.189380+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
       "sha256": "9304decac4d91517e9ae8128f2bb2a972ec4e4e47b810e91a580d07d9ed297be",
