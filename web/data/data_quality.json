@@ -12,7 +12,7 @@
     "24 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
     "三大法人當日覆蓋率 94.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "主力買賣超當日覆蓋率 37.5% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "主力買賣超當日覆蓋率 79.3% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
     "24 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
@@ -28,7 +28,7 @@
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1841,
   "stageCounts": {
-    "close": 1983
+    "official-chip": 1983
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -64,7 +64,7 @@
     "techReady": 1959,
     "financialReady": 1920,
     "institutionalReady": 1863,
-    "brokerReady": 743
+    "brokerReady": 1573
   },
   "feedCoverage": {
     "price": {
@@ -83,11 +83,11 @@
     },
     "broker": {
       "status": {
-        "carried": 784,
-        "missing": 456,
-        "current": 743
+        "current": 1573,
+        "missing": 390,
+        "carried": 20
       },
-      "currentRatio": 0.3747
+      "currentRatio": 0.7932
     },
     "news": {
       "status": {
@@ -131,7 +131,7 @@
     "evaluationDate": "2026-11-16",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 29
+    "reviewRequiredCount": 45
   },
   "nightlyFull": {
     "dataDate": "20261113",
@@ -161,5 +161,5 @@
     ]
   },
   "earlyBreakoutDate": "20261116",
-  "generatedAt": "2026-11-16T10:18:04.295689+00:00"
+  "generatedAt": "2026-11-16T12:53:53.644249+00:00"
 }
