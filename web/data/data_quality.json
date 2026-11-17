@@ -1,34 +1,38 @@
 {
   "schemaVersion": 1,
   "status": "warning",
-  "date": "20261116",
+  "date": "20261117",
   "count": 1983,
   "errors": [],
   "warnings": [
     "EPS 加速值：19 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：139 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：142 檔尚未備齊，不以單月代替三個月",
+    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
+    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "本次僅更新資料來源狀態，行情日期與分析分數未重算",
-    "24 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "34 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "三大法人當日覆蓋率 94.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "主力買賣超當日覆蓋率 79.3% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "24 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
-    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易"
+    "三大法人當日覆蓋率 0.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "主力買賣超當日覆蓋率 0.0% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "就緒指標 institutionalReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
+    "就緒指標 brokerReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
+    "34 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
+    "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
   ],
   "readiness": {
-    "techReady": 1959,
+    "techReady": 1949,
     "marketReady": 1983,
     "financialReady": 0,
-    "institutionalReady": 1863,
-    "newsReady": 1983
+    "institutionalReady": 0,
+    "newsReady": 0
   },
   "epsAccelerationReadyCount": 1964,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1844,
+  "revenueThreeMonthReadyCount": 1841,
   "stageCounts": {
-    "full": 1983
+    "intraday-close": 1983
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -45,54 +49,51 @@
     ]
   },
   "ohlcv": {
-    "date": "20261116",
+    "date": "20261117",
     "capturedCount": 1983,
-    "availableCount": 1959,
+    "availableCount": 1949,
     "complete40DayCount": 0,
     "universeCount": 1983
   },
   "sourceEvidence": {
-    "date": "20261116",
+    "date": "20261117",
     "count": 1983,
     "priceStatusCounts": {
-      "current": 1959,
-      "carried": 24
+      "current": 1949,
+      "carried": 34
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
-    "techReady": 1959,
+    "techReady": 1949,
     "financialReady": 1926,
-    "institutionalReady": 1863,
-    "brokerReady": 1573
+    "institutionalReady": 0,
+    "brokerReady": 0
   },
   "feedCoverage": {
     "price": {
       "status": {
-        "current": 1959,
-        "carried": 24
+        "current": 1949,
+        "carried": 34
       },
-      "currentRatio": 0.9879
+      "currentRatio": 0.9829
     },
     "institutional": {
       "status": {
-        "current": 1863,
-        "carried": 120
+        "carried": 1939,
+        "missing": 44
       },
-      "currentRatio": 0.9395
+      "currentRatio": 0.0
     },
     "broker": {
       "status": {
-        "current": 1573,
-        "missing": 390,
-        "carried": 20
+        "missing": 1983
       },
-      "currentRatio": 0.7932
+      "currentRatio": 0.0
     },
     "news": {
       "status": {
-        "received_date_requires_review": 1981,
-        "missing_or_deferred": 2
+        "missing_or_deferred": 1983
       },
       "currentRatio": 0.0
     },
@@ -128,11 +129,11 @@
     }
   },
   "officialTradingAnnouncements": {
-    "date": "20261116",
-    "evaluationDate": "2026-11-16",
+    "date": "20261117",
+    "evaluationDate": "2026-11-17",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 45
+    "reviewRequiredCount": 35
   },
   "nightlyFull": {
     "dataDate": "20261116",
@@ -153,7 +154,7 @@
     "status": "validated_sample_available",
     "signalCount": 826,
     "independentSignalCount": 324,
-    "tradeCount": 724,
+    "tradeCount": 725,
     "pointInTimeConsistentTradeCount": 419,
     "horizons": [
       10,
@@ -161,6 +162,6 @@
       40
     ]
   },
-  "earlyBreakoutDate": "20261116",
-  "generatedAt": "2026-11-16T15:39:34.344050+00:00"
+  "earlyBreakoutDate": "20261117",
+  "generatedAt": "2026-11-17T07:23:19.454561+00:00"
 }
