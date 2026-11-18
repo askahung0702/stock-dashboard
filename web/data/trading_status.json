@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "date": "20261118",
-  "evaluatedAt": "2026-11-18T06:37:31.984390+00:00",
+  "evaluatedAt": "2026-11-18T10:05:24.179479+00:00",
   "evaluationDate": "2026-11-18",
-  "universeCount": 1983,
-  "reviewRequiredCount": 24,
+  "universeCount": 1981,
+  "reviewRequiredCount": 23,
   "fetchedSourceCount": 6,
   "sourceCount": 6,
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-18T06:37:22.984528+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:22.984528+00:00",
+      "fetchedAt": "2026-11-18T10:05:16.512640+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:16.512640+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "41c59c6bba69eaac92703c750887d138f26e77d3b6dc1095d6ae7f1ab1e5b6f4",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-11-18T06:37:23.314277+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:23.314277+00:00",
+      "fetchedAt": "2026-11-18T10:05:16.873137+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:16.873137+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-18T06:37:23.570643+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:23.570643+00:00",
+      "fetchedAt": "2026-11-18T10:05:17.114685+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:17.114685+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "14ee8e4457fbc9e9c69635cc576a3341dec33159138721ddaf98ec0da7327f3d",
@@ -46,8 +46,8 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-18T06:37:23.806190+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:23.806190+00:00",
+      "fetchedAt": "2026-11-18T10:05:17.354270+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:17.354270+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
       "sha256": "cee90fe2e12496270c041dc6616c050487c0c8545f44851925e9af3e937067bd",
@@ -58,8 +58,8 @@
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-11-18T06:37:26.155221+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:26.155221+00:00",
+      "fetchedAt": "2026-11-18T10:05:18.583571+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:18.583571+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
       "sha256": "c151fe6e457f8763974f4645d775aaa5947ef8e2ad2cc046f48088afa1db3266",
@@ -70,8 +70,8 @@
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-18T06:37:29.015244+00:00",
-      "lastAttemptAt": "2026-11-18T06:37:29.015244+00:00",
+      "fetchedAt": "2026-11-18T10:05:22.892379+00:00",
+      "lastAttemptAt": "2026-11-18T10:05:22.892379+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
       "sha256": "a8ccd9e3832f35d8f4d5b9cdfe5a2b9149050d3093862b6be7c22c00e21ee005",
@@ -1722,17 +1722,6 @@
       "pointInTimeVerified": false
     },
     "1587": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "證交所注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "1589": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
@@ -20597,50 +20586,6 @@
       "assessment": "unknown",
       "flags": [],
       "events": [],
-      "issues": [
-        "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "8084": {
-      "fetchHealthy": true,
-      "assessment": "review_required",
-      "flags": [
-        "disposal",
-        "recent_attention"
-      ],
-      "events": [
-        {
-          "kind": "attention",
-          "announcedDate": "2026-11-17",
-          "detail": "最近六個營業日(含當日)累積之最後成交價跌幅達34.68%(第一款)",
-          "code": "8084",
-          "name": "巨虹",
-          "market": "TPEX",
-          "source": "tpex_attention",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
-          "id": "a586a7a574267247ae5ead0fc11f5745c2461db51fde48e685994e120c67bf75",
-          "payloadFirstSeenAt": "2026-11-18T06:37:26.155221+00:00",
-          "sourceFresh": true
-        },
-        {
-          "kind": "disposal",
-          "announcedDate": "2026-11-17",
-          "startDate": "2026-11-18",
-          "endDate": "2026-11-24",
-          "detail": "* 公布日期：115/11/17* 證券代號：8084* 證券名稱：巨虹電子股份有限公司* 處置原因：連續3個營業日達本中心「公布注意交易資訊」標準，且最近30個營業日內曾發布處置。* 處置起訖期間：自115年11月18日起5個營業日(115年11月18日至115年11月24日)，如遇：(1)有價證券最後交易日在處置期間，僅處置至其最後交易日；(2)休市、有價證券停止買賣、全日暫停交易，則順延執行。* 處置措施：(1)以人工管制之撮合終端機執行撮合作業(約每25分鐘撮合一次)；(2)依本中心業務規則第12條規定，證券商應就投資人每日已委託買賣該有價證券，向該投資人收取全部之買進價金或賣出證券。但違約專戶委託買賣該有價證券時，不在此限。",
-          "code": "8084",
-          "name": "巨虹",
-          "market": "TPEX",
-          "source": "tpex_disposal",
-          "sourceUrl": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
-          "id": "84f28d36368093ce716ca3d8159bfc5b7ce84f9d5a770275c9cd934cde5364d9",
-          "payloadFirstSeenAt": "2026-11-18T06:37:23.806190+00:00",
-          "sourceFresh": true,
-          "phase": "announced_period"
-        }
-      ],
       "issues": [
         "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
       ],
