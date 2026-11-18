@@ -2,11 +2,15 @@
   "schemaVersion": 1,
   "dataDate": "20261118",
   "executionDate": "20261118",
-  "status": "running",
+  "status": "completed",
   "startedAt": "2026-11-18T13:00:01.624344+00:00",
-  "finishedAt": null,
-  "fullExitCode": null,
-  "insiderExitCode": null,
-  "futuresExitCode": null,
-  "message": "夜間完整分析執行中"
+  "finishedAt": "2026-11-18T15:35:37.882903+00:00",
+  "fullExitCode": 0,
+  "insiderExitCode": 0,
+  "futuresExitCode": 0,
+  "message": "夜間完整分析、內部人資料及期貨部位均完成",
+  "collectionExitCode": 0,
+  "reportsExitCode": 0,
+  "publicationExitCode": 0,
+  "fullRunId": "20261118-210551-8a93a338"
 }
