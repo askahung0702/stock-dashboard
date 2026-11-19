@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "date": "20261119",
-  "evaluatedAt": "2026-11-19T06:36:09.525730+00:00",
+  "evaluatedAt": "2026-11-19T09:58:42.173844+00:00",
   "evaluationDate": "2026-11-19",
-  "universeCount": 1981,
+  "universeCount": 1980,
   "reviewRequiredCount": 20,
   "fetchedSourceCount": 6,
   "sourceCount": 6,
   "sources": {
     "twse_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-19T06:36:02.875563+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:02.875563+00:00",
+      "fetchedAt": "2026-11-19T09:58:40.742679+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:40.742679+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/punish",
       "error": null,
       "sha256": "99dbbde6d9c73eca8c68ed84c13a1399100a4d308cf0e6a2ed1c173c73f21657",
@@ -22,8 +22,8 @@
     },
     "twse_attention": {
       "status": "received_empty",
-      "fetchedAt": "2026-11-19T06:36:03.205805+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:03.205805+00:00",
+      "fetchedAt": "2026-11-19T09:58:41.014346+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:41.014346+00:00",
       "url": "https://openapi.twse.com.tw/v1/announcement/notice",
       "error": null,
       "sha256": "4bd0ac94f01d8731e1e4407c90af24f3d16d4ff24e13e09b9247e92e5160e216",
@@ -34,8 +34,8 @@
     },
     "twse_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-19T06:36:03.466060+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:03.466060+00:00",
+      "fetchedAt": "2026-11-19T09:58:41.218896+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:41.218896+00:00",
       "url": "https://openapi.twse.com.tw/v1/exchangeReport/TWTAWU",
       "error": null,
       "sha256": "14ee8e4457fbc9e9c69635cc576a3341dec33159138721ddaf98ec0da7327f3d",
@@ -46,8 +46,8 @@
     },
     "tpex_disposal": {
       "status": "received",
-      "fetchedAt": "2026-11-19T06:36:03.672728+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:03.672728+00:00",
+      "fetchedAt": "2026-11-19T09:58:41.423947+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:41.423947+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_disposal_information",
       "error": null,
       "sha256": "39fdfc6f3b612664d8090c8b5e3a572cd056d602f4a6358ac4c03a90d04fc919",
@@ -58,8 +58,8 @@
     },
     "tpex_attention": {
       "status": "received",
-      "fetchedAt": "2026-11-19T06:36:03.890657+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:03.890657+00:00",
+      "fetchedAt": "2026-11-19T09:58:41.720152+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:41.720152+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_trading_warning_information",
       "error": null,
       "sha256": "e1a47a4c8bd1591d55f9da5470e8dfa52d4047cef3100d4913b67c33c1c4dff6",
@@ -70,8 +70,8 @@
     },
     "tpex_halt": {
       "status": "received",
-      "fetchedAt": "2026-11-19T06:36:07.172604+00:00",
-      "lastAttemptAt": "2026-11-19T06:36:07.172604+00:00",
+      "fetchedAt": "2026-11-19T09:58:41.909681+00:00",
+      "lastAttemptAt": "2026-11-19T09:58:41.909681+00:00",
       "url": "https://www.tpex.org.tw/openapi/v1/tpex_spendi_history",
       "error": null,
       "sha256": "a8ccd9e3832f35d8f4d5b9cdfe5a2b9149050d3093862b6be7c22c00e21ee005",
@@ -21094,17 +21094,6 @@
       "pointInTimeVerified": false
     },
     "8289": {
-      "fetchHealthy": true,
-      "assessment": "unknown",
-      "flags": [],
-      "events": [],
-      "issues": [
-        "櫃買中心注意公告：尚未取得今日注意公告，不能判定今日沒有注意股票"
-      ],
-      "tradabilityVerified": false,
-      "pointInTimeVerified": false
-    },
-    "8291": {
       "fetchHealthy": true,
       "assessment": "unknown",
       "flags": [],
