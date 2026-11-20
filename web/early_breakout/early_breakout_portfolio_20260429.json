@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260429",
-  "latest_track_date": "20261119",
+  "latest_track_date": "20261120",
   "stock_count": 22,
   "groups": {
     "all": [
@@ -1075,6 +1075,14 @@
         "avg_return_pct": -1.37,
         "median_return_pct": 0.67,
         "win_rate_pct": 50.0
+      },
+      {
+        "track_date": "20261120",
+        "days_since_buy": 205,
+        "stock_count": 22,
+        "avg_return_pct": -7.93,
+        "median_return_pct": -6.1,
+        "win_rate_pct": 45.45
       }
     ],
     "continuation": [
@@ -2148,6 +2156,14 @@
         "stock_count": 7,
         "avg_return_pct": -14.99,
         "median_return_pct": -10.8,
+        "win_rate_pct": 28.57
+      },
+      {
+        "track_date": "20261120",
+        "days_since_buy": 205,
+        "stock_count": 7,
+        "avg_return_pct": -20.51,
+        "median_return_pct": -17.83,
         "win_rate_pct": 28.57
       }
     ],
@@ -3223,6 +3239,14 @@
         "avg_return_pct": -15.73,
         "median_return_pct": -16.09,
         "win_rate_pct": 33.33
+      },
+      {
+        "track_date": "20261120",
+        "days_since_buy": 205,
+        "stock_count": 6,
+        "avg_return_pct": -20.96,
+        "median_return_pct": -20.29,
+        "win_rate_pct": 33.33
       }
     ],
     "early": [
@@ -4297,6 +4321,14 @@
         "avg_return_pct": 4.99,
         "median_return_pct": 5.03,
         "win_rate_pct": 60.0
+      },
+      {
+        "track_date": "20261120",
+        "days_since_buy": 205,
+        "stock_count": 15,
+        "avg_return_pct": -2.07,
+        "median_return_pct": 0.38,
+        "win_rate_pct": 53.33
       }
     ],
     "early_focus": [
@@ -5370,6 +5402,14 @@
         "stock_count": 11,
         "avg_return_pct": 13.45,
         "median_return_pct": 12.5,
+        "win_rate_pct": 72.73
+      },
+      {
+        "track_date": "20261120",
+        "days_since_buy": 205,
+        "stock_count": 11,
+        "avg_return_pct": 6.44,
+        "median_return_pct": 7.29,
         "win_rate_pct": 72.73
       }
     ]
