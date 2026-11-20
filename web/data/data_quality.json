@@ -8,15 +8,10 @@
     "EPS 加速值：18 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
     "連續三個月營收：141 檔尚未備齊，不以單月代替三個月",
-    "行情初版的法人與分點可能沿用前次快照；已就緒不代表本交易日最新",
-    "行情初版略過新聞與事件分析，須等待夜間完整分析補齊",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "14 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "三大法人當日覆蓋率 0.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "主力買賣超當日覆蓋率 0.0% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "就緒指標 institutionalReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
-    "就緒指標 brokerReady 全為 0：規則或資料來源已失效，指標不再反映現狀",
+    "主力買賣超當日覆蓋率 45.9% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
     "14 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "最新夜間作業日期早於行情日期；本行情日的完整分析尚未確認"
@@ -25,14 +20,14 @@
     "techReady": 1966,
     "marketReady": 1980,
     "financialReady": 0,
-    "institutionalReady": 0,
+    "institutionalReady": 1881,
     "newsReady": 0
   },
   "epsAccelerationReadyCount": 1962,
   "insiderTransferCompleteCount": 0,
   "revenueThreeMonthReadyCount": 1839,
   "stageCounts": {
-    "intraday-close": 1980
+    "close": 1980
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -67,8 +62,8 @@
   "verifiedReadiness": {
     "techReady": 1966,
     "financialReady": 1925,
-    "institutionalReady": 0,
-    "brokerReady": 0
+    "institutionalReady": 1881,
+    "brokerReady": 909
   },
   "feedCoverage": {
     "price": {
@@ -80,16 +75,18 @@
     },
     "institutional": {
       "status": {
-        "carried": 1934,
-        "missing": 46
+        "current": 1881,
+        "carried": 99
       },
-      "currentRatio": 0.0
+      "currentRatio": 0.95
     },
     "broker": {
       "status": {
-        "missing": 1980
+        "carried": 749,
+        "missing": 322,
+        "current": 909
       },
-      "currentRatio": 0.0
+      "currentRatio": 0.4591
     },
     "news": {
       "status": {
@@ -133,7 +130,7 @@
     "evaluationDate": "2026-11-20",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 38
+    "reviewRequiredCount": 53
   },
   "nightlyFull": {
     "dataDate": "20261119",
@@ -163,5 +160,5 @@
     ]
   },
   "earlyBreakoutDate": "20261120",
-  "generatedAt": "2026-11-20T06:51:33.508828+00:00"
+  "generatedAt": "2026-11-20T10:38:46.460264+00:00"
 }
