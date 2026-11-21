@@ -130,22 +130,22 @@
     "evaluationDate": "2026-11-21",
     "fetchedSourceCount": 6,
     "sourceCount": 6,
-    "reviewRequiredCount": 53
+    "reviewRequiredCount": 41
   },
   "nightlyFull": {
     "dataDate": "20261120",
     "status": "completed",
-    "startedAt": "2026-11-20T13:00:26.550630+00:00",
-    "finishedAt": "2026-11-20T16:01:53.981404+00:00",
+    "startedAt": "2026-11-21T13:00:02.637498+00:00",
+    "finishedAt": "2026-11-21T13:00:29.997391+00:00",
     "fullExitCode": 0,
     "insiderExitCode": 0,
     "futuresExitCode": 0,
     "message": "夜間完整分析、內部人資料及期貨部位均完成",
-    "collectionExitCode": 0,
-    "reportsExitCode": 0,
-    "publicationExitCode": 0,
+    "collectionExitCode": null,
+    "reportsExitCode": null,
+    "publicationExitCode": null,
     "failurePhase": null,
-    "fullRunId": "20261120-211716-734e0036"
+    "fullRunId": null
   },
   "swingBacktest": {
     "status": "validated_sample_available",
@@ -160,5 +160,5 @@
     ]
   },
   "earlyBreakoutDate": "20261120",
-  "generatedAt": "2026-11-20T16:02:25.660170+00:00"
+  "generatedAt": "2026-11-21T13:01:59.662626+00:00"
 }
