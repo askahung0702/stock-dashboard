@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "date": "20261123",
-  "generatedAt": "2026-11-23T12:56:32.616483+00:00",
-  "universeCount": 1980,
-  "attemptedCount": 1980,
-  "capturedCount": 1980,
+  "generatedAt": "2026-11-23T15:17:13.931824+00:00",
+  "universeCount": 1979,
+  "attemptedCount": 1979,
+  "capturedCount": 1979,
   "availableCount": 1957,
   "complete40DayCount": 0,
   "status": "partial",
@@ -12,7 +12,12 @@
   "sources": [
     "https://help.yahoo.com/kb/finance/adjusted-close-sln28256.html"
   ],
-  "failures": [],
+  "failures": [
+    {
+      "symbol": "6228.TWO",
+      "error": "Latest fetch failed: SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+    }
+  ],
   "stocks": {
     "1101": {
       "available": true,
@@ -18447,7 +18452,7 @@
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
       "corporateActionsVerified": false,
       "pointInTimeVerified": false,
-      "fetchedAt": "2026-11-23T12:36:24.384195Z",
+      "fetchedAt": "2026-11-23T14:07:12.662545100Z",
       "barsThrough": "2026-11-23",
       "barCount": 242,
       "eventCount": 0,
@@ -20814,7 +20819,7 @@
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
       "corporateActionsVerified": false,
       "pointInTimeVerified": false,
-      "fetchedAt": "2026-11-23T12:36:41.678597800Z",
+      "fetchedAt": "2026-11-23T14:08:01.398592600Z",
       "barsThrough": "2026-11-23",
       "barCount": 242,
       "eventCount": 0,
@@ -42987,7 +42992,7 @@
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
       "corporateActionsVerified": false,
       "pointInTimeVerified": false,
-      "fetchedAt": "2026-11-23T12:40:53.941925700Z",
+      "fetchedAt": "2026-11-23T14:26:10.012414900Z",
       "barsThrough": "2026-11-23",
       "barCount": 242,
       "eventCount": 0,
@@ -43933,7 +43938,7 @@
       "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
       "corporateActionsVerified": false,
       "pointInTimeVerified": false,
-      "fetchedAt": "2026-11-23T12:41:16.051631600Z",
+      "fetchedAt": "2026-11-23T14:27:18.009997Z",
       "barsThrough": "2026-11-23",
       "barCount": 242,
       "eventCount": 1,
@@ -49527,30 +49532,6 @@
       "recentCorporateActionCount": 0,
       "unexplainedAdjustmentDates": [],
       "snapshotPriceDifferencePct": 0.0
-    },
-    "6228": {
-      "available": false,
-      "priceBasis": "Yahoo adjusted close; exchange reconciliation pending",
-      "corporateActionsVerified": false,
-      "pointInTimeVerified": false,
-      "fetchedAt": "2026-11-23T12:42:39.654213200Z",
-      "barsThrough": "2026-11-23",
-      "barCount": 242,
-      "eventCount": 0,
-      "events": [],
-      "warnings": [
-        "交易日有缺價、零成交或缺少還原數值，不推定為停牌，也不補零",
-        "最新預期交易日沒有完整 OHLCV 與還原收盤價"
-      ],
-      "returns": {},
-      "missingTradingDates": [
-        "2026-09-22",
-        "2026-10-15",
-        "2026-10-20",
-        "2026-10-23",
-        "2026-11-18",
-        "2026-11-23"
-      ]
     },
     "6229": {
       "available": true,

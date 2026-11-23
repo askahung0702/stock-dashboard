@@ -2,33 +2,33 @@
   "schemaVersion": 1,
   "status": "warning",
   "date": "20261123",
-  "count": 1980,
+  "count": 1979,
   "errors": [],
   "warnings": [
     "EPS 加速值：18 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：141 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：138 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
-    "23 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
+    "22 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
-    "三大法人當日覆蓋率 94.9% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "主力買賣超當日覆蓋率 78.1% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
-    "23 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
+    "三大法人當日覆蓋率 95.0% 低於 95%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "主力買賣超當日覆蓋率 78.2% 低於 85%：缺漏股票仍沿用舊值或無值，須查來源失敗原因",
+    "22 檔實際行情日不同於快照標示，需查明停牌、無成交或漏抓",
     "已接入官方處置、注意及停復牌公告；未列出不代表可正常交易",
     "夜間完整分析仍在執行，完整資料尚未確認"
   ],
   "readiness": {
     "techReady": 1957,
-    "marketReady": 1980,
+    "marketReady": 1979,
     "financialReady": 0,
     "institutionalReady": 1879,
-    "newsReady": 0
+    "newsReady": 1979
   },
-  "epsAccelerationReadyCount": 1962,
+  "epsAccelerationReadyCount": 1961,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1839,
+  "revenueThreeMonthReadyCount": 1841,
   "stageCounts": {
-    "official-chip": 1980
+    "full": 1979
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -46,23 +46,23 @@
   },
   "ohlcv": {
     "date": "20261123",
-    "capturedCount": 1980,
+    "capturedCount": 1979,
     "availableCount": 1957,
     "complete40DayCount": 0,
-    "universeCount": 1980
+    "universeCount": 1979
   },
   "sourceEvidence": {
     "date": "20261123",
-    "count": 1980,
+    "count": 1979,
     "priceStatusCounts": {
       "current": 1957,
-      "carried": 23
+      "carried": 22
     },
     "legacyScoreCount": 0
   },
   "verifiedReadiness": {
     "techReady": 1957,
-    "financialReady": 1925,
+    "financialReady": 1924,
     "institutionalReady": 1879,
     "brokerReady": 1547
   },
@@ -70,58 +70,59 @@
     "price": {
       "status": {
         "current": 1957,
-        "carried": 23
+        "carried": 22
       },
-      "currentRatio": 0.9884
+      "currentRatio": 0.9889
     },
     "institutional": {
       "status": {
         "current": 1879,
-        "carried": 101
+        "carried": 100
       },
-      "currentRatio": 0.949
+      "currentRatio": 0.9495
     },
     "broker": {
       "status": {
         "current": 1547,
-        "missing": 365,
+        "missing": 364,
         "carried": 68
       },
-      "currentRatio": 0.7813
+      "currentRatio": 0.7817
     },
     "news": {
       "status": {
-        "missing_or_deferred": 1980
+        "received_date_requires_review": 1970,
+        "missing_or_deferred": 9
       },
       "currentRatio": 0.0
     },
     "financial": {
       "income": {
-        "complete": 1979,
+        "complete": 1978,
         "incomplete": 0
       },
       "revenue": {
-        "complete": 1980,
-        "incomplete": 0
-      },
-      "balance": {
         "complete": 1979,
         "incomplete": 0
       },
+      "balance": {
+        "complete": 1978,
+        "incomplete": 0
+      },
       "profile": {
-        "complete": 1426,
+        "complete": 1428,
         "incomplete": 0
       },
       "eps": {
-        "complete": 1971,
+        "complete": 1970,
         "incomplete": 0
       },
       "epsTtm": {
-        "complete": 1925,
+        "complete": 1924,
         "incomplete": 46
       },
       "revenueHistory": {
-        "complete": 1842,
+        "complete": 1841,
         "incomplete": 138
       }
     }
@@ -150,8 +151,8 @@
   },
   "swingBacktest": {
     "status": "validated_sample_available",
-    "signalCount": 843,
-    "independentSignalCount": 324,
+    "signalCount": 845,
+    "independentSignalCount": 325,
     "tradeCount": 725,
     "pointInTimeConsistentTradeCount": 419,
     "horizons": [
@@ -161,5 +162,5 @@
     ]
   },
   "earlyBreakoutDate": "20261123",
-  "generatedAt": "2026-11-23T13:07:08.121375+00:00"
+  "generatedAt": "2026-11-23T15:28:46.622002+00:00"
 }
