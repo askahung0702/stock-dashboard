@@ -1,6 +1,6 @@
 {
   "snapshot_date": "20260506",
-  "latest_track_date": "20261120",
+  "latest_track_date": "20261123",
   "stock_count": 42,
   "groups": {
     "all": [
@@ -1035,6 +1035,14 @@
         "avg_return_pct": -20.04,
         "median_return_pct": -21.92,
         "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20261123",
+        "days_since_buy": 201,
+        "stock_count": 42,
+        "avg_return_pct": -18.0,
+        "median_return_pct": -20.55,
+        "win_rate_pct": 21.43
       }
     ],
     "continuation": [
@@ -2068,6 +2076,14 @@
         "stock_count": 20,
         "avg_return_pct": -23.57,
         "median_return_pct": -22.01,
+        "win_rate_pct": 20.0
+      },
+      {
+        "track_date": "20261123",
+        "days_since_buy": 201,
+        "stock_count": 20,
+        "avg_return_pct": -22.19,
+        "median_return_pct": -20.63,
         "win_rate_pct": 20.0
       }
     ],
@@ -3103,6 +3119,14 @@
         "avg_return_pct": -24.0,
         "median_return_pct": -24.67,
         "win_rate_pct": 22.22
+      },
+      {
+        "track_date": "20261123",
+        "days_since_buy": 201,
+        "stock_count": 18,
+        "avg_return_pct": -22.55,
+        "median_return_pct": -22.84,
+        "win_rate_pct": 22.22
       }
     ],
     "early": [
@@ -4137,6 +4161,14 @@
         "avg_return_pct": -16.83,
         "median_return_pct": -21.05,
         "win_rate_pct": 13.64
+      },
+      {
+        "track_date": "20261123",
+        "days_since_buy": 201,
+        "stock_count": 22,
+        "avg_return_pct": -14.19,
+        "median_return_pct": -20.38,
+        "win_rate_pct": 22.73
       }
     ],
     "early_focus": [
@@ -5171,6 +5203,14 @@
         "avg_return_pct": -15.51,
         "median_return_pct": -22.07,
         "win_rate_pct": 16.67
+      },
+      {
+        "track_date": "20261123",
+        "days_since_buy": 201,
+        "stock_count": 18,
+        "avg_return_pct": -12.7,
+        "median_return_pct": -18.38,
+        "win_rate_pct": 27.78
       }
     ]
   }
