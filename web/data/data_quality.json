@@ -7,7 +7,7 @@
   "warnings": [
     "EPS 加速值：19 檔資料不足，不應解讀為零成長",
     "內部人轉讓近 30 日查詢不完整，不能判定沒有轉讓",
-    "連續三個月營收：142 檔尚未備齊，不以單月代替三個月",
+    "連續三個月營收：139 檔尚未備齊，不以單月代替三個月",
     "資料完整度分數不是勝率；2～8 週策略仍需用還原行情及公告時間驗證",
     "35 檔缺少可用的當日逐日行情；需區分停牌、無成交與抓取缺漏",
     "OHLCV 與還原因子已開始保存；公司行動仍待官方核對，尚非可交易回測",
@@ -22,13 +22,13 @@
     "marketReady": 1981,
     "financialReady": 0,
     "institutionalReady": 1835,
-    "newsReady": 0
+    "newsReady": 1981
   },
   "epsAccelerationReadyCount": 1962,
   "insiderTransferCompleteCount": 0,
-  "revenueThreeMonthReadyCount": 1839,
+  "revenueThreeMonthReadyCount": 1842,
   "stageCounts": {
-    "official-chip": 1981
+    "full": 1981
   },
   "swingValidation": {
     "horizonTradingDays": [
@@ -91,13 +91,14 @@
     },
     "news": {
       "status": {
-        "missing_or_deferred": 1981
+        "received_date_requires_review": 1978,
+        "missing_or_deferred": 3
       },
       "currentRatio": 0.0
     },
     "financial": {
       "income": {
-        "complete": 1979,
+        "complete": 1980,
         "incomplete": 0
       },
       "revenue": {
@@ -105,11 +106,11 @@
         "incomplete": 0
       },
       "balance": {
-        "complete": 1979,
+        "complete": 1980,
         "incomplete": 0
       },
       "profile": {
-        "complete": 1432,
+        "complete": 1434,
         "incomplete": 0
       },
       "eps": {
@@ -150,8 +151,8 @@
   },
   "swingBacktest": {
     "status": "validated_sample_available",
-    "signalCount": 852,
-    "independentSignalCount": 327,
+    "signalCount": 855,
+    "independentSignalCount": 329,
     "tradeCount": 742,
     "pointInTimeConsistentTradeCount": 421,
     "horizons": [
@@ -161,5 +162,5 @@
     ]
   },
   "earlyBreakoutDate": "20261127",
-  "generatedAt": "2026-11-27T13:02:16.070945+00:00"
+  "generatedAt": "2026-11-27T15:38:26.362314+00:00"
 }
